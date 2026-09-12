@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shirnahar House - Admin Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B1E41',
+                        'primary-dark': '#6b1431',
+                        accent: '#D4AF37'
+                    },
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <nav class="bg-gray-900 text-white p-4 shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold font-serif text-accent flex items-center gap-2">
+                <i class="fas fa-shield-alt"></i> Shirnahar House Admin
+            </h1>
+            <div class="flex space-x-2 sm:space-x-4">
+                <button onclick="switchAdminTab('products')" id="tab-products" class="px-3 py-1.5 bg-primary text-white text-sm rounded-md font-semibold transition">Products</button>
+                <button onclick="switchAdminTab('orders')" id="tab-orders" class="px-3 py-1.5 hover:bg-gray-800 text-gray-300 text-sm rounded-md transition">Orders</button>
+                <button onclick="logoutAdmin()" class="px-3 py-1.5 text-red-400 hover:text-red-300 text-sm transition border border-red-900/50 rounded-md">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8 w-full flex-grow">
+        <!-- Products Management Tab -->
+        <div id="admin-products-tab">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 font-serif">Inventory Management</h2>
+                    <p class="text-sm text-gray-500">Add, edit stock status, or remove items from store</p>
+                </div>
+                <button onclick="openAddProductModal()" class="bg-green-600 text-white px-5 py-3 rounded-lg shadow-md hover:bg-green-700 transition font-bold flex items-center gap-2 text-base w-full sm:w-auto justify-center">
+                    <i class="fas fa-plus"></i> Add New Item
+                </button>
+            </div>
+            
+            <!-- Replaced Table with Mobile-Friendly Cards -->
+            <div id="admin-product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div class="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl shadow-sm border border-gray-200">Loading products...</div>
+            </div>
+        </div>
+
+        <!-- Orders Management Tab -->
+        <div id="admin-orders-tab" class="hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 font-serif">Customer Orders</h2>
+                <p class="text-sm text-gray-500">Track and update delivery status of customer orders</p>
+            </div>
+            <div id="admin-orders-list" class="space-y-4">
+                <div class="bg-white p-8 text-center rounded-xl border border-gray-200 text-gray-500">Loading orders...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="add-product-modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <h3 class="text-xl font-bold text-gray-800 font-serif">Add New Item</h3>
+                <button onclick="closeAddProductModal()" class="text-gray-400 hover:text-gray-700 p-2"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <form id="add-product-form" onsubmit="handleProductSubmit(event)" class="space-y-4">
+                
+                <!-- New File Upload Section for Mobile Camera/Gallery -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Take Photo or Select Video</label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="prod-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-primary/40 border-dashed rounded-xl cursor-pointer bg-rose-50 hover:bg-rose-100 transition">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <i class="fas fa-camera text-3xl text-primary mb-2"></i>
+                                <p class="text-sm text-primary font-semibold">Tap to open Camera/Gallery</p>
+                            </div>
+                            <!-- accept="image/*,video/*" triggers phone media pickers -->
+                            <input id="prod-file" type="file" accept="image/*,video/*" class="hidden" required />
+                        </label>
+                    </div>
+                    
+                    <!-- Progress Bar for Upload -->
+                    <div id="upload-progress-container" class="w-full bg-gray-200 rounded-full h-2.5 mt-3 hidden">
+                        <div id="upload-progress-bar" class="bg-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    
+                    <!-- Media Preview -->
+                    <div id="media-preview-container" class="mt-3 hidden relative">
+                        <img id="image-preview" src="" class="h-48 w-full object-cover rounded-xl border hidden shadow-sm">
+                        <video id="video-preview" src="" controls class="h-48 w-full object-cover rounded-xl border hidden shadow-sm"></video>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Product Name</label>
+                    <input type="text" id="prod-name" placeholder="e.g. Royal Silk Banarasi Saree" required class="w-full border border-gray-300 rounded-xl p-3 text-base focus:ring-2 focus:ring-primary outline-none">
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Price (₹)</label>
+                        <input type="number" id="prod-price" placeholder="2499" required min="1" class="w-full border border-gray-300 rounded-xl p-3 text-base focus:ring-2 focus:ring-primary outline-none">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Stock Quantity</label>
+                        <input type="number" id="prod-stock" placeholder="10" required min="1" value="1" class="w-full border border-gray-300 rounded-xl p-3 text-base focus:ring-2 focus:ring-primary outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Category</label>
+                    <select id="prod-category" class="w-full border border-gray-300 rounded-xl p-3 text-base focus:ring-2 focus:ring-primary outline-none bg-white">
+                        <option value="Saree">Saree</option>
+                        <option value="Dress">Dress</option>
+                        <option value="Lehenga">Lehenga</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+                    <textarea id="prod-desc" rows="3" placeholder="Fabric details, pattern, embellishments..." required class="w-full border border-gray-300 rounded-xl p-3 text-base focus:ring-2 focus:ring-primary outline-none"></textarea>
+                </div>
+                <button type="submit" id="submit-product-btn" class="w-full bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-primary-dark transition shadow-md flex justify-center items-center gap-2 text-lg mt-2">
+                    <i class="fas fa-check-circle"></i> Save to Store
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[110] bg-black/60 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4 id="confirm-modal-title" class="text-lg font-bold text-gray-800 mb-2">Are you sure?</h4>
+            <p id="confirm-modal-msg" class="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="handleConfirmResponse(false)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-lg font-semibold text-sm transition">Cancel</button>
+                <button onclick="handleConfirmResponse(true)" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold text-sm transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-[120] bg-gray-900 text-white px-5 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 flex items-center gap-3 text-sm">
+        <i class="fas fa-info-circle text-accent"></i>
+        <span id="toast-message">Message</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'shirnahar-house';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
+            measurementId: "G-L4MK6TB4EX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const PRODUCTS_COL_PATH = `artifacts/${appId}/public/data/products`;
+        const ORDERS_COL_PATH = `artifacts/${appId}/public/data/orders`;
+
+        let allProducts = [];
+        let allOrders = [];
+        let pendingConfirmCallback = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                showToast("Please log in first.");
+                setTimeout(() => window.location.href = 'index.html', 1500);
+            } else {
+                setupListeners();
+            }
+        });
+
+        function setupListeners() {
+            onSnapshot(collection(db, PRODUCTS_COL_PATH), (snapshot) => {
+                allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAdminProducts();
+            });
+
+            onSnapshot(collection(db, ORDERS_COL_PATH), (snapshot) => {
+                allOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt);
+                renderAdminOrders();
+            });
+        }
+
+        window.switchAdminTab = function(tabName) {
+            const pTab = document.getElementById('admin-products-tab');
+            const oTab = document.getElementById('admin-orders-tab');
+            const pBtn = document.getElementById('tab-products');
+            const oBtn = document.getElementById('tab-orders');
+
+            if (tabName === 'products') {
+                pTab.classList.remove('hidden');
+                oTab.classList.add('hidden');
+                pBtn.className = "px-3 py-1.5 bg-primary text-white text-sm rounded-md font-semibold transition";
+                oBtn.className = "px-3 py-1.5 hover:bg-gray-800 text-gray-300 text-sm rounded-md transition";
+            } else {
+                oTab.classList.remove('hidden');
+                pTab.classList.add('hidden');
+                oBtn.className = "px-3 py-1.5 bg-primary text-white text-sm rounded-md font-semibold transition";
+                pBtn.className = "px-3 py-1.5 hover:bg-gray-800 text-gray-300 text-sm rounded-md transition";
+            }
+        };
+
+        window.renderAdminProducts = function() {
+            const container = document.getElementById('admin-product-list');
+            container.innerHTML = '';
+            
+            if (allProducts.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl shadow-sm border border-gray-200">No products in inventory. Add some to get started!</div>`;
+                return;
+            }
+
+            allProducts.forEach(product => {
+                const stock = product.stock || 0;
+                
+                // Determine if media is a video or image (defaults to image for older data)
+                const mediaTag = product.mediaType === 'video' 
+                    ? `<video class="h-56 w-full object-cover rounded-t-xl bg-gray-100" src="${product.mediaUrl}" controls></video>`
+                    : `<img class="h-56 w-full object-cover rounded-t-xl bg-gray-100" src="${product.mediaUrl || product.imageUrl}" onerror="this.src='https://placehold.co/400x300/ccc/fff?text=No+Image'">`;
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-md border border-gray-100 flex flex-col overflow-hidden relative";
+                
+                // Out of stock overlay banner
+                const outOfStockBanner = stock <= 0 
+                    ? `<div class="absolute top-4 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-l-md shadow-md z-10">Out of Stock</div>` 
+                    : '';
+
+                card.innerHTML = `
+                    ${outOfStockBanner}
+                    ${mediaTag}
+                    <div class="p-4 flex-grow flex flex-col">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="font-bold text-gray-900 leading-tight pr-2">${product.name}</h3>
+                            <span class="px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-rose-100 text-primary whitespace-nowrap mt-0.5">${product.category}</span>
+                        </div>
+                        <p class="font-extrabold text-lg text-gray-800 mb-4">₹${parseFloat(product.price || 0).toLocaleString('en-IN')}</p>
+                        
+                        <div class="mt-auto pt-4 border-t border-gray-100">
+                            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Available Stock</label>
+                            <div class="flex items-center justify-between bg-gray-50 rounded-xl border border-gray-200 p-1 mb-3">
+                                <button onclick="updateStock('${product.id}', -1)" class="w-12 h-10 flex items-center justify-center text-red-600 font-bold hover:bg-gray-200 rounded-lg transition text-2xl active:scale-95 touch-manipulation">-</button>
+                                <span class="font-bold text-xl px-2 ${stock === 0 ? 'text-red-500' : 'text-gray-800'}">${stock}</span>
+                                <button onclick="updateStock('${product.id}', 1)" class="w-12 h-10 flex items-center justify-center text-green-600 font-bold hover:bg-gray-200 rounded-lg transition text-xl active:scale-95 touch-manipulation">+</button>
+                            </div>
+                            <button onclick="confirmDeleteProduct('${product.id}')" class="w-full py-3 text-sm text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-600 rounded-xl font-bold transition flex items-center justify-center gap-2 active:scale-95">
+                                <i class="fas fa-trash-alt"></i> Remove Item
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.renderAdminOrders = function() {
+            const list = document.getElementById('admin-orders-list');
+            list.innerHTML = '';
+            
+            if (allOrders.length === 0) {
+                list.innerHTML = `<div class="bg-white p-8 text-center rounded-xl border border-gray-200 text-gray-500">No orders received yet.</div>`;
+                return;
+            }
+
+            allOrders.forEach(order => {
+                const date = order.createdAt ? new Date(order.createdAt.toMillis()).toLocaleString() : 'Just now';
+                let statusColor = "bg-yellow-100 text-yellow-800";
+                if(order.status === 'Delivered') statusColor = "bg-green-100 text-green-800";
+                else if (order.status === 'Cancelled') statusColor = "bg-red-100 text-red-800";
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between gap-4";
+                card.innerHTML = `
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="font-bold text-gray-900">#${order.id.substring(0, 8).toUpperCase()}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${statusColor}">${order.status}</span>
+                            <span class="text-xs text-gray-500"><i class="far fa-clock"></i> ${date}</span>
+                        </div>
+                        <p class="text-sm text-gray-800 font-semibold mb-1"><i class="fas fa-user text-gray-400 w-5"></i> ${order.customerName} - ${order.customerPhone}</p>
+                        <p class="text-sm text-gray-600 mb-3"><i class="fas fa-map-marker-alt text-gray-400 w-5"></i> ${order.deliveryAddress}</p>
+                        <div class="bg-gray-50 rounded p-3 text-sm">
+                            <div class="font-semibold text-gray-700 mb-1 border-b pb-1">Items (${order.items.length})</div>
+                            <ul class="space-y-1">${order.items.map(i => `<li class="flex justify-between"><span class="text-gray-600">${i.quantity}x ${i.name}</span><span class="text-gray-800">₹${(i.price * i.quantity).toLocaleString('en-IN')}</span></li>`).join('')}</ul>
+                            <div class="mt-2 pt-2 border-t flex justify-between font-bold text-primary"><span>Total:</span><span>₹${order.totalAmount.toLocaleString('en-IN')}</span></div>
+                        </div>
+                    </div>
+                    <div class="md:w-48 flex flex-col justify-start gap-2 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Update Status</span>
+                        <select onchange="updateOrderStatus('${order.id}', this.value)" class="w-full border rounded-md p-2 text-sm outline-none focus:border-primary bg-gray-50">
+                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Out for Delivery" ${order.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+                            <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        };
+
+        window.openAddProductModal = () => document.getElementById('add-product-modal').classList.remove('hidden');
+        window.closeAddProductModal = () => document.getElementById('add-product-modal').classList.add('hidden');
+
+        // Handle File Selection Preview
+        document.getElementById('prod-file').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const container = document.getElementById('media-preview-container');
+            const img = document.getElementById('image-preview');
+            const vid = document.getElementById('video-preview');
+            
+            if(file) { 
+                container.classList.remove('hidden');
+                const url = URL.createObjectURL(file);
+                if(file.type.startsWith('video/')) {
+                    img.classList.add('hidden');
+                    vid.classList.remove('hidden');
+                    vid.src = url;
+                } else {
+                    vid.classList.add('hidden');
+                    img.classList.remove('hidden');
+                    img.src = url;
+                }
+            } else { 
+                container.classList.add('hidden'); 
+            }
+        });
+
+        // Helper to upload file to Firebase Storage
+        const uploadMedia = (file) => {
+            return new Promise((resolve, reject) => {
+                const storageRef = ref(storage, `products/${Date.now()}_${file.name.replace(/\s+/g, '_')}`);
+                const uploadTask = uploadBytesResumable(storageRef, file);
+                const progressBar = document.getElementById('upload-progress-bar');
+                
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = progress + '%';
+                    }, 
+                    (error) => reject(error), 
+                    async () => {
+                        const url = await getDownloadURL(uploadTask.snapshot.ref);
+                        resolve(url);
+                    }
+                );
+            });
+        };
+
+        window.handleProductSubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-product-btn');
+            const fileInput = document.getElementById('prod-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showToast("Please take a photo or select a video first.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading... Please Wait`;
+            
+            const progressContainer = document.getElementById('upload-progress-container');
+            progressContainer.classList.remove('hidden');
+
+            try {
+                // 1. Upload the file securely
+                const downloadURL = await uploadMedia(file);
+                const isVideo = file.type.startsWith('video/');
+
+                // 2. Save the product data to the database
+                await addDoc(collection(db, PRODUCTS_COL_PATH), {
+                    name: document.getElementById('prod-name').value,
+                    price: parseFloat(document.getElementById('prod-price').value),
+                    stock: parseInt(document.getElementById('prod-stock').value),
+                    category: document.getElementById('prod-category').value,
+                    description: document.getElementById('prod-desc').value,
+                    mediaUrl: downloadURL,
+                    mediaType: isVideo ? 'video' : 'image',
+                    createdAt: serverTimestamp()
+                });
+                
+                showToast("Product added successfully!");
+                closeAddProductModal();
+                document.getElementById('add-product-form').reset();
+                document.getElementById('media-preview-container').classList.add('hidden');
+                
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to upload. Check your connection.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> Save to Store`;
+                progressContainer.classList.add('hidden');
+                document.getElementById('upload-progress-bar').style.width = '0%';
+            }
+        };
+
+        window.updateStock = async function(id, change) {
+            const product = allProducts.find(p => p.id === id);
+            if(product) {
+                // Prevent stock from dropping below zero
+                const newStock = Math.max(0, (product.stock || 0) + change);
+                try {
+                    await updateDoc(doc(db, PRODUCTS_COL_PATH, id), { stock: newStock });
+                    // No need to show toast for every tap, real-time UI update is enough feedback
+                } catch(e) {
+                    showToast("Failed to update stock");
+                }
+            }
+        };
+
+        window.confirmDeleteProduct = function(id) {
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            pendingConfirmCallback = async () => {
+                await deleteDoc(doc(db, PRODUCTS_COL_PATH, id));
+                showToast("Product deleted");
+            };
+        };
+
+        window.handleConfirmResponse = async function(confirmed) {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (confirmed && pendingConfirmCallback) await pendingConfirmCallback();
+            pendingConfirmCallback = null;
+        };
+
+        window.updateOrderStatus = async function(id, status) {
+            await updateDoc(doc(db, ORDERS_COL_PATH, id), { status });
+            showToast("Order status updated");
+        };
+
+        window.logoutAdmin = async function() {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        };
+
+        window.showToast = function(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
+        };
+    </script>
+</body>
+</html>
