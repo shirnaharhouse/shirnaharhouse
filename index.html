@@ -307,7 +307,7 @@
         <footer class="bg-stone-900 text-stone-400 py-8 text-center border-t border-stone-800 mt-auto pb-24 md:pb-8">
             <p>&copy; 2026 Shirnahar House. All rights reserved.</p>
             <p class="text-xs mt-2">Serving customers proudly in Tripura.</p>
-            <button ondblclick="triggerAdminMode()" class="w-10 h-10 mt-4 opacity-10 hover:opacity-100 transition"><i class="fa-solid fa-lock"></i></button>
+            <button ondblclick="window.location.href='admin.html'" class="w-10 h-10 mt-4 opacity-10 hover:opacity-100 transition"><i class="fa-solid fa-lock"></i></button>
         </footer>
 
         <!-- Cart Drawer -->
@@ -863,16 +863,7 @@
         };
 
         // ADMIN TOGGLES
-        window.triggerAdminMode = () => {
-            document.getElementById('customer-view').classList.add('hidden');
-            document.getElementById('admin-view').classList.remove('hidden');
-            document.getElementById('admin-view').classList.add('flex');
-        };
-        window.closeAdminMode = () => {
-            document.getElementById('admin-view').classList.add('hidden');
-            document.getElementById('admin-view').classList.remove('flex');
-            document.getElementById('customer-view').classList.remove('hidden');
-        };
+        // Removing triggerAdminMode and closeAdminMode as they are no longer needed for a single-page setup.
     </script>
 </body>
 </html>
