@@ -549,24 +549,45 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
-                try {
-                    const docSnap = await getDoc(doc(db, "customers", user.uid));
+                const docSnap = await getDoc(doc(db, "customers", user.uid));
+                
+                if (docSnap.exists() && docSnap.data().name) {
+                    // Profile exists, save ALL details to phone memory for instant loading & rescue
+                    localStorage.setItem('shirnahar_user_setup', 'true');
+                    localStorage.setItem('shirnahar_user_name', docSnap.data().name);
+                    localStorage.setItem('shirnahar_user_phone', docSnap.data().phone);
+                    localStorage.setItem('shirnahar_user_address', docSnap.data().address);
                     
-                    if (docSnap.exists() && docSnap.data().name) {
-                        // Profile exists, save to phone memory for instant loading next time
-                        localStorage.setItem('shirnahar_user_setup', 'true');
+                    // Show storefront
+                    document.getElementById('customerSetupOverlay').classList.add('hidden');
+                    document.getElementById('customerSetupOverlay').classList.remove('flex');
+                    document.getElementById('customer-view').classList.remove('hidden');
+                    document.getElementById('customer-view').classList.add('flex');
+                    
+                    document.getElementById('custName').value = docSnap.data().name || '';
+                    document.getElementById('custPhone').value = docSnap.data().phone || '';
+                    document.getElementById('custAddress').value = docSnap.data().address || '';
+                } else {
+                    // Firebase lost the profile (e.g., Admin logged out). Let's check if the phone remembers them!
+                    const localName = localStorage.getItem('shirnahar_user_name');
+                    const localPhone = localStorage.getItem('shirnahar_user_phone');
+                    const localAddress = localStorage.getItem('shirnahar_user_address');
+
+                    if (localName && localPhone && localAddress) {
+                        // AUTO-RESCUE: Silently rebuild the Firebase profile in the background!
+                        setDoc(doc(db, "customers", user.uid), { name: localName, phone: localPhone, address: localAddress });
                         
-                        // Show storefront
+                        // Drop them straight into the store seamlessly
                         document.getElementById('customerSetupOverlay').classList.add('hidden');
                         document.getElementById('customerSetupOverlay').classList.remove('flex');
                         document.getElementById('customer-view').classList.remove('hidden');
                         document.getElementById('customer-view').classList.add('flex');
                         
-                        document.getElementById('custName').value = docSnap.data().name || '';
-                        document.getElementById('custPhone').value = docSnap.data().phone || '';
-                        document.getElementById('custAddress').value = docSnap.data().address || '';
+                        document.getElementById('custName').value = localName;
+                        document.getElementById('custPhone').value = localPhone;
+                        document.getElementById('custAddress').value = localAddress;
                     } else {
-                        // No profile yet, clear local memory just in case
+                        // Truly no profile yet, clear local memory just in case
                         localStorage.removeItem('shirnahar_user_setup');
                         
                         // Show setup screen
@@ -575,12 +596,10 @@
                         document.getElementById('customer-view').classList.add('hidden');
                         document.getElementById('customer-view').classList.remove('flex');
                     }
-                } catch(e) {
-                    console.error("Error fetching profile:", e);
                 }
             } else {
-                // If NO user is found in the phone's memory, THEN sign them in anonymously
-                signInAnonymously(auth).catch(e => console.log("Auth error:", e));
+                // FIX: If absolutely no user is logged in, silently create a new anonymous session!
+                signInAnonymously(auth).catch(e => console.error("Auth error:", e));
             }
         });
 
@@ -598,8 +617,11 @@
             try {
                 await setDoc(doc(db, "customers", currentUserId), { name, phone, address });
                 
-                // NEW: Save to phone memory for instant loading next time they open the website
+                // NEW: Save all details to phone memory for the Auto-Rescue feature
                 localStorage.setItem('shirnahar_user_setup', 'true');
+                localStorage.setItem('shirnahar_user_name', name);
+                localStorage.setItem('shirnahar_user_phone', phone);
+                localStorage.setItem('shirnahar_user_address', address);
                 
                 // Populate the hidden profile modal for future edits
                 document.getElementById('custName').value = name;
@@ -897,7 +919,13 @@
             if(!name || !phone || !address) return showToast("Please fill in all details.");
             if (currentUserId) {
                 await setDoc(doc(db, "customers", currentUserId), { name, phone, address });
-                localStorage.setItem('shirnahar_user_setup', 'true'); // Keep memory in sync
+                
+                // Update local memory so Auto-Rescue always has the newest details
+                localStorage.setItem('shirnahar_user_setup', 'true'); 
+                localStorage.setItem('shirnahar_user_name', name);
+                localStorage.setItem('shirnahar_user_phone', phone);
+                localStorage.setItem('shirnahar_user_address', address);
+                
                 showToast("Details saved!");
                 toggleProfileModal();
             }
@@ -926,29 +954,47 @@
 
             try {
                 const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+                
+                // 1. Create the Order in Firebase (Only wait for this!)
                 await addDoc(collection(db, "orders"), {
                     customerId: currentUserId, customerName: name, customerPhone: phone,
                     customerAddress: address, items: cart, totalAmount: total,
                     status: 'Pending', createdAt: Date.now()
                 });
 
-                for(const item of cart) {
+                // 2. Update stock in the background (Fire and forget, don't make the user wait!)
+                cart.forEach(item => {
+                    // Update the local shop screen instantly!
+                    const localProd = allProducts.find(p => p.id === item.id);
+                    if(localProd) localProd.stock = Math.max(0, localProd.stock - item.qty);
+
+                    // Quietly update the database in the background
                     const prodDoc = doc(db, "products", item.id);
-                    const prodSnap = await getDoc(prodDoc);
-                    if(prodSnap.exists()) {
-                        const newStock = Math.max(0, (prodSnap.data().stock || 0) - item.qty);
-                        await updateDoc(prodDoc, { stock: newStock });
-                    }
-                }
+                    getDoc(prodDoc).then(prodSnap => {
+                        if(prodSnap.exists()) {
+                            const newStock = Math.max(0, (prodSnap.data().stock || 0) - item.qty);
+                            updateDoc(prodDoc, { stock: newStock });
+                        }
+                    });
+                });
 
                 cart = [];
                 updateCartUI();
                 toggleCartDrawer();
-                await fetchProducts();
+                
+                // Instantly refresh the UI using local data (Removed the slow fetchProducts call!)
+                const currentCategoryBtn = document.querySelector('button.bg-primary[id^="filter-"]');
+                const activeCategory = currentCategoryBtn ? currentCategoryBtn.id.replace('filter-', '') : 'All';
+                window.filterProducts(activeCategory);
                 
                 document.getElementById('successCustomerName').innerText = `Thank you, ${name}!`;
                 document.getElementById('successOrderTotal').innerText = `Total: ₹${total.toLocaleString('en-IN')}`;
                 document.getElementById('orderSuccessModal').classList.remove('hidden');
+                
+                // Silently refresh the Orders tab if it's currently open
+                if (!document.getElementById('tab-orders').classList.contains('hidden')) {
+                    loadCustomerOrders();
+                }
             } catch (e) {
                 showToast("Failed to place order.");
             } finally {
