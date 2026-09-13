@@ -95,6 +95,9 @@
                     <button id="profileBtn" class="hidden md:block text-primary hover:text-gray-600 transition text-xl">
                         <i class="fa-solid fa-circle-user"></i>
                     </button>
+                    <button onclick="switchCustomerTab('orders')" class="text-primary hover:text-gray-600 transition text-xl relative p-1" title="My Orders">
+                        <i class="fa-solid fa-box-open"></i>
+                    </button>
                     <button id="cartBtn" onclick="toggleCartDrawer()" class="text-primary hover:text-gray-600 transition text-xl relative p-1">
                         <i class="fa-solid fa-bag-shopping"></i>
                         <span id="cartCount" class="absolute -top-1 -right-2 bg-primary text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold shadow-sm">0</span>
@@ -381,11 +384,6 @@
                         <textarea id="custAddress" rows="3" class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:border-primary" placeholder="House No, Street, City, Pincode"></textarea>
                     </div>
                     <button onclick="saveCustomerProfile()" class="w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold hover:bg-red-900 transition shadow mt-2">Save Details</button>
-                    
-                    <!-- NEW ORDER HISTORY BUTTON -->
-                    <button onclick="toggleProfileModal(); switchCustomerTab('orders');" class="w-full bg-stone-100 text-gray-700 py-3 md:py-4 rounded-xl font-bold hover:bg-stone-200 transition shadow-sm mt-3 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-box-open"></i> Track My Orders
-                    </button>
                 </div>
             </div>
         </div>
