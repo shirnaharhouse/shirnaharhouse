@@ -336,6 +336,7 @@
                 }
                 
                 loadAdminData(); // Fetch right away when app opens
+                loadAdminOrders(); // NEW: Pre-fetch orders in the background so there's zero wait!
             } else {
                 document.getElementById('authOverlay').classList.remove('hidden');
                 document.getElementById('adminApp').classList.add('hidden');
@@ -456,12 +457,17 @@
             const list = document.getElementById('adminProductList');
             list.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
             try {
-                const q = query(collection(db, "products"), orderBy('createdAt', 'desc'), limit(200));
-                const snap = await getDocs(q);
+                // FIXED: Removed orderBy and limit to prevent Firebase cache hanging. We sort in JS.
+                const snap = await getDocs(collection(db, "products"));
                 adminProducts = [];
                 snap.forEach(d => adminProducts.push({ id: d.id, ...d.data() }));
+                
+                // Sort newest first using JavaScript instantly
+                adminProducts.sort((a, b) => b.createdAt - a.createdAt);
+                
                 renderProducts();
             } catch (e) {
+                console.error("Products error:", e);
                 list.innerHTML = `<div class="col-span-full text-center py-10 text-red-400">Error loading data.</div>`;
             }
         };
@@ -670,19 +676,28 @@
         // NEW: Fetch all orders and store them globally for easy filtering
         const loadAdminOrders = async () => {
             const list = document.getElementById('adminOrderList');
-            list.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
+            
+            // Only show spinner if it's completely empty so background updates are silent
+            if (adminOrdersData.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
+            }
+
             try {
-                const q = query(collection(db, "orders"), orderBy('createdAt', 'desc'), limit(300));
-                const snap = await getDocs(q);
+                // FIXED: Removed orderBy to prevent Firebase from getting stuck in an infinite loop with the offline cache!
+                const snap = await getDocs(collection(db, "orders"));
                 
                 adminOrdersData = [];
                 snap.forEach(d => adminOrdersData.push({ id: d.id, ...d.data() }));
+                
+                // Sort newest first using JavaScript instantly
+                adminOrdersData.sort((a, b) => b.createdAt - a.createdAt);
                 
                 // Render based on current filter selection
                 const filterStatus = document.getElementById('orderFilter').value;
                 renderAdminOrders(filterStatus);
                 
             } catch (e) {
+                console.error("Orders error:", e);
                 list.innerHTML = `<div class="col-span-full text-center text-red-500 py-4 text-sm">Error loading orders.</div>`;
             }
         };
