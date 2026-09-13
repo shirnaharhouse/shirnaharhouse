@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shirnahar Admin App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-burgundy: #8B2C46;
+            --accent-gold: #D4AF37;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        h1, h2, h3, .font-serif { font-family: 'Playfair Display', serif; }
+        .text-primary { color: var(--primary-burgundy); }
+        .bg-primary { background-color: var(--primary-burgundy); }
+        
+        /* Hide scrollbar for cleaner mobile look */
+        ::-webkit-scrollbar { display: none; }
+        
+        /* Smooth tab transitions */
+        .tab-content { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Mobile Login Screen -->
+    <div id="authOverlay" class="fixed inset-0 z-50 flex flex-col justify-center items-center p-6 bg-white">
+        <div class="w-full max-w-sm text-center">
+            <div class="w-20 h-20 bg-pink-50 text-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-pink-100">
+                <i class="fa-solid fa-store text-4xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 font-serif mb-2">Admin Login</h2>
+            <p class="text-gray-500 mb-8">Manage your boutique on the go.</p>
+            
+            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1 tracking-wider">Email</label>
+                    <input type="email" id="adminEmail" required class="w-full border border-gray-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-slate-50" placeholder="admin@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1 tracking-wider">Password</label>
+                    <input type="password" id="adminPassword" required class="w-full border border-gray-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-slate-50" placeholder="••••••••">
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-primary text-white py-4 rounded-2xl font-bold hover:bg-red-900 transition shadow-lg shadow-pink-900/20 mt-4 text-lg">
+                    Login
+                </button>
+                <p id="loginError" class="text-red-500 text-xs text-center font-bold hidden mt-4 p-3 bg-red-50 rounded-xl"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden until logged in) -->
+    <div id="adminApp" class="hidden flex-col h-screen overflow-hidden">
+        
+        <!-- Mobile Top Header -->
+        <header class="bg-white px-5 py-4 shadow-sm z-20 flex justify-between items-center border-b border-slate-100 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-leaf text-accent text-xl"></i>
+                <h1 class="text-xl font-bold text-primary font-serif">Shirnahar House</h1>
+            </div>
+            <button onclick="handleLogout()" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+        </header>
+
+        <!-- Main Scrollable Content Area (Padding bottom to account for nav bar) -->
+        <main class="flex-grow overflow-y-auto pb-24 p-4 bg-slate-50">
+            
+            <!-- INVENTORY TAB -->
+            <section id="sectionProducts" class="tab-content max-w-lg mx-auto">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 font-serif">Inventory</h2>
+                        <p class="text-xs text-gray-500">Your dresses & sarees</p>
+                    </div>
+                </div>
+                
+                <!-- Product List (Cards) -->
+                <div id="adminProductList" class="flex flex-col gap-4">
+                    <!-- Loaded via JS -->
+                </div>
+
+                <!-- Floating Add Button for Mobile -->
+                <button onclick="openProductModal()" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-pink-900/30 text-xl z-30 hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </section>
+
+            <!-- ORDERS TAB -->
+            <section id="sectionOrders" class="tab-content max-w-lg mx-auto hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 font-serif">Customer Orders</h2>
+                    <p class="text-xs text-gray-500">Manage deliveries and status</p>
+                </div>
+                
+                <!-- Orders List (Cards) -->
+                <div id="adminOrderList" class="flex flex-col gap-4">
+                    <!-- Loaded via JS -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <nav class="bg-white border-t border-slate-100 fixed bottom-0 w-full z-20 px-6 py-3 flex justify-around items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button onclick="switchAdminTab('products')" id="navProducts" class="flex flex-col items-center gap-1 text-primary w-20 transition">
+                <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                <span class="text-[10px] font-bold">Inventory</span>
+            </button>
+            <button onclick="switchAdminTab('orders')" id="navOrders" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 w-20 transition relative">
+                <i class="fa-solid fa-clipboard-list text-xl"></i>
+                <span class="text-[10px] font-bold">Orders</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Add Product Modal (Absolute positioned for guaranteed scrolling) -->
+    <div id="productModal" class="fixed inset-0 bg-slate-50 z-50 hidden transition-transform transform translate-y-full data-[open=true]:translate-y-0 duration-300">
+        
+        <!-- Fixed Header -->
+        <div class="absolute top-0 left-0 right-0 h-[70px] px-5 flex justify-between items-center border-b border-slate-200 bg-white z-20 shadow-sm">
+            <h3 class="text-xl font-bold text-gray-900 font-serif">Add New Item</h3>
+            <button type="button" onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-lg">&times;</button>
+        </div>
+        
+        <!-- Guaranteed Scrollable Area (Trapped between header and footer) -->
+        <div class="absolute top-[70px] bottom-[85px] left-0 right-0 overflow-y-auto p-5">
+            <form id="productForm" onsubmit="handleSaveProduct(event)" class="space-y-6 pb-4">
+                
+                <!-- Massive Tap Zone for Phone Camera/Gallery -->
+                <div class="relative">
+                    <input type="file" id="prodFile" accept="image/*" multiple onchange="previewImages(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="bg-pink-50 border-2 border-dashed border-pink-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
+                            <i class="fa-solid fa-camera text-2xl"></i>
+                        </div>
+                        <p class="font-bold text-primary text-sm">Tap to add photos</p>
+                        <p class="text-xs text-gray-400 mt-1">Camera or Gallery</p>
+                    </div>
+                </div>
+                
+                <!-- Image Previews -->
+                <div id="imagePreviewContainer" class="flex gap-3 overflow-x-auto pb-2 hidden"></div>
+
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Product Name</label>
+                        <input type="text" id="prodName" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent" placeholder="e.g. Royal Blue Silk Saree">
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Price (₹)</label>
+                            <input type="number" id="prodPrice" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent" placeholder="0">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Stock</label>
+                            <input type="number" id="prodStock" required value="5" class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Category</label>
+                        <select id="prodCategory" class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent appearance-none">
+                            <option value="Saree">Saree</option>
+                            <option value="Dress">Dress</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Description</label>
+                        <textarea id="prodDesc" rows="3" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent resize-none" placeholder="Fabric, work, etc..."></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sticky Save Button -->
+        <div class="absolute bottom-0 left-0 right-0 h-[85px] p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-20">
+            <button type="submit" form="productForm" id="saveProductBtn" class="w-full h-full bg-primary text-white rounded-2xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-2">
+                Save & Publish
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Stock Update Bottom Sheet -->
+    <div id="stockModal" class="fixed inset-0 z-50 hidden bg-black/40 flex-col justify-end">
+        <div class="bg-white w-full rounded-t-3xl p-6 pb-10 transform transition-transform translate-y-0">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 font-serif">Quick Stock Update</h3>
+                <button onclick="closeStockModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold">&times;</button>
+            </div>
+            
+            <p id="stockProductName" class="text-sm text-gray-500 mb-6 font-medium line-clamp-1"></p>
+            <input type="hidden" id="stockUpdateId">
+            
+            <div class="flex items-center justify-center gap-8 mb-8">
+                <button onclick="adjustStock(-1)" class="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 text-slate-600 font-bold text-2xl flex items-center justify-center active:bg-slate-200">-</button>
+                <input type="number" id="newStockInput" class="w-24 bg-transparent text-center text-5xl font-bold text-primary focus:outline-none" min="0">
+                <button onclick="adjustStock(1)" class="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 text-slate-600 font-bold text-2xl flex items-center justify-center active:bg-slate-200">+</button>
+            </div>
+            
+            <button onclick="confirmStockUpdate()" id="confirmStockBtn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg">
+                Confirm Update
+            </button>
+        </div>
+    </div>
+
+    <!-- Minimal Mobile Toast -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white px-5 py-3 rounded-full shadow-2xl hidden z-[100] text-xs font-bold flex items-center gap-2 backdrop-blur-sm whitespace-nowrap">
+        <i class="fa-solid fa-circle-check text-green-400"></i>
+        <span id="toastMsg"></span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        // FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let adminProducts = [];
+
+        // Auth Flow
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('authOverlay').classList.add('hidden');
+                document.getElementById('adminApp').classList.remove('hidden');
+                document.getElementById('adminApp').classList.add('flex');
+                loadAdminData(); // Fetch right away when app opens
+            } else {
+                document.getElementById('authOverlay').classList.remove('hidden');
+                document.getElementById('adminApp').classList.add('hidden');
+                document.getElementById('adminApp').classList.remove('flex');
+            }
+        });
+
+        window.handleAdminLogin = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const errBox = document.getElementById('loginError');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+            errBox.classList.add('hidden');
+
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('adminEmail').value, document.getElementById('adminPassword').value);
+            } catch (err) {
+                errBox.innerText = "Incorrect details.";
+                errBox.classList.remove('hidden');
+                btn.innerHTML = "Login";
+            }
+        };
+
+        window.handleLogout = () => {
+            if(confirm("Log out of dashboard?")) signOut(auth);
+        };
+
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2500);
+        };
+
+        window.switchAdminTab = (tab) => {
+            document.getElementById('sectionProducts').classList.add('hidden');
+            document.getElementById('sectionOrders').classList.add('hidden');
+            
+            // Reset nav colors
+            document.getElementById('navProducts').className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 w-20 transition";
+            document.getElementById('navOrders').className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 w-20 transition relative";
+
+            if(tab === 'products') {
+                document.getElementById('sectionProducts').classList.remove('hidden');
+                document.getElementById('navProducts').classList.add('text-primary');
+                document.getElementById('navProducts').classList.remove('text-slate-400');
+                loadAdminData();
+            } else {
+                document.getElementById('sectionOrders').classList.remove('hidden');
+                document.getElementById('navOrders').classList.add('text-primary');
+                document.getElementById('navOrders').classList.remove('text-slate-400');
+                loadAdminOrders();
+            }
+        };
+
+        const compressImage = (file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_WIDTH = 500; // Shrink to save DB space
+                        const scale = Math.min(1, MAX_WIDTH / img.width);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6)); 
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        window.previewImages = (e) => {
+            const container = document.getElementById('imagePreviewContainer');
+            container.innerHTML = '';
+            if(e.target.files.length > 0) {
+                container.classList.remove('hidden');
+                const files = Array.from(e.target.files).slice(0, 4); // Max 4 photos
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        container.innerHTML += `
+                            <div class="w-20 h-24 rounded-xl overflow-hidden flex-shrink-0 border-2 border-primary shadow-sm">
+                                <img src="${e.target.result}" class="w-full h-full object-cover">
+                            </div>`;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                container.classList.add('hidden');
+            }
+        };
+
+        const loadAdminData = async () => {
+            const list = document.getElementById('adminProductList');
+            list.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
+            try {
+                const q = query(collection(db, "products"), orderBy('createdAt', 'desc'));
+                const snap = await getDocs(q);
+                adminProducts = [];
+                snap.forEach(d => adminProducts.push({ id: d.id, ...d.data() }));
+                renderProducts();
+            } catch (e) {
+                list.innerHTML = `<div class="text-center py-10 text-red-400">Error loading data.</div>`;
+            }
+        };
+
+        const renderProducts = () => {
+            const list = document.getElementById('adminProductList');
+            list.innerHTML = '';
+            if(adminProducts.length === 0) {
+                list.innerHTML = `
+                    <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100 mt-4">
+                        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa-solid fa-box-open text-3xl"></i>
+                        </div>
+                        <p class="font-bold text-slate-800">Inventory Empty</p>
+                        <p class="text-xs text-slate-500 mt-1">Tap + to add dresses.</p>
+                    </div>`;
+                return;
+            }
+
+            adminProducts.forEach(p => {
+                const stock = p.stock !== undefined ? p.stock : 0;
+                const stockColor = stock > 0 ? "text-green-600 bg-green-50 border-green-200" : "text-red-600 bg-red-50 border-red-200";
+                const displayImage = (p.images && p.images.length > 0) ? p.images[0] : (p.imageUrl || 'https://placehold.co/100/8B2C46/FFF');
+
+                // Mobile Card Layout
+                list.innerHTML += `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4 relative">
+                        <div class="w-24 h-32 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                            <img src="${displayImage}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col justify-between flex-grow py-1">
+                            <div>
+                                <span class="text-[9px] font-bold tracking-widest uppercase text-slate-400 mb-1 block">${p.category}</span>
+                                <h3 class="font-bold text-slate-800 text-sm leading-tight line-clamp-2 mb-1">${p.name}</h3>
+                                <p class="font-bold text-primary font-serif">₹${p.price.toLocaleString('en-IN')}</p>
+                            </div>
+                            
+                            <div class="flex justify-between items-end mt-2">
+                                <span class="text-[10px] font-bold px-2 py-1 rounded-md border ${stockColor}">${stock} Left</span>
+                                <div class="flex gap-2">
+                                    <button onclick="openStockModal('${p.id}', ${stock}, '${p.name.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-200 active:bg-slate-200">
+                                        <i class="fa-solid fa-pen text-xs"></i>
+                                    </button>
+                                    <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 active:bg-red-200">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        };
+
+        window.openProductModal = () => {
+            document.getElementById('productForm').reset();
+            document.getElementById('imagePreviewContainer').innerHTML = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+            const modal = document.getElementById('productModal');
+            modal.classList.remove('hidden');
+            // Slight delay for animation to kick in
+            setTimeout(() => modal.dataset.open = "true", 10);
+        };
+
+        window.closeProductModal = () => {
+            const modal = document.getElementById('productModal');
+            modal.dataset.open = "false";
+            setTimeout(() => modal.classList.add('hidden'), 300); // Wait for transition
+        };
+
+        window.handleSaveProduct = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveProductBtn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
+            btn.disabled = true;
+
+            try {
+                const fileInput = document.getElementById('prodFile');
+                let imagesArray = [];
+                if(fileInput.files.length > 0) {
+                    const filesToProcess = Array.from(fileInput.files).slice(0, 4);
+                    for (let file of filesToProcess) {
+                        imagesArray.push(await compressImage(file));
+                    }
+                } else {
+                    imagesArray = ["https://placehold.co/400x500/8B2C46/FFFFFF?text=No+Photo"];
+                }
+
+                await addDoc(collection(db, "products"), {
+                    name: document.getElementById('prodName').value.trim(), 
+                    price: parseFloat(document.getElementById('prodPrice').value), 
+                    stock: parseInt(document.getElementById('prodStock').value), 
+                    category: document.getElementById('prodCategory').value, 
+                    description: document.getElementById('prodDesc').value.trim(), 
+                    images: imagesArray,
+                    imageUrl: imagesArray[0],
+                    createdAt: Date.now()
+                });
+
+                closeProductModal();
+                loadAdminData();
+                showToast("Product saved!");
+            } catch (err) {
+                alert("Error saving. Try again.");
+            } finally {
+                btn.innerHTML = "Save & Publish";
+                btn.disabled = false;
+            }
+        };
+
+        window.openStockModal = (id, currentStock, name) => {
+            document.getElementById('stockUpdateId').value = id;
+            document.getElementById('stockProductName').innerText = name;
+            document.getElementById('newStockInput').value = currentStock;
+            document.getElementById('stockModal').classList.remove('hidden');
+            document.getElementById('stockModal').classList.add('flex');
+        };
+
+        window.closeStockModal = () => {
+            document.getElementById('stockModal').classList.add('hidden');
+            document.getElementById('stockModal').classList.remove('flex');
+        };
+
+        window.adjustStock = (delta) => {
+            const input = document.getElementById('newStockInput');
+            input.value = Math.max(0, (parseInt(input.value) || 0) + delta);
+        };
+
+        window.confirmStockUpdate = async () => {
+            const id = document.getElementById('stockUpdateId').value;
+            const newStock = parseInt(document.getElementById('newStockInput').value) || 0;
+            const btn = document.getElementById('confirmStockBtn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+            
+            try {
+                await updateDoc(doc(db, "products", id), { stock: newStock });
+                closeStockModal();
+                loadAdminData();
+                showToast("Stock updated");
+            } catch(e) {
+                alert("Failed to update.");
+            } finally {
+                btn.innerHTML = `Confirm Update`;
+            }
+        };
+
+        window.deleteProduct = async (id) => {
+            if(!confirm("Delete this dress forever?")) return;
+            await deleteDoc(doc(db, "products", id));
+            loadAdminData();
+            showToast("Item deleted");
+        };
+
+        const loadAdminOrders = async () => {
+            const list = document.getElementById('adminOrderList');
+            list.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
+            try {
+                const q = query(collection(db, "orders"), orderBy('createdAt', 'desc'));
+                const snap = await getDocs(q);
+                
+                if(snap.empty) {
+                    list.innerHTML = `
+                        <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100 mt-4">
+                            <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fa-solid fa-receipt text-3xl"></i>
+                            </div>
+                            <p class="font-bold text-slate-800">No Orders Yet</p>
+                            <p class="text-xs text-slate-500 mt-1">Check back later.</p>
+                        </div>`;
+                    return;
+                }
+                
+                list.innerHTML = '';
+                snap.forEach(d => {
+                    const o = d.data();
+                    const itemsText = o.items.map(i => `<div class="text-xs text-slate-600 py-0.5">• ${i.name} (x${i.qty})</div>`).join('');
+                    const date = new Date(o.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+                    
+                    const statusColors = {
+                        'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
+                        'Dispatched': 'bg-blue-100 text-blue-800 border-blue-200',
+                        'Delivered': 'bg-green-100 text-green-800 border-green-200'
+                    };
+                    const colorClass = statusColors[o.status || 'Pending'];
+
+                    // Mobile Order Card
+                    list.innerHTML += `
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 relative">
+                            <!-- Header -->
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
+                                <div>
+                                    <span class="font-mono text-[10px] font-bold text-primary bg-pink-50 px-2 py-0.5 rounded border border-pink-100">#${d.id.substring(0,6)}</span>
+                                    <p class="text-[10px] text-slate-400 mt-1">${date}</p>
+                                </div>
+                                <select onchange="updateOrderStatus('${d.id}', this.value)" class="text-[10px] font-bold px-2 py-1 rounded-md border outline-none appearance-none text-center ${colorClass}">
+                                    <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Dispatched" ${o.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
+                                    <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Customer Details -->
+                            <div class="mb-3">
+                                <h4 class="font-bold text-slate-800 text-sm">${o.customerName}</h4>
+                                <a href="tel:${o.customerPhone}" class="text-xs text-primary font-bold flex items-center gap-1 my-1"><i class="fa-solid fa-phone"></i> ${o.customerPhone}</a>
+                                <p class="text-xs text-slate-500 leading-tight">${o.customerAddress}</p>
+                            </div>
+                            
+                            <!-- Items -->
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 mb-3">
+                                ${itemsText}
+                            </div>
+                            
+                            <!-- Footer -->
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase">Cash on Delivery</span>
+                                <span class="font-bold text-slate-900 font-serif text-lg">₹${o.totalAmount.toLocaleString('en-IN')}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                list.innerHTML = `<div class="text-center text-red-500 py-4 text-sm">Error loading orders.</div>`;
+            }
+        };
+
+        window.updateOrderStatus = async (orderId, newStatus) => {
+            try {
+                await updateDoc(doc(db, "orders", orderId), { status: newStatus });
+                showToast(`Order marked ${newStatus}`);
+                loadAdminOrders();
+            } catch (e) {
+                alert("Update failed");
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shirnahar House | Exclusive Sarees & Dresses</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-burgundy: #8B2C46;
+            --accent-gold: #D4AF37;
+            --bg-soft-blush: #FFF6F6;
+        }
+        
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-soft-blush);
+            color: #4A4A4A;
+            -webkit-tap-highlight-color: transparent; /* Removes blue tap flash on phones */
+        }
+
+        h1, h2, h3, h4, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .bg-primary { background-color: var(--primary-burgundy); }
+        .text-primary { color: var(--primary-burgundy); }
+        .border-primary { border-color: var(--primary-burgundy); }
+        .bg-accent { background-color: var(--accent-gold); }
+        .text-accent { color: var(--accent-gold); }
+
+        .btn-primary {
+            background-color: var(--primary-burgundy);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #702035;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 44, 70, 0.2);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-burgundy);
+            border: 1px solid var(--primary-burgundy);
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            background-color: rgba(139, 44, 70, 0.05);
+            transform: translateY(-2px);
+        }
+
+        /* Hides scrollbar for an app-like feel on mobile */
+        ::-webkit-scrollbar { display: none; } 
+
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="font-sans flex flex-col min-h-screen">
+    <div id="customer-view" class="flex-grow flex flex-col pb-16 md:pb-0">
+        
+        <!-- Desktop Top Navigation -->
+        <nav class="bg-white text-gray-800 p-4 sticky top-0 z-40 shadow-sm border-b border-gray-100">
+            <div class="container mx-auto flex justify-between items-center px-4 md:px-8">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="switchCustomerTab('home')">
+                    <i class="fa-solid fa-leaf text-accent text-xl"></i>
+                    <h1 class="text-2xl font-bold tracking-wide text-primary font-serif">Shirnahar House</h1>
+                </div>
+                
+                <div class="hidden md:flex space-x-8 items-center absolute left-1/2 transform -translate-x-1/2">
+                    <button onclick="switchCustomerTab('home')" class="text-gray-600 hover:text-primary transition font-medium">Home</button>
+                    <button onclick="switchCustomerTab('collection')" class="text-gray-600 hover:text-primary transition font-medium">Collection</button>
+                    <button onclick="switchCustomerTab('community')" class="text-gray-600 hover:text-primary transition font-medium flex items-center gap-1">
+                        Community <span class="bg-pink-100 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider">Soon</span>
+                    </button>
+                    <button class="text-gray-600 hover:text-primary transition font-medium">About Us</button>
+                </div>
+
+                <div class="flex space-x-5 items-center">
+                    <button id="profileBtn" class="hidden md:block text-primary hover:text-gray-600 transition text-xl">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </button>
+                    <button id="cartBtn" onclick="toggleCartDrawer()" class="text-primary hover:text-gray-600 transition text-xl relative p-1">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <span id="cartCount" class="absolute -top-1 -right-2 bg-primary text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold shadow-sm">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-100 z-40 flex justify-around items-center py-3 px-2 shadow-[0_-4px_15px_rgba(0,0,0,0.05)] pb-safe">
+            <button onclick="switchCustomerTab('home')" class="flex flex-col items-center gap-1 text-primary w-16 mobile-nav-btn" data-target="home">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span class="text-[9px] font-bold">Home</span>
+            </button>
+            <button onclick="switchCustomerTab('collection')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary w-16 transition mobile-nav-btn" data-target="collection">
+                <i class="fa-solid fa-border-all text-lg"></i>
+                <span class="text-[9px] font-bold">Shop</span>
+            </button>
+            <button onclick="switchCustomerTab('community')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary w-16 transition relative mobile-nav-btn" data-target="community">
+                <i class="fa-solid fa-camera-retro text-lg"></i>
+                <span class="text-[9px] font-bold">Social</span>
+                <span class="absolute -top-1 -right-1 bg-pink-100 text-primary text-[8px] font-bold px-1 rounded-sm">Soon</span>
+            </button>
+            <button onclick="toggleProfileModal()" class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary w-16 transition">
+                <i class="fa-solid fa-user text-lg"></i>
+                <span class="text-[9px] font-bold">Profile</span>
+            </button>
+        </nav>
+
+        <div id="tab-home" class="flex-grow">
+            <header class="py-16 md:py-32 text-center relative overflow-hidden" style="background: linear-gradient(180deg, #FFF0F0 0%, #FFFFFF 100%);">
+                <div class="relative z-10 container mx-auto px-4 max-w-4xl">
+                    <span class="inline-block px-4 py-1.5 rounded-full bg-pink-100 text-primary text-xs font-bold tracking-widest uppercase mb-6 shadow-sm border border-pink-200">
+                        Exquisite Handpicked Ethnic Wear
+                    </span>
+                    <h2 class="text-4xl md:text-7xl font-bold mb-6 text-primary font-serif leading-tight">Elegance Woven <br/> with Love</h2>
+                    <p class="text-base md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+                        Discover our fine handpicked collection of sarees and dresses. Delivered directly from our boutique home to yours across Tripura.
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <button onclick="switchCustomerTab('collection')" class="btn-primary px-8 py-3.5 rounded-xl font-bold text-lg w-full sm:w-auto min-w-[200px] shadow-lg shadow-pink-900/20">Explore Collection</button>
+                    </div>
+                </div>
+                <!-- Decorative elements -->
+                <div class="absolute top-10 left-10 w-32 h-32 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                <div class="absolute top-10 right-10 w-32 h-32 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+                <div class="absolute -bottom-8 left-20 w-48 h-48 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+            </header>
+            
+            <section class="py-16 bg-white">
+                <div class="container mx-auto text-center px-4">
+                    <h3 class="text-2xl md:text-4xl font-bold text-primary mb-2 font-serif">Our Curated Collection</h3>
+                    <p class="text-gray-500 mb-10 font-light text-sm md:text-base">Crafted for celebrations, weddings, and timeless elegance</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                        <div class="p-6 md:p-8 rounded-2xl bg-stone-50 border border-stone-100 transition duration-300 hover:shadow-lg hover:-translate-y-1">
+                            <div class="w-14 h-14 mx-auto bg-pink-100 rounded-full flex items-center justify-center mb-4 text-primary">
+                                <i class="fa-solid fa-truck-fast text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-lg md:text-xl mb-2 text-gray-800">Fast Delivery</h4>
+                            <p class="text-gray-500 text-xs md:text-sm leading-relaxed">We prioritize local deliveries to get your beautiful dresses to you quickly across Tripura.</p>
+                        </div>
+                        <div class="p-6 md:p-8 rounded-2xl bg-stone-50 border border-stone-100 transition duration-300 hover:shadow-lg hover:-translate-y-1">
+                            <div class="w-14 h-14 mx-auto bg-pink-100 rounded-full flex items-center justify-center mb-4 text-primary">
+                                <i class="fa-solid fa-gem text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-lg md:text-xl mb-2 text-gray-800">Premium Quality</h4>
+                            <p class="text-gray-500 text-xs md:text-sm leading-relaxed">Every piece is meticulously hand-inspected to ensure flawless fabric quality and perfection.</p>
+                        </div>
+                        <div class="p-6 md:p-8 rounded-2xl bg-stone-50 border border-stone-100 transition duration-300 hover:shadow-lg hover:-translate-y-1">
+                            <div class="w-14 h-14 mx-auto bg-pink-100 rounded-full flex items-center justify-center mb-4 text-primary">
+                                <i class="fa-solid fa-hand-holding-dollar text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-lg md:text-xl mb-2 text-gray-800">Cash on Delivery</h4>
+                            <p class="text-gray-500 text-xs md:text-sm leading-relaxed">Enjoy peace of mind. Pay only when the beautiful package safely reaches your hands.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="tab-collection" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden">
+            <div class="flex flex-col items-center mb-8 md:mb-12 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary font-serif mb-4">The Collection</h2>
+                <div class="flex flex-wrap gap-2 justify-center">
+                    <button onclick="filterProducts('All')" id="filter-All" class="px-5 py-2 bg-primary text-white rounded-full text-xs md:text-sm font-medium transition shadow-sm">All Items</button>
+                    <button onclick="filterProducts('Saree')" id="filter-Saree" class="px-5 py-2 bg-white border border-gray-200 text-gray-600 hover:border-primary hover:text-primary rounded-full text-xs md:text-sm font-medium transition shadow-sm">Sarees</button>
+                    <button onclick="filterProducts('Dress')" id="filter-Dress" class="px-5 py-2 bg-white border border-gray-200 text-gray-600 hover:border-primary hover:text-primary rounded-full text-xs md:text-sm font-medium transition shadow-sm">Dresses</button>
+                </div>
+            </div>
+            
+            <!-- Products are injected here dynamically via JS -->
+            <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
+                <div class="col-span-full flex justify-center py-20">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW PRODUCT DETAIL TAB -->
+        <div id="tab-product-detail" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden animate-fade-in bg-white/50 backdrop-blur-sm rounded-3xl my-2 md:my-6">
+            <button onclick="switchCustomerTab('collection')" class="text-gray-500 hover:text-primary mb-6 flex items-center gap-2 font-bold transition text-sm">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            
+            <div class="flex flex-col md:flex-row gap-8 md:gap-12">
+                <!-- Product Image Gallery -->
+                <div class="md:w-1/2">
+                    <div class="relative pt-[130%] md:pt-[120%] bg-stone-50 overflow-hidden rounded-2xl shadow-sm border border-stone-100">
+                        <img id="detailImg" src="" alt="Product" class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-300">
+                    </div>
+                    <!-- Thumbnails row generated via JS -->
+                    <div id="detailThumbnails" class="flex gap-2 mt-3 overflow-x-auto pb-2 hidden scrollbar-hide"></div>
+                </div>
+
+                <!-- Product Information -->
+                <div class="md:w-1/2 flex flex-col justify-center">
+                    <span id="detailCategory" class="text-[10px] md:text-xs font-bold text-accent uppercase tracking-widest mb-3 border border-accent/30 w-fit px-3 py-1 rounded-full bg-yellow-50"></span>
+                    <h2 id="detailTitle" class="text-3xl md:text-5xl font-bold text-gray-900 font-serif mb-3 md:mb-4 leading-tight"></h2>
+                    <div class="flex items-center gap-4 mb-6">
+                        <p id="detailPrice" class="text-2xl md:text-3xl font-bold text-primary font-serif"></p>
+                        <div id="detailStockBadge"></div>
+                    </div>
+                    
+                    <h4 class="font-bold text-gray-900 mb-2 font-serif text-base md:text-lg">Product Details</h4>
+                    <p id="detailDesc" class="text-gray-600 font-light leading-relaxed mb-6 md:mb-10 whitespace-pre-wrap text-sm md:text-base"></p>
+                    
+                    <!-- STICKY BUTTON ON MOBILE -->
+                    <div class="fixed bottom-14 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-gray-100 z-30 md:relative md:bottom-auto md:p-0 md:bg-transparent md:border-0 md:z-auto">
+                        <button id="detailAddToCartBtn" class="w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-3">
+                            <i class="fa-solid fa-bag-shopping text-xl"></i> <span>Add to Bag</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews & Recommendations Section -->
+            <div class="mt-12 md:mt-24 border-t border-stone-200 pt-10 md:pt-16">
+                <div class="flex flex-col lg:flex-row gap-12 md:gap-16">
+                    
+                    <!-- Left: Reviews -->
+                    <div class="lg:w-2/3">
+                        <h3 class="text-2xl md:text-3xl font-bold text-primary font-serif mb-6 md:mb-8 flex items-center gap-3">
+                            <i class="fa-regular fa-star text-accent"></i> Customer Reviews
+                        </h3>
+                        
+                        <div class="bg-white p-5 md:p-8 rounded-2xl border border-stone-100 shadow-sm mb-8 md:mb-10">
+                            <h4 class="font-bold text-base md:text-lg mb-4 text-gray-800">Have you bought this? Share your thoughts!</h4>
+                            <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-4 md:space-y-5">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Your Name</label>
+                                        <input type="text" id="reviewName" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-primary outline-none transition bg-stone-50 focus:bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rating</label>
+                                        <select id="reviewRating" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-primary outline-none bg-stone-50 focus:bg-white transition">
+                                            <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                                            <option value="4">⭐⭐⭐⭐ (Good)</option>
+                                            <option value="3">⭐⭐⭐ (Average)</option>
+                                            <option value="2">⭐⭐ (Below Average)</option>
+                                            <option value="1">⭐ (Poor)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Your Review</label>
+                                    <textarea id="reviewText" required rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:border-primary outline-none transition bg-stone-50 focus:bg-white" placeholder="Tell others what you loved about this piece..."></textarea>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="w-full md:w-auto bg-stone-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-stone-800 transition shadow-md">Post Review</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Reviews List -->
+                        <div id="reviewsList" class="space-y-4 md:space-y-5">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right: Recommendations -->
+                    <div class="lg:w-1/3">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 font-serif mb-6 md:mb-8">You Might Also Like</h3>
+                        <div id="recommendationGrid" class="flex flex-col gap-4 md:gap-6">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- SHIRNAHAR COMMUNITY (FUTURE SOCIAL FEATURE) -->
+        <div id="tab-community" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden animate-fade-in my-10">
+            <div class="max-w-3xl mx-auto text-center py-16 px-4 bg-white/60 backdrop-blur-md rounded-3xl border border-pink-100 shadow-sm relative overflow-hidden">
+                <div class="absolute -top-10 -left-10 w-40 h-40 bg-pink-100 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
+                <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-yellow-100 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
+                
+                <div class="relative z-10">
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-tr from-primary to-pink-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg transform rotate-3">
+                        <i class="fa-solid fa-camera-retro text-2xl md:text-3xl text-white -rotate-3"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-bold text-gray-900 font-serif mb-4">Shirnahar Community</h2>
+                    <span class="inline-block px-4 py-1.5 rounded-full bg-stone-900 text-white text-[10px] md:text-xs font-bold tracking-widest uppercase mb-6 shadow-sm">
+                        Coming Soon
+                    </span>
+                    <p class="text-sm md:text-lg text-gray-600 mb-8 max-w-xl mx-auto font-light leading-relaxed">
+                        A dedicated space to create your profile, gain followers, and share your beautiful moments wearing Shirnahar House creations. See a look you love on someone else? Buy it directly from their post!
+                    </p>
+                    <div class="flex justify-center gap-4 opacity-60 grayscale">
+                        <div class="w-20 h-28 md:w-24 md:h-32 bg-stone-200 rounded-lg border-2 border-white shadow-md flex items-center justify-center"><i class="fa-regular fa-image text-stone-400"></i></div>
+                        <div class="w-24 h-32 md:w-28 md:h-36 bg-stone-200 rounded-lg border-2 border-white shadow-md -mt-4 relative"><i class="fa-regular fa-heart absolute bottom-2 right-2 text-stone-400"></i></div>
+                        <div class="w-20 h-28 md:w-24 md:h-32 bg-stone-200 rounded-lg border-2 border-white shadow-md relative"><i class="fa-solid fa-bag-shopping absolute bottom-2 left-2 text-stone-400"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-stone-900 text-stone-400 py-8 text-center border-t border-stone-800 mt-auto pb-24 md:pb-8">
+            <p>&copy; 2026 Shirnahar House. All rights reserved.</p>
+            <p class="text-xs mt-2">Serving customers proudly in Tripura.</p>
+            <button ondblclick="triggerAdminMode()" class="w-10 h-10 mt-4 opacity-10 hover:opacity-100 transition"><i class="fa-solid fa-lock"></i></button>
+        </footer>
+
+        <!-- Cart Drawer -->
+        <div id="cartDrawer" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex justify-end transition-opacity">
+            <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl relative animate-slide-in-right">
+                <div class="p-5 md:p-6 bg-primary text-white flex justify-between items-center">
+                    <h3 class="text-xl md:text-2xl font-bold"><i class="fa-solid fa-cart-shopping mr-2"></i> Your Cart</h3>
+                    <button onclick="toggleCartDrawer()" class="text-white hover:text-accent text-3xl leading-none">&times;</button>
+                </div>
+                
+                <div id="cartItemsList" class="flex-grow overflow-y-auto p-4 md:p-6 space-y-4">
+                    <!-- Cart items loaded here -->
+                </div>
+                
+                <div class="border-t p-4 md:p-6 bg-stone-50 pb-safe">
+                    <div class="flex justify-between text-lg md:text-xl font-bold mb-4 md:mb-6 text-gray-900">
+                        <span>Grand Total:</span>
+                        <span id="cartTotalPrice" class="text-primary">₹0</span>
+                    </div>
+                    <button onclick="checkoutOrder()" class="w-full bg-accent text-primary py-3.5 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-yellow-500 transition shadow-lg flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-motorcycle"></i> Place Order (COD)
+                    </button>
+                    <p class="text-center text-[10px] md:text-xs text-gray-500 mt-3">Payment collected upon delivery in Tripura.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile / Checkout Details Modal -->
+        <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex justify-center items-end md:items-center p-0 md:p-4">
+            <div class="bg-white rounded-t-3xl md:rounded-2xl max-w-sm w-full p-6 md:p-8 relative shadow-2xl transition-transform animate-slide-up">
+                <button onclick="toggleProfileModal()" class="absolute top-4 right-5 text-gray-400 hover:text-black text-2xl leading-none">&times;</button>
+                <h3 class="text-xl md:text-2xl font-bold mb-1 text-primary">Delivery Details</h3>
+                <p class="text-xs md:text-sm text-gray-500 mb-6">Save your details for faster checkout next time.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Full Name</label>
+                        <input type="text" id="custName" class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:border-primary" placeholder="e.g. Aditi Sharma">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Phone Number</label>
+                        <input type="tel" id="custPhone" class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:border-primary" placeholder="+91">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Tripura Address</label>
+                        <textarea id="custAddress" rows="3" class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:border-primary" placeholder="House No, Street, City, Pincode"></textarea>
+                    </div>
+                    <button onclick="saveCustomerProfile()" class="w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold hover:bg-red-900 transition shadow mt-2">Save Details</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Success Modal -->
+        <div id="orderSuccessModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex justify-center items-center p-4">
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 relative shadow-2xl text-center animate-fade-in border-t-8 border-green-500">
+                <div class="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-5 shadow-inner">
+                    <i class="fa-solid fa-check text-3xl md:text-4xl text-green-500"></i>
+                </div>
+                <h3 class="text-2xl md:text-3xl font-bold mb-2 text-primary font-serif">Order Confirmed!</h3>
+                <p id="successCustomerName" class="text-base md:text-lg text-gray-800 font-medium mb-1"></p>
+                <p id="successOrderTotal" class="text-xl md:text-2xl font-bold text-gray-900 mb-4 font-serif"></p>
+                <p class="text-xs md:text-sm text-gray-500 mb-6 leading-relaxed">
+                    Thank you for shopping with Shirnahar House. We will process your order for Cash on Delivery in Tripura.
+                </p>
+                
+                <div class="bg-pink-50 border border-pink-100 rounded-2xl p-4 md:p-5 mb-6 md:mb-8">
+                    <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider mb-1 md:mb-2">Have queries about your dress?</p>
+                    <p class="text-xs md:text-sm text-gray-700 mb-3">Feel free to contact us directly!</p>
+                    <a href="tel:+918974477318" class="inline-flex items-center justify-center gap-2 bg-white px-5 py-3 rounded-xl shadow-sm border border-pink-200 text-primary font-bold text-base hover:shadow-md hover:border-primary transition">
+                        <i class="fa-solid fa-phone-volume animate-pulse"></i> +91 8974477318
+                    </a>
+                </div>
+                
+                <button onclick="closeSuccessModal()" class="w-full bg-stone-900 text-white py-3 md:py-4 rounded-xl font-bold hover:bg-stone-800 transition shadow-lg text-sm md:text-lg">Continue Shopping</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Admin Placeholder -->
+    <div id="admin-view" class="hidden flex-grow flex-col min-h-screen bg-stone-100">
+        <div class="flex items-center justify-center h-screen flex-col text-center p-6">
+            <i class="fa-solid fa-person-digging text-6xl text-gray-400 mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-700">Admin Area Reserved</h2>
+            <button onclick="closeAdminMode()" class="mt-8 text-primary font-bold underline hover:text-red-900">Return to Storefront</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 md:top-auto md:left-auto md:bottom-5 md:right-5 md:transform-none bg-stone-900/90 backdrop-blur-sm text-white px-5 py-3 md:px-6 md:py-4 rounded-full md:rounded-xl shadow-2xl hidden z-[100] text-xs md:text-sm font-medium transition-all flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-green-400 text-base md:text-xl"></i>
+        <span id="toastMsg" class="whitespace-nowrap"></span>
+    </div>
+
+    <style>
+        .animate-slide-in-right { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, getDoc, setDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // STATE
+        let allProducts = [];
+        let cart = [];
+        let currentUserId = null;
+        let currentDetailProductId = null;
+
+        // AUTH & LOAD
+        window.addEventListener('DOMContentLoaded', () => {
+            signInAnonymously(auth).catch(e => console.log("Auth error:", e));
+            fetchProducts();
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                const docSnap = await getDoc(doc(db, "customers", user.uid));
+                if (docSnap.exists()) {
+                    document.getElementById('custName').value = docSnap.data().name || '';
+                    document.getElementById('custPhone').value = docSnap.data().phone || '';
+                    document.getElementById('custAddress').value = docSnap.data().address || '';
+                }
+            }
+        });
+
+        // UI HELPERS
+        window.showToast = (msg) => {
+            document.getElementById('toastMsg').innerText = msg;
+            const t = document.getElementById('toast');
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 3500);
+        };
+
+        window.switchCustomerTab = (tab) => {
+            document.getElementById('tab-home').classList.add('hidden');
+            document.getElementById('tab-collection').classList.add('hidden');
+            document.getElementById('tab-product-detail').classList.add('hidden');
+            document.getElementById('tab-community').classList.add('hidden');
+            
+            if(tab === 'home') document.getElementById('tab-home').classList.remove('hidden');
+            if(tab === 'collection') {
+                document.getElementById('tab-collection').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if(tab === 'product-detail') {
+                document.getElementById('tab-product-detail').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if(tab === 'community') {
+                document.getElementById('tab-community').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Update mobile nav colors
+            const navBtns = document.querySelectorAll('.mobile-nav-btn');
+            navBtns.forEach(btn => {
+                if(btn.dataset.target === tab) {
+                    btn.classList.add('text-primary');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.add('text-gray-400');
+                    btn.classList.remove('text-primary');
+                }
+            });
+        };
+
+        const fetchProducts = async () => {
+            try {
+                const q = query(collection(db, "products"), orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                allProducts = [];
+                querySnapshot.forEach((docSnap) => {
+                    allProducts.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                window.filterProducts('All');
+            } catch (e) {
+                console.error("Error fetching products:", e);
+                document.getElementById('productGrid').innerHTML = '<p class="col-span-full text-center text-red-500 py-12">Failed to load products.</p>';
+            }
+        };
+
+        window.filterProducts = (category) => {
+            ['All', 'Saree', 'Dress'].forEach(c => {
+                const btn = document.getElementById(`filter-${c}`);
+                if(c === category) {
+                    btn.className = "px-5 py-2 bg-primary text-white rounded-full text-xs md:text-sm font-medium transition shadow-sm";
+                } else {
+                    btn.className = "px-5 py-2 bg-white border border-gray-200 text-gray-600 hover:border-primary hover:text-primary rounded-full text-xs md:text-sm font-medium transition shadow-sm";
+                }
+            });
+
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            
+            const filtered = category === 'All' ? allProducts : allProducts.filter(p => p.category === category);
+            
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20 text-gray-400"><i class="fa-solid fa-box-open text-4xl md:text-6xl mb-4 text-pink-200"></i><p class="font-serif text-sm md:text-lg">More items coming soon!</p></div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const stock = p.stock !== undefined ? p.stock : 0; 
+                const isAvailable = stock > 0;
+                
+                const stockBadge = isAvailable ? 
+                    `<div class="absolute top-2 right-2 md:top-4 md:right-4 bg-white/90 backdrop-blur-sm text-gray-800 text-[8px] md:text-[10px] font-bold px-2 py-1 md:px-3 rounded-full shadow-sm uppercase tracking-wider">${stock} Left</div>` : 
+                    `<div class="absolute top-2 right-2 md:top-4 md:right-4 bg-red-500/90 backdrop-blur-sm text-white text-[8px] md:text-[10px] font-bold px-2 py-1 md:px-3 rounded-full shadow-sm uppercase tracking-wider">Sold Out</div>`;
+                
+                const btnHtml = isAvailable ? 
+                    `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="w-full bg-white border border-gray-200 text-gray-800 hover:border-primary hover:text-primary py-2.5 md:py-3 rounded-lg transition font-medium shadow-sm flex justify-center items-center gap-2 text-xs md:text-sm relative z-10"><i class="fa-solid fa-bag-shopping"></i> <span class="hidden sm:inline">Add to Bag</span><span class="sm:hidden">Add</span></button>` :
+                    `<button disabled class="w-full bg-gray-50 text-gray-400 py-2.5 md:py-3 rounded-lg cursor-not-allowed font-medium border border-gray-100 text-xs md:text-sm relative z-10">Out of Stock</button>`;
+
+                const displayImage = (p.images && p.images.length > 0) ? p.images[0] : (p.imageUrl || 'https://placehold.co/400x500/8B2C46/FFFFFF?text=Shirnahar');
+
+                grid.innerHTML += `
+                    <div onclick="window.openProductDetail('${p.id}')" class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full group cursor-pointer relative">
+                        <div class="relative pt-[130%] bg-stone-50 overflow-hidden">
+                            ${stockBadge}
+                            <img src="${displayImage}" alt="${p.name}" class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
+                        </div>
+                        <div class="p-3 md:p-6 flex flex-col flex-grow justify-between text-center">
+                            <div class="mb-2 md:mb-4">
+                                <span class="text-[8px] md:text-[10px] font-bold text-accent uppercase tracking-widest mb-1 md:mb-2 block">${p.category}</span>
+                                <h3 class="font-serif font-bold text-sm md:text-lg text-gray-900 leading-tight mb-1 md:mb-2 line-clamp-2">${p.name}</h3>
+                                <p class="text-[10px] md:text-xs text-gray-500 line-clamp-1 md:line-clamp-2 font-light hidden sm:block">${p.description || ''}</p>
+                            </div>
+                            <div>
+                                <p class="text-base md:text-xl font-bold text-primary mb-3 md:mb-5 font-serif">₹${p.price.toLocaleString('en-IN')}</p>
+                                ${btnHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        };
+
+        window.addToCart = (id) => {
+            const product = allProducts.find(p => p.id === id);
+            const stock = product.stock !== undefined ? product.stock : 0;
+            if(!product || stock <= 0) return;
+
+            const existingItem = cart.find(item => item.id === id);
+            if(existingItem && existingItem.qty >= stock) {
+                showToast(`Only ${stock} items available in stock!`);
+                return;
+            }
+
+            const imgToUse = (product.images && product.images.length > 0) ? product.images[0] : product.imageUrl;
+
+            if(existingItem) {
+                existingItem.qty += 1;
+            } else {
+                cart.push({ id: product.id, name: product.name, price: product.price, img: imgToUse, qty: 1, maxStock: stock });
+            }
+            updateCartUI();
+            
+            const btn = document.getElementById('cartBtn');
+            btn.classList.add('scale-110');
+            setTimeout(() => btn.classList.remove('scale-110'), 200);
+            showToast(`Added to bag!`);
+        };
+
+        const updateCartUI = () => {
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cartCount').innerText = count;
+            const list = document.getElementById('cartItemsList');
+            list.innerHTML = '';
+            
+            if(cart.length === 0) {
+                list.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 mt-12">
+                                    <i class="fa-solid fa-basket-shopping text-4xl mb-4 text-stone-200"></i>
+                                    <p class="font-medium text-sm">Your cart is empty.</p>
+                                  </div>`;
+                document.getElementById('cartTotalPrice').innerText = '₹0';
+                return;
+            }
+
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price * item.qty;
+                list.innerHTML += `
+                    <div class="flex items-center gap-3 bg-white p-2 md:p-3 rounded-xl border shadow-sm">
+                        <img src="${item.img || 'https://placehold.co/100/800000/D4AF37'}" class="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg border">
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-gray-900 leading-tight text-xs md:text-sm line-clamp-1">${item.name}</h4>
+                            <p class="text-primary font-black mt-1 text-sm md:text-base">₹${item.price}</p>
+                            <div class="flex items-center gap-2 mt-2 bg-stone-100 w-fit rounded-lg border">
+                                <button onclick="changeQty('${item.id}', -1)" class="w-6 h-6 flex items-center justify-center text-gray-600 font-bold">-</button>
+                                <span class="font-bold text-xs w-4 text-center">${item.qty}</span>
+                                <button onclick="changeQty('${item.id}', 1)" class="w-6 h-6 flex items-center justify-center text-gray-600 font-bold">+</button>
+                            </div>
+                        </div>
+                        <button onclick="changeQty('${item.id}', -999)" class="text-red-400 w-8 h-8 flex items-center justify-center rounded-full bg-red-50"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>`;
+            });
+            document.getElementById('cartTotalPrice').innerText = `₹${total.toLocaleString('en-IN')}`;
+        };
+
+        window.changeQty = (id, delta) => {
+            const item = cart.find(i => i.id === id);
+            if(!item) return;
+            if(delta > 0 && item.qty >= item.maxStock) return showToast(`Maximum stock reached.`);
+            item.qty += delta;
+            if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+            updateCartUI();
+        };
+
+        window.toggleCartDrawer = () => document.getElementById('cartDrawer').classList.toggle('hidden');
+        const profileModal = document.getElementById('profileModal');
+        document.getElementById('profileBtn').addEventListener('click', () => profileModal.classList.remove('hidden'));
+        window.toggleProfileModal = () => profileModal.classList.toggle('hidden');
+
+        window.saveCustomerProfile = async () => {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            if(!name || !phone || !address) return showToast("Please fill in all details.");
+            if (currentUserId) {
+                await setDoc(doc(db, "customers", currentUserId), { name, phone, address });
+                showToast("Details saved!");
+                toggleProfileModal();
+            }
+        };
+
+        window.closeSuccessModal = () => {
+            document.getElementById('orderSuccessModal').classList.add('hidden');
+            window.switchCustomerTab('collection');
+        };
+
+        window.checkoutOrder = async () => {
+            if(cart.length === 0) return;
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+
+            if(!name || !phone || !address) {
+                toggleCartDrawer();
+                toggleProfileModal();
+                return showToast("Please add delivery details first.");
+            }
+
+            const btn = document.querySelector('#cartDrawer .bg-accent');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
+            btn.disabled = true;
+
+            try {
+                const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+                await addDoc(collection(db, "orders"), {
+                    customerId: currentUserId, customerName: name, customerPhone: phone,
+                    customerAddress: address, items: cart, totalAmount: total,
+                    status: 'Pending', createdAt: Date.now()
+                });
+
+                for(const item of cart) {
+                    const prodDoc = doc(db, "products", item.id);
+                    const prodSnap = await getDoc(prodDoc);
+                    if(prodSnap.exists()) {
+                        const newStock = Math.max(0, (prodSnap.data().stock || 0) - item.qty);
+                        await updateDoc(prodDoc, { stock: newStock });
+                    }
+                }
+
+                cart = [];
+                updateCartUI();
+                toggleCartDrawer();
+                await fetchProducts();
+                
+                document.getElementById('successCustomerName').innerText = `Thank you, ${name}!`;
+                document.getElementById('successOrderTotal').innerText = `Total: ₹${total.toLocaleString('en-IN')}`;
+                document.getElementById('orderSuccessModal').classList.remove('hidden');
+            } catch (e) {
+                showToast("Failed to place order.");
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-motorcycle"></i> Place Order (COD)`;
+                btn.disabled = false;
+            }
+        };
+
+        window.openProductDetail = (id) => {
+            const p = allProducts.find(x => x.id === id);
+            if(!p) return;
+            currentDetailProductId = id;
+
+            // Main Image
+            const mainImg = document.getElementById('detailImg');
+            mainImg.src = (p.images && p.images.length > 0) ? p.images[0] : (p.imageUrl || 'https://placehold.co/400x500/8B2C46/FFFFFF');
+            
+            // Thumbnails Logic
+            const thumbContainer = document.getElementById('detailThumbnails');
+            if(p.images && p.images.length > 1) {
+                thumbContainer.innerHTML = p.images.map(img => 
+                    `<img src="${img}" onclick="document.getElementById('detailImg').src='${img}'" class="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-primary transition-colors flex-shrink-0 bg-stone-100">`
+                ).join('');
+                thumbContainer.classList.remove('hidden');
+            } else {
+                thumbContainer.classList.add('hidden');
+            }
+
+            document.getElementById('detailCategory').innerText = p.category;
+            document.getElementById('detailTitle').innerText = p.name;
+            document.getElementById('detailPrice').innerText = `₹${p.price.toLocaleString('en-IN')}`;
+            document.getElementById('detailDesc').innerText = p.description || 'No description provided.';
+            
+            const stock = p.stock !== undefined ? p.stock : 0;
+            document.getElementById('detailStockBadge').innerHTML = stock > 0 ? 
+                `<span class="px-3 py-1 bg-green-100 text-green-800 text-[10px] md:text-xs font-bold rounded-full shadow-sm">${stock} in stock</span>` : 
+                `<span class="px-3 py-1 bg-red-100 text-red-800 text-[10px] md:text-xs font-bold rounded-full shadow-sm">Out of Stock</span>`;
+
+            const btn = document.getElementById('detailAddToCartBtn');
+            if(stock > 0) {
+                btn.disabled = false;
+                btn.className = "w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-3";
+                btn.innerHTML = `<i class="fa-solid fa-bag-shopping text-xl"></i> <span>Add to Bag</span>`;
+                btn.onclick = () => window.addToCart(p.id);
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full bg-stone-200 text-gray-500 py-3 md:py-4 rounded-xl font-bold text-lg cursor-not-allowed flex justify-center items-center gap-3 shadow-inner border border-stone-300";
+                btn.innerHTML = `Out of Stock`;
+                btn.onclick = null;
+            }
+
+            const savedName = document.getElementById('custName').value;
+            if(savedName) document.getElementById('reviewName').value = savedName;
+
+            window.switchCustomerTab('product-detail');
+            loadReviews(id);
+            loadRecommendations(p);
+        };
+
+        const loadReviews = async (productId) => {
+            const list = document.getElementById('reviewsList');
+            list.innerHTML = `<div class="text-center text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br><span class="text-xs">Loading...</span></div>`;
+            try {
+                const q = query(collection(db, "reviews"), where("productId", "==", productId));
+                const snap = await getDocs(q);
+                
+                if(snap.empty) {
+                    list.innerHTML = `
+                        <div class="text-center bg-stone-50 rounded-2xl p-6 md:p-10 border border-stone-100 border-dashed">
+                            <i class="fa-regular fa-comment-dots text-3xl md:text-4xl text-stone-300 mb-2 md:mb-3"></i>
+                            <p class="text-gray-500 font-medium text-sm md:text-base">No reviews yet.</p>
+                            <p class="text-[10px] md:text-sm text-gray-400 mt-1">Be the first to review!</p>
+                        </div>`;
+                    return;
+                }
+                
+                let reviews = [];
+                snap.forEach(d => reviews.push(d.data()));
+                reviews.sort((a, b) => b.createdAt - a.createdAt);
+
+                list.innerHTML = '';
+                reviews.forEach(r => {
+                    const stars = '⭐'.repeat(r.rating) + '<span class="text-gray-200">' + '★'.repeat(5 - r.rating) + '</span>';
+                    const date = new Date(r.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric'});
+                    list.innerHTML += `
+                        <div class="bg-white p-4 md:p-6 rounded-2xl border border-stone-100 shadow-sm">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center font-bold font-serif text-sm md:text-lg border border-stone-200">
+                                        ${r.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-gray-900 leading-none text-sm md:text-base">${r.name}</h5>
+                                        <span class="text-[10px] md:text-xs text-gray-400 font-medium">${date}</span>
+                                    </div>
+                                </div>
+                                <div class="text-accent text-[10px] md:text-sm tracking-widest">${stars}</div>
+                            </div>
+                            <p class="text-gray-600 text-xs md:text-sm leading-relaxed pl-11 md:pl-13">${r.text}</p>
+                        </div>`;
+                });
+            } catch(e) {
+                list.innerHTML = `<p class="text-red-500 text-center py-4 text-xs">Failed to load reviews.</p>`;
+            }
+        };
+
+        window.submitReview = async (e) => {
+            e.preventDefault();
+            if(!currentDetailProductId) return;
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Posting...`;
+            btn.disabled = true;
+
+            const name = document.getElementById('reviewName').value.trim();
+            const rating = parseInt(document.getElementById('reviewRating').value);
+            const text = document.getElementById('reviewText').value.trim();
+
+            try {
+                await addDoc(collection(db, "reviews"), {
+                    productId: currentDetailProductId, name: name, rating: rating, text: text, createdAt: Date.now()
+                });
+                document.getElementById('reviewText').value = '';
+                document.getElementById('reviewRating').value = '5';
+                showToast("Review posted!");
+                loadReviews(currentDetailProductId);
+            } catch(err) {
+                alert("Could not post review.");
+            } finally {
+                btn.innerHTML = "Post Review";
+                btn.disabled = false;
+            }
+        };
+
+        const loadRecommendations = (currentProduct) => {
+            const grid = document.getElementById('recommendationGrid');
+            grid.innerHTML = '';
+            
+            let recs = allProducts.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id);
+            recs.sort(() => 0.5 - Math.random()); 
+            recs = recs.slice(0, 3);
+            
+            if(recs.length === 0) recs = allProducts.filter(p => p.id !== currentProduct.id).sort(() => 0.5 - Math.random()).slice(0, 3);
+            if(recs.length === 0) return grid.innerHTML = `<p class="text-center text-gray-400 italic py-4 text-xs">More coming soon.</p>`;
+
+            recs.forEach(p => {
+                const imgToUse = (p.images && p.images.length > 0) ? p.images[0] : (p.imageUrl || 'https://placehold.co/100/8B2C46/FFFFFF');
+                grid.innerHTML += `
+                    <div onclick="window.openProductDetail('${p.id}')" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-stone-100 overflow-hidden cursor-pointer group flex items-center gap-3 md:gap-4 p-2 md:p-3">
+                        <div class="w-20 h-24 md:w-24 md:h-24 bg-stone-50 rounded-lg overflow-hidden flex-shrink-0 relative">
+                            <img src="${imgToUse}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        </div>
+                        <div>
+                            <h3 class="font-serif font-bold text-gray-900 leading-tight mb-1 line-clamp-2 text-xs md:text-base">${p.name}</h3>
+                            <p class="font-bold text-primary text-sm font-serif mb-1">₹${p.price.toLocaleString('en-IN')}</p>
+                            <span class="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider">${p.category}</span>
+                        </div>
+                    </div>`;
+            });
+        };
+
+        // ADMIN TOGGLES
+        window.triggerAdminMode = () => {
+            document.getElementById('customer-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.remove('hidden');
+            document.getElementById('admin-view').classList.add('flex');
+        };
+        window.closeAdminMode = () => {
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.remove('flex');
+            document.getElementById('customer-view').classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
