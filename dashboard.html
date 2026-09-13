@@ -83,12 +83,12 @@
                 <div id="adminProductList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Loaded via JS -->
                 </div>
-
-                <!-- Floating Add Button for Mobile & Desktop -->
-                <button onclick="openProductModal()" class="fixed bottom-24 right-5 md:bottom-10 md:right-10 w-14 h-14 md:w-16 md:h-16 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-pink-900/30 text-xl md:text-2xl z-30 hover:scale-105 transition-transform hover:bg-red-900">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
             </section>
+
+            <!-- Floating Add Button for Mobile & Desktop (MOVED OUTSIDE ANIMATED TAB) -->
+            <button id="addProductBtn" onclick="openProductModal()" class="fixed bottom-24 right-5 md:bottom-10 md:right-10 w-14 h-14 md:w-16 md:h-16 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-pink-900/30 text-xl md:text-2xl z-30 hover:scale-105 transition-transform hover:bg-red-900">
+                <i class="fa-solid fa-plus"></i>
+            </button>
 
             <!-- ORDERS TAB -->
             <section id="sectionOrders" class="tab-content max-w-4xl mx-auto hidden">
@@ -242,6 +242,21 @@
         <span id="toastMsg"></span>
     </div>
 
+    <!-- NEW: Custom Confirm/Alert Modal to avoid Chrome Pop-ups -->
+    <div id="customConfirmModal" class="fixed inset-0 z-[110] hidden bg-black/60 flex-col justify-center items-center p-6 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="w-16 h-16 bg-pink-50 text-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-pink-100">
+                <i id="ccIcon" class="fa-solid fa-bell text-3xl"></i>
+            </div>
+            <h3 id="ccTitle" class="text-xl font-bold text-gray-900 font-serif text-center mb-2"></h3>
+            <p id="ccMessage" class="text-sm text-gray-500 text-center mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button id="ccCancelBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition">Cancel</button>
+                <button id="ccConfirmBtn" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-red-900 transition shadow-md">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
@@ -264,6 +279,46 @@
 
         let adminProducts = [];
         let adminOrdersData = []; // NEW: Store orders globally for filtering
+
+        // NEW: Custom Confirm Dialog Logic (Replaces alert() and confirm())
+        window.customConfirm = (title, message, confirmTxt = "Yes", cancelTxt = "Cancel", isAlert = false, iconClass = "fa-bell") => {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customConfirmModal');
+                const modalInner = modal.querySelector('div.bg-white');
+                
+                document.getElementById('ccTitle').innerText = title;
+                document.getElementById('ccMessage').innerText = message;
+                document.getElementById('ccConfirmBtn').innerText = confirmTxt;
+                document.getElementById('ccCancelBtn').innerText = cancelTxt;
+                document.getElementById('ccIcon').className = `fa-solid ${iconClass} text-3xl`;
+
+                if(isAlert) document.getElementById('ccCancelBtn').classList.add('hidden');
+                else document.getElementById('ccCancelBtn').classList.remove('hidden');
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                // Slight delay for animation triggers
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modalInner.classList.remove('scale-95');
+                }, 10);
+
+                const cleanup = () => {
+                    modal.classList.add('opacity-0');
+                    modalInner.classList.add('scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.getElementById('ccConfirmBtn').onclick = null;
+                        document.getElementById('ccCancelBtn').onclick = null;
+                    }, 300);
+                };
+
+                document.getElementById('ccConfirmBtn').onclick = () => { cleanup(); resolve(true); };
+                document.getElementById('ccCancelBtn').onclick = () => { cleanup(); resolve(false); };
+            });
+        };
 
         // Auth Flow
         onAuthStateChanged(auth, (user) => {
@@ -301,8 +356,9 @@
             }
         };
 
-        window.handleLogout = () => {
-            if(confirm("Log out of dashboard?")) signOut(auth);
+        window.handleLogout = async () => {
+            const res = await customConfirm("Log Out", "Are you sure you want to log out of the dashboard?", "Log Out", "Cancel", false, "fa-arrow-right-from-bracket");
+            if(res) signOut(auth);
         };
 
         window.showToast = (msg) => {
@@ -330,16 +386,24 @@
 
             if(tab === 'products') {
                 document.getElementById('sectionProducts').classList.remove('hidden');
+                document.getElementById('addProductBtn').classList.remove('hidden'); // Show Plus Button
                 document.getElementById('navProducts').classList.add('text-primary');
                 document.getElementById('navProducts').classList.remove('text-slate-400');
                 if(deskProd) deskProd.className = "flex items-center gap-3 px-4 py-3 bg-pink-50 text-primary rounded-xl transition font-bold mb-2";
-                loadAdminData();
+                
+                // Only load from database if empty, else render instantly
+                if(adminProducts.length === 0) loadAdminData();
+                else renderProducts(); 
             } else {
                 document.getElementById('sectionOrders').classList.remove('hidden');
+                document.getElementById('addProductBtn').classList.add('hidden'); // Hide Plus Button
                 document.getElementById('navOrders').classList.add('text-primary');
                 document.getElementById('navOrders').classList.remove('text-slate-400');
                 if(deskOrd) deskOrd.className = "flex items-center gap-3 px-4 py-3 bg-pink-50 text-primary rounded-xl transition font-bold";
-                loadAdminOrders();
+                
+                // Only load from database if empty, else render instantly
+                if(adminOrdersData.length === 0) loadAdminOrders();
+                else renderAdminOrders(document.getElementById('orderFilter').value);
             }
         };
 
@@ -524,7 +588,7 @@
                 renderProducts(); // Re-render instantly
                 showToast("Product saved!");
             } catch (err) {
-                alert("Error saving. Try again.");
+                await customConfirm("Error", "Error saving product. Please try again.", "OK", "", true, "fa-triangle-exclamation");
             } finally {
                 btn.innerHTML = "Save & Publish";
                 btn.disabled = false;
@@ -574,14 +638,15 @@
                     adminProducts[pIndex].stock = oldStock;
                     renderProducts();
                 }
-                alert("Failed to update.");
+                await customConfirm("Update Failed", "Failed to update stock. Please try again.", "OK", "", true, "fa-triangle-exclamation");
             } finally {
                 btn.innerHTML = `Confirm Update`;
             }
         };
 
         window.deleteProduct = async (id) => {
-            if(!confirm("Delete this dress forever?")) return;
+            const confirmDelete = await customConfirm("Delete Dress", "Are you sure you want to delete this dress forever? This action cannot be undone.", "Delete", "Cancel", false, "fa-trash-can");
+            if(!confirmDelete) return;
             
             // Instantly remove from UI
             const originalData = [...adminProducts];
@@ -595,7 +660,7 @@
                 // Revert if database fails
                 adminProducts = originalData;
                 renderProducts();
-                alert("Failed to delete item.");
+                await customConfirm("Delete Failed", "Failed to delete item. Please try again.", "OK", "", true, "fa-triangle-exclamation");
             }
         };
 
@@ -703,7 +768,8 @@
 
         // NEW: Function to permanently delete an order
         window.deleteAdminOrder = async (orderId) => {
-            if(!confirm("Are you sure you want to permanently delete this order? This keeps your dashboard clean but cannot be undone.")) return;
+            const confirmDelete = await customConfirm("Delete Order", "Are you sure you want to permanently delete this order? This keeps your dashboard clean but cannot be undone.", "Delete Order", "Cancel", false, "fa-trash-can");
+            if(!confirmDelete) return;
             
             // Instantly remove from UI
             const filterStatus = document.getElementById('orderFilter').value;
@@ -718,7 +784,7 @@
                 // Revert if database fails
                 adminOrdersData = originalData;
                 renderAdminOrders(filterStatus);
-                alert("Failed to delete order.");
+                await customConfirm("Delete Failed", "Failed to delete order. Please try again.", "OK", "", true, "fa-triangle-exclamation");
             }
         };
 
@@ -730,7 +796,7 @@
 
             try {
                 if (newStatus === 'Cancelled') {
-                    const wantToRestore = confirm("Do you want to automatically restore the inventory stock for this cancelled order?");
+                    const wantToRestore = await customConfirm("Restore Stock?", "Do you want to automatically restore the inventory stock for this cancelled order?", "Yes, Restore", "No", false, "fa-boxes-stacked");
                     if (wantToRestore) {
                         const orderData = adminOrdersData[orderIndex];
                         if(orderData && orderData.items) {
@@ -759,7 +825,7 @@
                 adminOrdersData[orderIndex].status = originalStatus;
                 const filterStatus = document.getElementById('orderFilter').value;
                 renderAdminOrders(filterStatus);
-                alert("Status update failed");
+                await customConfirm("Update Failed", "Status update failed. Please try again.", "OK", "", true, "fa-triangle-exclamation");
                 console.error(e);
             }
         };
