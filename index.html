@@ -317,21 +317,9 @@
             <div class="max-w-2xl mx-auto">
                 <h2 class="text-3xl md:text-4xl font-bold text-primary font-serif mb-6 text-center">My Orders</h2>
                 
-                <!-- Toggle Tabs -->
-                <div class="flex bg-white rounded-xl p-1 shadow-sm border border-gray-100 mb-6">
-                    <button class="flex-1 py-3 rounded-lg bg-primary text-white font-bold text-sm md:text-base shadow transition">Current Orders</button>
-                    <button class="flex-1 py-3 rounded-lg text-gray-500 font-bold text-sm md:text-base hover:text-gray-800 transition">Past Orders</button>
-                </div>
-
-                <!-- Placeholder Area -->
-                <div class="text-center py-20 bg-white/60 backdrop-blur-sm rounded-3xl border border-dashed border-pink-200 shadow-sm relative">
-                    <div class="w-20 h-20 bg-pink-50 text-pink-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                        <i class="fa-solid fa-box-open text-4xl"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800 text-xl mb-2">Developer Space</h3>
-                    <p class="text-sm md:text-base text-gray-500 max-w-sm mx-auto">
-                        The order tracking logic will be built here next. Customers will be able to check if their dress is pending, dispatched, or delivered!
-                    </p>
+                <!-- Dynamic Orders List -->
+                <div id="customerOrdersList" class="space-y-4 md:space-y-6">
+                    <!-- Orders will be injected here via JavaScript -->
                 </div>
             </div>
         </div>
@@ -508,6 +496,7 @@
             if(tab === 'orders') {
                 document.getElementById('tab-orders').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (typeof loadCustomerOrders === 'function') loadCustomerOrders();
             }
 
             const navBtns = document.querySelectorAll('.mobile-nav-btn');
@@ -920,6 +909,143 @@
                     </div>`;
             });
         };
+
+        // NEW: LOAD CUSTOMER ORDERS
+        window.loadCustomerOrders = async () => {
+            const list = document.getElementById('customerOrdersList');
+            if(!currentUserId) {
+                list.innerHTML = `<p class="text-center text-gray-500 py-10 text-sm">Checking authentication...</p>`;
+                return;
+            }
+            
+            list.innerHTML = `<div class="text-center py-12"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl mb-3"></i><p class="text-sm text-gray-500">Loading your orders...</p></div>`;
+
+            try {
+                // Fetch orders for this specific customer
+                const q = query(collection(db, "orders"), where("customerId", "==", currentUserId));
+                const snap = await getDocs(q);
+                let orders = [];
+                snap.forEach(d => orders.push({id: d.id, ...d.data()}));
+                
+                // Sort newest first
+                orders.sort((a,b) => b.createdAt - a.createdAt);
+
+                if(orders.length === 0) {
+                    list.innerHTML = `
+                        <div class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm border border-stone-100">
+                            <i class="fa-solid fa-box-open text-5xl text-stone-300 mb-4"></i>
+                            <p class="font-bold text-gray-800 text-lg mb-1">No orders yet</p>
+                            <p class="text-gray-500 text-sm mb-6">Looks like you haven't made a purchase yet.</p>
+                            <button onclick="switchCustomerTab('collection')" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow hover:bg-red-900 transition">Start Shopping</button>
+                        </div>`;
+                    return;
+                }
+
+                list.innerHTML = '';
+                orders.forEach(o => {
+                    const date = new Date(o.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+                    
+                    // 24 HOUR CANCELLATION RULE CALCULATION
+                    const timeDiffMillis = Date.now() - o.createdAt;
+                    const hours24InMillis = 24 * 60 * 60 * 1000;
+                    const canCancel = o.status === 'Pending' && timeDiffMillis <= hours24InMillis;
+
+                    const statusColors = {
+                        'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
+                        'Dispatched': 'bg-blue-100 text-blue-800 border-blue-200',
+                        'Delivered': 'bg-green-100 text-green-800 border-green-200',
+                        'Cancelled': 'bg-red-100 text-red-800 border-red-200'
+                    };
+                    const badgeClass = statusColors[o.status] || 'bg-gray-100 text-gray-800';
+
+                    let itemsHtml = o.items.map(i => `
+                        <div class="flex gap-3 mt-3 items-center bg-stone-50 p-2 rounded-xl border border-stone-100">
+                            <img src="${i.img || 'https://placehold.co/100/8B2C46/FFFFFF'}" class="w-12 h-16 object-cover rounded-lg shadow-sm border border-stone-200">
+                            <div class="flex-grow">
+                                <p class="font-bold text-sm text-gray-800 line-clamp-1">${i.name}</p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Qty: ${i.qty}</p>
+                            </div>
+                            <p class="font-bold text-primary font-serif">₹${(i.price * i.qty).toLocaleString('en-IN')}</p>
+                        </div>
+                    `).join('');
+
+                    let cancelBtn = canCancel ? 
+                        `<button onclick='cancelCustomerOrder("${o.id}")' class="w-full md:w-auto px-5 py-2.5 border border-red-500 text-red-500 bg-red-50 rounded-xl font-bold text-sm hover:bg-red-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-xmark mr-1"></i> Cancel Order</button>` : '';
+
+                    let statusNote = canCancel ? `<p class="text-[10px] text-red-400 mt-2 text-center md:text-right">*Can be cancelled within 24hrs of ordering</p>` : '';
+
+                    list.innerHTML += `
+                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-stone-100 relative">
+                            <div class="flex justify-between items-start border-b border-stone-100 pb-3 mb-3">
+                                <div>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Order Placed</p>
+                                    <p class="font-bold text-gray-800 text-sm">${date}</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider border shadow-sm ${badgeClass}">${o.status}</span>
+                            </div>
+                            
+                            <div class="mb-4">
+                                ${itemsHtml}
+                            </div>
+                            
+                            <div class="border-t border-stone-100 pt-4 flex flex-col md:flex-row justify-between items-center gap-3">
+                                <div class="text-center md:text-left">
+                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">Total (COD)</p>
+                                    <p class="text-xl text-primary font-serif font-bold">₹${o.totalAmount.toLocaleString('en-IN')}</p>
+                                </div>
+                                <div>
+                                    ${cancelBtn}
+                                    ${statusNote}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) {
+                console.error(e);
+                list.innerHTML = `<p class="text-center text-red-500 py-10 text-sm">Failed to load orders.</p>`;
+            }
+        };
+
+        // NEW: CANCEL CUSTOMER ORDER
+        window.cancelCustomerOrder = async (orderId) => {
+            if(!confirm("Are you sure you want to cancel this beautiful dress?")) return;
+            
+            try {
+                const orderDoc = doc(db, "orders", orderId);
+                const orderSnap = await getDoc(orderDoc);
+                
+                if(orderSnap.exists()) {
+                    const orderData = orderSnap.data();
+                    
+                    // Double check 24 hours rule securely in case they kept the tab open
+                    if(Date.now() - orderData.createdAt > 24 * 60 * 60 * 1000) {
+                        showToast("Too late! Orders cannot be cancelled after 24 hours.");
+                        return;
+                    }
+
+                    // Restore stock automatically so others can buy it!
+                    for(const item of orderData.items) {
+                        const prodDoc = doc(db, "products", item.id);
+                        const prodSnap = await getDoc(prodDoc);
+                        if(prodSnap.exists()) {
+                            const currentStock = prodSnap.data().stock || 0;
+                            await updateDoc(prodDoc, { stock: currentStock + item.qty });
+                        }
+                    }
+                    
+                    // Change status to Cancelled
+                    await updateDoc(orderDoc, { status: "Cancelled" });
+                    
+                    showToast("Order cancelled successfully.");
+                    loadCustomerOrders(); // Refresh the list instantly
+                    fetchProducts(); // Refresh storefront inventory
+                }
+            } catch (e) {
+                console.error("Cancel error:", e);
+                showToast("Failed to cancel order.");
+            }
+        }
     </script>
 </body>
 </html>
