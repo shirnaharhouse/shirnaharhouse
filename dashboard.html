@@ -68,44 +68,58 @@
         </header>
 
         <!-- Main Scrollable Content Area (Padding bottom to account for nav bar) -->
-        <main class="flex-grow overflow-y-auto pb-24 p-4 bg-slate-50">
+        <main class="flex-grow overflow-y-auto pb-24 p-4 md:p-6 lg:p-8 bg-slate-50">
             
             <!-- INVENTORY TAB -->
-            <section id="sectionProducts" class="tab-content max-w-lg mx-auto">
+            <section id="sectionProducts" class="tab-content max-w-4xl mx-auto">
                 <div class="flex justify-between items-end mb-6">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 font-serif">Inventory</h2>
-                        <p class="text-xs text-gray-500">Your dresses & sarees</p>
+                        <h2 class="text-2xl md:text-3xl font-bold text-gray-900 font-serif">Inventory</h2>
+                        <p class="text-xs md:text-sm text-gray-500">Your dresses & sarees</p>
                     </div>
                 </div>
                 
                 <!-- Product List (Cards) -->
-                <div id="adminProductList" class="flex flex-col gap-4">
+                <div id="adminProductList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Loaded via JS -->
                 </div>
 
-                <!-- Floating Add Button for Mobile -->
-                <button onclick="openProductModal()" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-pink-900/30 text-xl z-30 hover:scale-105 transition-transform">
+                <!-- Floating Add Button for Mobile & Desktop -->
+                <button onclick="openProductModal()" class="fixed bottom-24 right-5 md:bottom-10 md:right-10 w-14 h-14 md:w-16 md:h-16 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-pink-900/30 text-xl md:text-2xl z-30 hover:scale-105 transition-transform hover:bg-red-900">
                     <i class="fa-solid fa-plus"></i>
                 </button>
             </section>
 
             <!-- ORDERS TAB -->
-            <section id="sectionOrders" class="tab-content max-w-lg mx-auto hidden">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 font-serif">Customer Orders</h2>
-                    <p class="text-xs text-gray-500">Manage deliveries and status</p>
+            <section id="sectionOrders" class="tab-content max-w-4xl mx-auto hidden">
+                <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-gray-900 font-serif">Customer Orders</h2>
+                        <p class="text-xs md:text-sm text-gray-500">Manage deliveries, clean up old records</p>
+                    </div>
+                    
+                    <!-- NEW: Order Filter -->
+                    <div class="relative w-full md:w-auto">
+                        <select id="orderFilter" onchange="filterAdminOrders(this.value)" class="w-full md:w-auto text-xs md:text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl p-3 outline-none shadow-sm cursor-pointer hover:border-primary transition appearance-none pr-10">
+                            <option value="All">All Orders</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Dispatched">Dispatched</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
                 </div>
                 
                 <!-- Orders List (Cards) -->
-                <div id="adminOrderList" class="flex flex-col gap-4">
+                <div id="adminOrderList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Loaded via JS -->
                 </div>
             </section>
         </main>
 
-        <!-- Mobile Bottom Navigation Bar -->
-        <nav class="bg-white border-t border-slate-100 fixed bottom-0 w-full z-20 px-6 py-3 flex justify-around items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <!-- Mobile Bottom Navigation Bar (Hidden on md screens if we wanted, but keeping for uniform experience right now) -->
+        <nav class="bg-white border-t border-slate-100 fixed bottom-0 w-full z-20 px-6 py-3 flex justify-around items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:hidden">
             <button onclick="switchAdminTab('products')" id="navProducts" class="flex flex-col items-center gap-1 text-primary w-20 transition">
                 <i class="fa-solid fa-boxes-stacked text-xl"></i>
                 <span class="text-[10px] font-bold">Inventory</span>
@@ -115,102 +129,115 @@
                 <span class="text-[10px] font-bold">Orders</span>
             </button>
         </nav>
-    </div>
 
-    <!-- Add Product Modal (Absolute positioned for guaranteed scrolling) -->
-    <div id="productModal" class="fixed inset-0 bg-slate-50 z-50 hidden transition-transform transform translate-y-full data-[open=true]:translate-y-0 duration-300">
-        
-        <!-- Fixed Header -->
-        <div class="absolute top-0 left-0 right-0 h-[70px] px-5 flex justify-between items-center border-b border-slate-200 bg-white z-20 shadow-sm">
-            <h3 class="text-xl font-bold text-gray-900 font-serif">Add New Item</h3>
-            <button type="button" onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-lg">&times;</button>
-        </div>
-        
-        <!-- Guaranteed Scrollable Area (Trapped between header and footer) -->
-        <div class="absolute top-[70px] bottom-[85px] left-0 right-0 overflow-y-auto p-5">
-            <form id="productForm" onsubmit="handleSaveProduct(event)" class="space-y-6 pb-4">
-                
-                <!-- Massive Tap Zone for Phone Camera/Gallery -->
-                <div class="relative">
-                    <input type="file" id="prodFile" accept="image/*" multiple onchange="previewImages(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div class="bg-pink-50 border-2 border-dashed border-pink-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
-                            <i class="fa-solid fa-camera text-2xl"></i>
-                        </div>
-                        <p class="font-bold text-primary text-sm">Tap to add photos</p>
-                        <p class="text-xs text-gray-400 mt-1">Camera or Gallery</p>
-                    </div>
-                </div>
-                
-                <!-- Image Previews -->
-                <div id="imagePreviewContainer" class="flex gap-3 overflow-x-auto pb-2 hidden"></div>
-
-                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Product Name</label>
-                        <input type="text" id="prodName" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent" placeholder="e.g. Royal Blue Silk Saree">
-                    </div>
-                    
-                    <div class="flex gap-4">
-                        <div class="w-1/2">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Price (₹)</label>
-                            <input type="number" id="prodPrice" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent" placeholder="0">
-                        </div>
-                        <div class="w-1/2">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Stock</label>
-                            <input type="number" id="prodStock" required value="5" class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Category</label>
-                        <select id="prodCategory" class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent appearance-none">
-                            <option value="Saree">Saree</option>
-                            <option value="Dress">Dress</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Description</label>
-                        <textarea id="prodDesc" rows="3" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent resize-none" placeholder="Fabric, work, etc..."></textarea>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Sticky Save Button -->
-        <div class="absolute bottom-0 left-0 right-0 h-[85px] p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-20">
-            <button type="submit" form="productForm" id="saveProductBtn" class="w-full h-full bg-primary text-white rounded-2xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-2">
-                Save & Publish
+        <!-- Desktop Sidebar/Nav integration could go here later, reusing the bottom nav logic -->
+        <div class="hidden md:flex flex-col bg-white border-r border-slate-100 fixed left-0 top-[73px] bottom-0 w-64 z-10 p-6 shadow-sm">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Menu</p>
+            <button onclick="switchAdminTab('products')" id="navProductsDesktop" class="flex items-center gap-3 px-4 py-3 bg-pink-50 text-primary rounded-xl transition font-bold mb-2">
+                <i class="fa-solid fa-boxes-stacked w-5"></i> Inventory
+            </button>
+            <button onclick="switchAdminTab('orders')" id="navOrdersDesktop" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl transition font-bold">
+                <i class="fa-solid fa-clipboard-list w-5"></i> Orders
             </button>
         </div>
     </div>
 
+    <!-- Add Product Modal (Absolute positioned for guaranteed scrolling) -->
+    <div id="productModal" class="fixed inset-0 bg-black/50 z-50 hidden justify-center items-center p-0 md:p-6 opacity-0 transition-opacity duration-300">
+        
+        <div class="bg-slate-50 w-full h-full md:h-auto md:max-h-[90vh] md:max-w-md md:rounded-3xl relative flex flex-col transform transition-transform translate-y-full data-[open=true]:translate-y-0 duration-300 md:translate-y-10 shadow-2xl overflow-hidden">
+            <!-- Fixed Header -->
+            <div class="h-[70px] px-5 flex justify-between items-center border-b border-slate-200 bg-white z-20 shadow-sm flex-shrink-0">
+                <h3 class="text-xl font-bold text-gray-900 font-serif">Add New Item</h3>
+                <button type="button" onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-lg hover:bg-slate-200 transition">&times;</button>
+            </div>
+            
+            <!-- Guaranteed Scrollable Area -->
+            <div class="overflow-y-auto p-5 flex-grow">
+                <form id="productForm" onsubmit="handleSaveProduct(event)" class="space-y-6 pb-4">
+                    
+                    <!-- Massive Tap Zone for Phone Camera/Gallery -->
+                    <div class="relative">
+                        <input type="file" id="prodFile" accept="image/*" multiple onchange="previewImages(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="bg-pink-50 border-2 border-dashed border-pink-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:bg-pink-100 transition">
+                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
+                                <i class="fa-solid fa-camera text-2xl"></i>
+                            </div>
+                            <p class="font-bold text-primary text-sm">Tap to add photos</p>
+                            <p class="text-xs text-gray-400 mt-1">Camera or Gallery (Max 4)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Image Previews -->
+                    <div id="imagePreviewContainer" class="flex gap-3 overflow-x-auto pb-2 hidden"></div>
+
+                    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Product Name</label>
+                            <input type="text" id="prodName" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent" placeholder="e.g. Royal Blue Silk Saree">
+                        </div>
+                        
+                        <div class="flex gap-4">
+                            <div class="w-1/2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Price (₹)</label>
+                                <input type="number" id="prodPrice" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent" placeholder="0">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Stock</label>
+                                <input type="number" id="prodStock" required value="5" class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Category</label>
+                            <select id="prodCategory" class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent cursor-pointer">
+                                <option value="Saree">Saree</option>
+                                <option value="Dress">Dress</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Description</label>
+                            <textarea id="prodDesc" rows="3" required class="w-full border-b-2 border-slate-100 p-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-primary transition bg-transparent resize-none" placeholder="Fabric, work, etc..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sticky Save Button -->
+            <div class="p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-20 flex-shrink-0">
+                <button type="submit" form="productForm" id="saveProductBtn" class="w-full py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-2">
+                    Save & Publish
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Stock Update Bottom Sheet -->
-    <div id="stockModal" class="fixed inset-0 z-50 hidden bg-black/40 flex-col justify-end">
-        <div class="bg-white w-full rounded-t-3xl p-6 pb-10 transform transition-transform translate-y-0">
+    <div id="stockModal" class="fixed inset-0 z-50 hidden bg-black/60 flex-col justify-end items-center md:justify-center p-0 md:p-6">
+        <div class="bg-white w-full md:max-w-sm rounded-t-3xl md:rounded-3xl p-6 pb-10 transform transition-transform translate-y-0">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-gray-900 font-serif">Quick Stock Update</h3>
-                <button onclick="closeStockModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold">&times;</button>
+                <button onclick="closeStockModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 transition">&times;</button>
             </div>
             
             <p id="stockProductName" class="text-sm text-gray-500 mb-6 font-medium line-clamp-1"></p>
             <input type="hidden" id="stockUpdateId">
             
             <div class="flex items-center justify-center gap-8 mb-8">
-                <button onclick="adjustStock(-1)" class="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 text-slate-600 font-bold text-2xl flex items-center justify-center active:bg-slate-200">-</button>
+                <button onclick="adjustStock(-1)" class="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 text-slate-600 font-bold text-2xl flex items-center justify-center active:bg-slate-200 hover:bg-slate-100 transition">-</button>
                 <input type="number" id="newStockInput" class="w-24 bg-transparent text-center text-5xl font-bold text-primary focus:outline-none" min="0">
-                <button onclick="adjustStock(1)" class="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 text-slate-600 font-bold text-2xl flex items-center justify-center active:bg-slate-200">+</button>
+                <button onclick="adjustStock(1)" class="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 text-slate-600 font-bold text-2xl flex items-center justify-center active:bg-slate-200 hover:bg-slate-100 transition">+</button>
             </div>
             
-            <button onclick="confirmStockUpdate()" id="confirmStockBtn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg">
+            <button onclick="confirmStockUpdate()" id="confirmStockBtn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg hover:bg-slate-800 transition shadow-lg">
                 Confirm Update
             </button>
         </div>
     </div>
 
     <!-- Minimal Mobile Toast -->
-    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white px-5 py-3 rounded-full shadow-2xl hidden z-[100] text-xs font-bold flex items-center gap-2 backdrop-blur-sm whitespace-nowrap">
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-slate-900/95 text-white px-5 py-3 rounded-full shadow-2xl hidden z-[100] text-xs font-bold flex items-center gap-2 backdrop-blur-sm whitespace-nowrap">
         <i class="fa-solid fa-circle-check text-green-400"></i>
         <span id="toastMsg"></span>
     </div>
@@ -218,7 +245,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+        // Added getDoc for restoring stock
+        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
         // FIREBASE CONFIGURATION
         const firebaseConfig = {
@@ -235,6 +263,7 @@
         const db = getFirestore(app);
 
         let adminProducts = [];
+        let adminOrdersData = []; // NEW: Store orders globally for filtering
 
         // Auth Flow
         onAuthStateChanged(auth, (user) => {
@@ -242,6 +271,12 @@
                 document.getElementById('authOverlay').classList.add('hidden');
                 document.getElementById('adminApp').classList.remove('hidden');
                 document.getElementById('adminApp').classList.add('flex');
+                
+                // Adjust desktop padding to make room for side nav if logged in
+                if(window.innerWidth >= 768) {
+                    document.querySelector('main').classList.add('md:ml-64');
+                }
+                
                 loadAdminData(); // Fetch right away when app opens
             } else {
                 document.getElementById('authOverlay').classList.remove('hidden');
@@ -281,19 +316,29 @@
             document.getElementById('sectionProducts').classList.add('hidden');
             document.getElementById('sectionOrders').classList.add('hidden');
             
-            // Reset nav colors
+            // Reset mobile nav colors
             document.getElementById('navProducts').className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 w-20 transition";
             document.getElementById('navOrders').className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 w-20 transition relative";
+            
+            // Reset desktop nav colors
+            const deskProd = document.getElementById('navProductsDesktop');
+            const deskOrd = document.getElementById('navOrdersDesktop');
+            if(deskProd && deskOrd) {
+                deskProd.className = "flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl transition font-bold mb-2";
+                deskOrd.className = "flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl transition font-bold";
+            }
 
             if(tab === 'products') {
                 document.getElementById('sectionProducts').classList.remove('hidden');
                 document.getElementById('navProducts').classList.add('text-primary');
                 document.getElementById('navProducts').classList.remove('text-slate-400');
+                if(deskProd) deskProd.className = "flex items-center gap-3 px-4 py-3 bg-pink-50 text-primary rounded-xl transition font-bold mb-2";
                 loadAdminData();
             } else {
                 document.getElementById('sectionOrders').classList.remove('hidden');
                 document.getElementById('navOrders').classList.add('text-primary');
                 document.getElementById('navOrders').classList.remove('text-slate-400');
+                if(deskOrd) deskOrd.className = "flex items-center gap-3 px-4 py-3 bg-pink-50 text-primary rounded-xl transition font-bold";
                 loadAdminOrders();
             }
         };
@@ -306,12 +351,12 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        const MAX_WIDTH = 1200; // INCREASED FROM 500 to 1200 for HD photos
+                        const MAX_WIDTH = 1200; // HD photos
                         const scale = Math.min(1, MAX_WIDTH / img.width);
                         canvas.width = img.width * scale;
                         canvas.height = img.height * scale;
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.85)); // INCREASED QUALITY from 0.6 to 0.85
+                        resolve(canvas.toDataURL('image/jpeg', 0.85)); // Good quality
                     };
                     img.src = e.target.result;
                 };
@@ -342,7 +387,7 @@
 
         const loadAdminData = async () => {
             const list = document.getElementById('adminProductList');
-            list.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
+            list.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
             try {
                 const q = query(collection(db, "products"), orderBy('createdAt', 'desc'));
                 const snap = await getDocs(q);
@@ -350,7 +395,7 @@
                 snap.forEach(d => adminProducts.push({ id: d.id, ...d.data() }));
                 renderProducts();
             } catch (e) {
-                list.innerHTML = `<div class="text-center py-10 text-red-400">Error loading data.</div>`;
+                list.innerHTML = `<div class="col-span-full text-center py-10 text-red-400">Error loading data.</div>`;
             }
         };
 
@@ -359,7 +404,7 @@
             list.innerHTML = '';
             if(adminProducts.length === 0) {
                 list.innerHTML = `
-                    <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100 mt-4">
+                    <div class="col-span-full bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100 mt-4 max-w-md mx-auto w-full">
                         <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
                             <i class="fa-solid fa-box-open text-3xl"></i>
                         </div>
@@ -374,26 +419,25 @@
                 const stockColor = stock > 0 ? "text-green-600 bg-green-50 border-green-200" : "text-red-600 bg-red-50 border-red-200";
                 const displayImage = (p.images && p.images.length > 0) ? p.images[0] : (p.imageUrl || 'https://placehold.co/100/8B2C46/FFF');
 
-                // Mobile Card Layout
                 list.innerHTML += `
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4 relative">
-                        <div class="w-24 h-32 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4 relative transition hover:shadow-md">
+                        <div class="w-24 h-32 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-100">
                             <img src="${displayImage}" class="w-full h-full object-cover">
                         </div>
                         <div class="flex flex-col justify-between flex-grow py-1">
                             <div>
                                 <span class="text-[9px] font-bold tracking-widest uppercase text-slate-400 mb-1 block">${p.category}</span>
-                                <h3 class="font-bold text-slate-800 text-sm leading-tight line-clamp-2 mb-1">${p.name}</h3>
-                                <p class="font-bold text-primary font-serif">₹${p.price.toLocaleString('en-IN')}</p>
+                                <h3 class="font-bold text-slate-800 text-sm md:text-base leading-tight line-clamp-2 mb-1">${p.name}</h3>
+                                <p class="font-bold text-primary font-serif md:text-lg">₹${p.price.toLocaleString('en-IN')}</p>
                             </div>
                             
                             <div class="flex justify-between items-end mt-2">
                                 <span class="text-[10px] font-bold px-2 py-1 rounded-md border ${stockColor}">${stock} Left</span>
                                 <div class="flex gap-2">
-                                    <button onclick="openStockModal('${p.id}', ${stock}, '${p.name.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-200 active:bg-slate-200">
+                                    <button onclick="openStockModal('${p.id}', ${stock}, '${p.name.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-200 hover:bg-primary hover:text-white hover:border-primary transition" title="Update Stock">
                                         <i class="fa-solid fa-pen text-xs"></i>
                                     </button>
-                                    <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 active:bg-red-200">
+                                    <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-500 hover:text-white transition" title="Delete Item">
                                         <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
                                 </div>
@@ -410,14 +454,28 @@
             document.getElementById('imagePreviewContainer').classList.add('hidden');
             const modal = document.getElementById('productModal');
             modal.classList.remove('hidden');
-            // Slight delay for animation to kick in
-            setTimeout(() => modal.dataset.open = "true", 10);
+            modal.classList.add('flex');
+            
+            // Animation triggers
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                const innerModal = modal.querySelector('div.bg-slate-50');
+                innerModal.dataset.open = "true";
+                if(window.innerWidth >= 768) innerModal.classList.remove('md:translate-y-10');
+            }, 10);
         };
 
         window.closeProductModal = () => {
             const modal = document.getElementById('productModal');
-            modal.dataset.open = "false";
-            setTimeout(() => modal.classList.add('hidden'), 300); // Wait for transition
+            const innerModal = modal.querySelector('div.bg-slate-50');
+            innerModal.dataset.open = "false";
+            if(window.innerWidth >= 768) innerModal.classList.add('md:translate-y-10');
+            modal.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300); // Wait for transition
         };
 
         window.handleSaveProduct = async (e) => {
@@ -503,86 +561,147 @@
             showToast("Item deleted");
         };
 
+        // NEW: Fetch all orders and store them globally for easy filtering
         const loadAdminOrders = async () => {
             const list = document.getElementById('adminOrderList');
-            list.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
+            list.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Loading...</div>`;
             try {
                 const q = query(collection(db, "orders"), orderBy('createdAt', 'desc'));
                 const snap = await getDocs(q);
                 
-                if(snap.empty) {
-                    list.innerHTML = `
-                        <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100 mt-4">
-                            <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fa-solid fa-receipt text-3xl"></i>
-                            </div>
-                            <p class="font-bold text-slate-800">No Orders Yet</p>
-                            <p class="text-xs text-slate-500 mt-1">Check back later.</p>
-                        </div>`;
-                    return;
-                }
+                adminOrdersData = [];
+                snap.forEach(d => adminOrdersData.push({ id: d.id, ...d.data() }));
                 
-                list.innerHTML = '';
-                snap.forEach(d => {
-                    const o = d.data();
-                    const itemsText = o.items.map(i => `<div class="text-xs text-slate-600 py-0.5">• ${i.name} (x${i.qty})</div>`).join('');
-                    const date = new Date(o.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
-                    
-                    const statusColors = {
-                        'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
-                        'Dispatched': 'bg-blue-100 text-blue-800 border-blue-200',
-                        'Delivered': 'bg-green-100 text-green-800 border-green-200'
-                    };
-                    const colorClass = statusColors[o.status || 'Pending'];
-
-                    // Mobile Order Card
-                    list.innerHTML += `
-                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 relative">
-                            <!-- Header -->
-                            <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
-                                <div>
-                                    <span class="font-mono text-[10px] font-bold text-primary bg-pink-50 px-2 py-0.5 rounded border border-pink-100">#${d.id.substring(0,6)}</span>
-                                    <p class="text-[10px] text-slate-400 mt-1">${date}</p>
-                                </div>
-                                <select onchange="updateOrderStatus('${d.id}', this.value)" class="text-[10px] font-bold px-2 py-1 rounded-md border outline-none appearance-none text-center ${colorClass}">
-                                    <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                                    <option value="Dispatched" ${o.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
-                                    <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Customer Details -->
-                            <div class="mb-3">
-                                <h4 class="font-bold text-slate-800 text-sm">${o.customerName}</h4>
-                                <a href="tel:${o.customerPhone}" class="text-xs text-primary font-bold flex items-center gap-1 my-1"><i class="fa-solid fa-phone"></i> ${o.customerPhone}</a>
-                                <p class="text-xs text-slate-500 leading-tight">${o.customerAddress}</p>
-                            </div>
-                            
-                            <!-- Items -->
-                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 mb-3">
-                                ${itemsText}
-                            </div>
-                            
-                            <!-- Footer -->
-                            <div class="flex justify-between items-center pt-2">
-                                <span class="text-[10px] text-slate-400 font-bold uppercase">Cash on Delivery</span>
-                                <span class="font-bold text-slate-900 font-serif text-lg">₹${o.totalAmount.toLocaleString('en-IN')}</span>
-                            </div>
-                        </div>
-                    `;
-                });
+                // Render based on current filter selection
+                const filterStatus = document.getElementById('orderFilter').value;
+                renderAdminOrders(filterStatus);
+                
             } catch (e) {
-                list.innerHTML = `<div class="text-center text-red-500 py-4 text-sm">Error loading orders.</div>`;
+                list.innerHTML = `<div class="col-span-full text-center text-red-500 py-4 text-sm">Error loading orders.</div>`;
             }
         };
 
+        // NEW: Triggered when the dropdown filter is changed
+        window.filterAdminOrders = (status) => {
+            renderAdminOrders(status);
+        };
+
+        // NEW: Render orders specifically based on the filter
+        const renderAdminOrders = (filterStatus) => {
+            const list = document.getElementById('adminOrderList');
+            list.innerHTML = '';
+            
+            const filteredOrders = filterStatus === 'All' ? adminOrdersData : adminOrdersData.filter(o => o.status === filterStatus);
+
+            if(filteredOrders.length === 0) {
+                list.innerHTML = `
+                    <div class="col-span-full bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100 mt-4 max-w-md mx-auto w-full">
+                        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa-solid fa-receipt text-3xl"></i>
+                        </div>
+                        <p class="font-bold text-slate-800">No Orders Found</p>
+                        <p class="text-xs text-slate-500 mt-1">There are no ${filterStatus !== 'All' ? filterStatus.toLowerCase() : ''} orders to show.</p>
+                    </div>`;
+                return;
+            }
+            
+            filteredOrders.forEach(o => {
+                const itemsText = o.items.map(i => `<div class="text-xs font-medium text-slate-600 py-0.5 flex justify-between"><span>• ${i.name}</span> <span class="text-slate-400 font-bold">x${i.qty}</span></div>`).join('');
+                const date = new Date(o.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+                
+                const statusColors = {
+                    'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
+                    'Dispatched': 'bg-blue-100 text-blue-800 border-blue-200',
+                    'Delivered': 'bg-green-100 text-green-800 border-green-200',
+                    'Cancelled': 'bg-red-100 text-red-800 border-red-200'
+                };
+                const colorClass = statusColors[o.status || 'Pending'];
+
+                // Updated Mobile & Desktop Order Card
+                list.innerHTML += `
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative transition hover:shadow-md">
+                        <!-- Header -->
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
+                            <div>
+                                <span class="font-mono text-[10px] font-bold text-primary bg-pink-50 px-2 py-0.5 rounded border border-pink-100">#${o.id.substring(0,6)}</span>
+                                <p class="text-[10px] text-slate-400 mt-1">${date}</p>
+                            </div>
+                            
+                            <!-- Select Menu with new Cancelled option -->
+                            <select onchange="updateOrderStatus('${o.id}', this.value)" class="text-[10px] font-bold px-2 py-1 rounded-md border outline-none cursor-pointer hover:shadow-sm transition text-center ${colorClass}">
+                                <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''} class="bg-white text-slate-800">Pending</option>
+                                <option value="Dispatched" ${o.status === 'Dispatched' ? 'selected' : ''} class="bg-white text-slate-800">Dispatched</option>
+                                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''} class="bg-white text-slate-800">Delivered</option>
+                                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''} class="bg-white text-slate-800">Cancelled</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Customer Details -->
+                        <div class="mb-3">
+                            <h4 class="font-bold text-slate-800 text-sm md:text-base">${o.customerName}</h4>
+                            <a href="tel:${o.customerPhone}" class="text-xs text-primary font-bold flex items-center gap-1 my-1.5 hover:underline w-fit"><i class="fa-solid fa-phone"></i> ${o.customerPhone}</a>
+                            <p class="text-xs text-slate-500 leading-tight">${o.customerAddress}</p>
+                        </div>
+                        
+                        <!-- Items -->
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-3">
+                            ${itemsText}
+                        </div>
+                        
+                        <!-- Footer with NEW Delete Button -->
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase block">Total (COD)</span>
+                                <span class="font-bold text-slate-900 font-serif text-lg">₹${o.totalAmount.toLocaleString('en-IN')}</span>
+                            </div>
+                            <button onclick="deleteAdminOrder('${o.id}')" class="text-[10px] md:text-xs font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl border border-red-100 hover:bg-red-500 hover:text-white transition shadow-sm flex items-center gap-1.5" title="Permanently delete order">
+                                <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        };
+
+        // NEW: Function to permanently delete an order
+        window.deleteAdminOrder = async (orderId) => {
+            if(!confirm("Are you sure you want to permanently delete this order? This keeps your dashboard clean but cannot be undone.")) return;
+            try {
+                await deleteDoc(doc(db, "orders", orderId));
+                showToast("Order permanently deleted");
+                loadAdminOrders(); // Refresh list
+            } catch (e) {
+                alert("Failed to delete order.");
+            }
+        };
+
+        // MODIFIED: Handle marking an order as cancelled (ask to restore stock)
         window.updateOrderStatus = async (orderId, newStatus) => {
             try {
+                if (newStatus === 'Cancelled') {
+                    const wantToRestore = confirm("Do you want to automatically restore the inventory stock for this cancelled order?");
+                    if (wantToRestore) {
+                        const orderData = adminOrdersData.find(o => o.id === orderId);
+                        if(orderData && orderData.items) {
+                            for (const item of orderData.items) {
+                                const prodDoc = doc(db, "products", item.id);
+                                const prodSnap = await getDoc(prodDoc);
+                                if (prodSnap.exists()) {
+                                    const currentStock = prodSnap.data().stock || 0;
+                                    await updateDoc(prodDoc, { stock: currentStock + item.qty });
+                                }
+                            }
+                            showToast("Stock restored successfully.");
+                        }
+                    }
+                }
+                
                 await updateDoc(doc(db, "orders", orderId), { status: newStatus });
                 showToast(`Order marked ${newStatus}`);
-                loadAdminOrders();
+                loadAdminOrders(); // This will re-fetch and apply the current filter correctly
             } catch (e) {
-                alert("Update failed");
+                alert("Status update failed");
+                console.error(e);
             }
         };
     </script>
