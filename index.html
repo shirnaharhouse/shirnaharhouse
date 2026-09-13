@@ -457,22 +457,10 @@
             if (user) {
                 currentUserId = user.uid;
                 const docSnap = await getDoc(doc(db, "customers", user.uid));
-                if (docSnap.exists() && docSnap.data().name) {
-                    // THEY ARE A RETURNING CUSTOMER!
-                    // Fill their details in the background profile modal
+                if (docSnap.exists()) {
                     document.getElementById('custName').value = docSnap.data().name || '';
                     document.getElementById('custPhone').value = docSnap.data().phone || '';
                     document.getElementById('custAddress').value = docSnap.data().address || '';
-                    
-                    // Smoothly fade out the welcome screen
-                    const overlay = document.getElementById('welcomeOverlay');
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.classList.add('hidden'), 500);
-                } else {
-                    // THEY ARE A NEW CUSTOMER! 
-                    // Hide the spinner and show the registration form
-                    document.getElementById('welcomeLoader').classList.add('hidden');
-                    document.getElementById('welcomeForm').classList.remove('hidden');
                 }
             }
         });
@@ -673,43 +661,6 @@
         const profileModal = document.getElementById('profileModal');
         document.getElementById('profileBtn').addEventListener('click', () => profileModal.classList.remove('hidden'));
         window.toggleProfileModal = () => profileModal.classList.toggle('hidden');
-
-        // NEW: SAVING THE INITIAL WELCOME PROFILE
-        window.saveInitialProfile = async () => {
-            const name = document.getElementById('welcomeName').value.trim();
-            const phone = document.getElementById('welcomePhone').value.trim();
-            const address = document.getElementById('welcomeAddress').value.trim();
-
-            if(!name || !phone || !address) {
-                return showToast("Please fill in all details to enter.");
-            }
-            
-            const btn = document.getElementById('welcomeBtn');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
-            btn.disabled = true;
-
-            if (currentUserId) {
-                try {
-                    await setDoc(doc(db, "customers", currentUserId), { name, phone, address });
-                    
-                    // Sync the data to the inner profile modal just in case they open it later
-                    document.getElementById('custName').value = name;
-                    document.getElementById('custPhone').value = phone;
-                    document.getElementById('custAddress').value = address;
-                    
-                    showToast(`Welcome to Shirnahar House, ${name}!`);
-                    
-                    // Fade out the overlay and let them shop!
-                    const overlay = document.getElementById('welcomeOverlay');
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.classList.add('hidden'), 500);
-                } catch(e) {
-                    showToast("Failed to save. Check your connection.");
-                    btn.innerHTML = "Enter Boutique";
-                    btn.disabled = false;
-                }
-            }
-        };
 
         window.saveCustomerProfile = async () => {
             const name = document.getElementById('custName').value.trim();
