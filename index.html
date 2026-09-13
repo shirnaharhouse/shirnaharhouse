@@ -516,15 +516,19 @@
             // This shows the UI immediately without waiting for Firebase to connect.
             if (localStorage.getItem('shirnahar_user_setup') === 'true') {
                 // Returning user: Show storefront instantly
+                document.getElementById('customerSetupOverlay').classList.add('hidden');
+                document.getElementById('customerSetupOverlay').classList.remove('flex');
                 document.getElementById('customer-view').classList.remove('hidden');
                 document.getElementById('customer-view').classList.add('flex');
             } else {
                 // New user: Show the welcome screen instantly so they aren't staring at a blank page
                 document.getElementById('customerSetupOverlay').classList.remove('hidden');
                 document.getElementById('customerSetupOverlay').classList.add('flex');
+                document.getElementById('customer-view').classList.add('hidden');
+                document.getElementById('customer-view').classList.remove('flex');
             }
 
-            signInAnonymously(auth).catch(e => console.log("Auth error:", e));
+            // REMOVED signInAnonymously FROM HERE to prevent session resets on reload!
             fetchProducts();
             
             if (!window.location.hash) {
@@ -545,31 +549,38 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
-                const docSnap = await getDoc(doc(db, "customers", user.uid));
-                
-                if (docSnap.exists() && docSnap.data().name) {
-                    // Profile exists, save to phone memory for instant loading next time
-                    localStorage.setItem('shirnahar_user_setup', 'true');
+                try {
+                    const docSnap = await getDoc(doc(db, "customers", user.uid));
                     
-                    // Show storefront
-                    document.getElementById('customerSetupOverlay').classList.add('hidden');
-                    document.getElementById('customerSetupOverlay').classList.remove('flex');
-                    document.getElementById('customer-view').classList.remove('hidden');
-                    document.getElementById('customer-view').classList.add('flex');
-                    
-                    document.getElementById('custName').value = docSnap.data().name || '';
-                    document.getElementById('custPhone').value = docSnap.data().phone || '';
-                    document.getElementById('custAddress').value = docSnap.data().address || '';
-                } else {
-                    // No profile yet, clear local memory just in case
-                    localStorage.removeItem('shirnahar_user_setup');
-                    
-                    // Show setup screen
-                    document.getElementById('customerSetupOverlay').classList.remove('hidden');
-                    document.getElementById('customerSetupOverlay').classList.add('flex');
-                    document.getElementById('customer-view').classList.add('hidden');
-                    document.getElementById('customer-view').classList.remove('flex');
+                    if (docSnap.exists() && docSnap.data().name) {
+                        // Profile exists, save to phone memory for instant loading next time
+                        localStorage.setItem('shirnahar_user_setup', 'true');
+                        
+                        // Show storefront
+                        document.getElementById('customerSetupOverlay').classList.add('hidden');
+                        document.getElementById('customerSetupOverlay').classList.remove('flex');
+                        document.getElementById('customer-view').classList.remove('hidden');
+                        document.getElementById('customer-view').classList.add('flex');
+                        
+                        document.getElementById('custName').value = docSnap.data().name || '';
+                        document.getElementById('custPhone').value = docSnap.data().phone || '';
+                        document.getElementById('custAddress').value = docSnap.data().address || '';
+                    } else {
+                        // No profile yet, clear local memory just in case
+                        localStorage.removeItem('shirnahar_user_setup');
+                        
+                        // Show setup screen
+                        document.getElementById('customerSetupOverlay').classList.remove('hidden');
+                        document.getElementById('customerSetupOverlay').classList.add('flex');
+                        document.getElementById('customer-view').classList.add('hidden');
+                        document.getElementById('customer-view').classList.remove('flex');
+                    }
+                } catch(e) {
+                    console.error("Error fetching profile:", e);
                 }
+            } else {
+                // If NO user is found in the phone's memory, THEN sign them in anonymously
+                signInAnonymously(auth).catch(e => console.log("Auth error:", e));
             }
         });
 
