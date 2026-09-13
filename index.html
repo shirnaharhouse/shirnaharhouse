@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shirnahar House | Exclusive Sarees & Dresses</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,7 +18,7 @@
             font-family: 'Lato', sans-serif;
             background-color: var(--bg-soft-blush);
             color: #4A4A4A;
-            -webkit-tap-highlight-color: transparent; /* Removes blue tap flash on phones */
+            -webkit-tap-highlight-color: transparent;
         }
 
         h1, h2, h3, h4, .font-serif {
@@ -58,6 +58,16 @@
 
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-slide-in-right { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+        }
     </style>
 </head>
 <body class="font-sans flex flex-col min-h-screen">
@@ -175,7 +185,6 @@
                 </div>
             </div>
             
-            <!-- Products are injected here dynamically via JS -->
             <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
                 <div class="col-span-full flex justify-center py-20">
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -183,7 +192,6 @@
             </div>
         </div>
 
-        <!-- NEW PRODUCT DETAIL TAB -->
         <div id="tab-product-detail" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden animate-fade-in bg-white/50 backdrop-blur-sm rounded-3xl my-2 md:my-6">
             <button onclick="switchCustomerTab('collection')" class="text-gray-500 hover:text-primary mb-6 flex items-center gap-2 font-bold transition text-sm">
                 <i class="fa-solid fa-arrow-left"></i> Back
@@ -192,10 +200,18 @@
             <div class="flex flex-col md:flex-row gap-8 md:gap-12">
                 <!-- Product Image Gallery -->
                 <div class="md:w-1/2">
-                    <div class="relative pt-[130%] md:pt-[120%] bg-stone-50 overflow-hidden rounded-2xl shadow-sm border border-stone-100">
+                    <div class="relative pt-[130%] md:pt-[120%] bg-stone-50 overflow-hidden rounded-2xl shadow-sm border border-stone-100 group">
                         <img id="detailImg" src="" alt="Product" class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-300">
+                        
+                        <!-- Image Navigation Arrows -->
+                        <button id="prevImgBtn" onclick="changeGalleryImage(-1)" class="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white/90 text-primary w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shadow-md hidden hover:bg-white hover:scale-110 transition z-10">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button id="nextImgBtn" onclick="changeGalleryImage(1)" class="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white/90 text-primary w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shadow-md hidden hover:bg-white hover:scale-110 transition z-10">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
                     </div>
-                    <!-- Thumbnails row generated via JS -->
+                    <!-- Thumbnails row -->
                     <div id="detailThumbnails" class="flex gap-2 mt-3 overflow-x-auto pb-2 hidden scrollbar-hide"></div>
                 </div>
 
@@ -224,7 +240,6 @@
             <div class="mt-12 md:mt-24 border-t border-stone-200 pt-10 md:pt-16">
                 <div class="flex flex-col lg:flex-row gap-12 md:gap-16">
                     
-                    <!-- Left: Reviews -->
                     <div class="lg:w-2/3">
                         <h3 class="text-2xl md:text-3xl font-bold text-primary font-serif mb-6 md:mb-8 flex items-center gap-3">
                             <i class="fa-regular fa-star text-accent"></i> Customer Reviews
@@ -259,25 +274,17 @@
                             </form>
                         </div>
 
-                        <!-- Reviews List -->
-                        <div id="reviewsList" class="space-y-4 md:space-y-5">
-                            <!-- Injected via JS -->
-                        </div>
+                        <div id="reviewsList" class="space-y-4 md:space-y-5"></div>
                     </div>
 
-                    <!-- Right: Recommendations -->
                     <div class="lg:w-1/3">
                         <h3 class="text-xl md:text-2xl font-bold text-gray-900 font-serif mb-6 md:mb-8">You Might Also Like</h3>
-                        <div id="recommendationGrid" class="flex flex-col gap-4 md:gap-6">
-                            <!-- Injected via JS -->
-                        </div>
+                        <div id="recommendationGrid" class="flex flex-col gap-4 md:gap-6"></div>
                     </div>
-                    
                 </div>
             </div>
         </div>
 
-        <!-- SHIRNAHAR COMMUNITY (FUTURE SOCIAL FEATURE) -->
         <div id="tab-community" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden animate-fade-in my-10">
             <div class="max-w-3xl mx-auto text-center py-16 px-4 bg-white/60 backdrop-blur-md rounded-3xl border border-pink-100 shadow-sm relative overflow-hidden">
                 <div class="absolute -top-10 -left-10 w-40 h-40 bg-pink-100 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
@@ -288,9 +295,7 @@
                         <i class="fa-solid fa-camera-retro text-2xl md:text-3xl text-white -rotate-3"></i>
                     </div>
                     <h2 class="text-3xl md:text-5xl font-bold text-gray-900 font-serif mb-4">Shirnahar Community</h2>
-                    <span class="inline-block px-4 py-1.5 rounded-full bg-stone-900 text-white text-[10px] md:text-xs font-bold tracking-widest uppercase mb-6 shadow-sm">
-                        Coming Soon
-                    </span>
+                    <span class="inline-block px-4 py-1.5 rounded-full bg-stone-900 text-white text-[10px] md:text-xs font-bold tracking-widest uppercase mb-6 shadow-sm">Coming Soon</span>
                     <p class="text-sm md:text-lg text-gray-600 mb-8 max-w-xl mx-auto font-light leading-relaxed">
                         A dedicated space to create your profile, gain followers, and share your beautiful moments wearing Shirnahar House creations. See a look you love on someone else? Buy it directly from their post!
                     </p>
@@ -303,25 +308,20 @@
             </div>
         </div>
 
-        <!-- Footer -->
         <footer class="bg-stone-900 text-stone-400 py-8 text-center border-t border-stone-800 mt-auto">
             <p>&copy; 2026 Shirnahar House. All rights reserved.</p>
             <p class="text-xs mt-2">Serving customers proudly in Tripura.</p>
-            <!-- SECRET ADMIN LOGIN BUTTON (Changed to a single tap for mobile compatibility) -->
             <button onclick="window.location.href='dashboard.html'" class="w-10 h-10 mt-4 opacity-10 hover:opacity-100 transition"><i class="fa-solid fa-lock"></i></button>
         </footer>
 
-        <!-- Cart Drawer (Hidden by default) -->
-        <div id="cartDrawer" class="fixed inset-0 bg-black/60 z-[60] hidden flex justify-end transition-opacity">
+        <div id="cartDrawer" class="fixed inset-0 z-[60] bg-black/60 hidden flex justify-end transition-opacity">
             <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl relative animate-slide-in-right">
                 <div class="p-5 md:p-6 bg-primary text-white flex justify-between items-center">
                     <h3 class="text-xl md:text-2xl font-bold"><i class="fa-solid fa-cart-shopping mr-2"></i> Your Cart</h3>
                     <button onclick="toggleCartDrawer()" class="text-white hover:text-accent text-3xl leading-none">&times;</button>
                 </div>
                 
-                <div id="cartItemsList" class="flex-grow overflow-y-auto p-4 md:p-6 space-y-4">
-                    <!-- Cart items loaded here -->
-                </div>
+                <div id="cartItemsList" class="flex-grow overflow-y-auto p-4 md:p-6 space-y-4"></div>
                 
                 <div class="border-t p-4 md:p-6 bg-stone-50 pb-safe">
                     <div class="flex justify-between text-lg md:text-xl font-bold mb-4 md:mb-6 text-gray-900">
@@ -336,7 +336,6 @@
             </div>
         </div>
 
-        <!-- Profile / Checkout Details Modal -->
         <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex justify-center items-end md:items-center p-0 md:p-4">
             <div class="bg-white rounded-t-3xl md:rounded-2xl max-w-sm w-full p-6 md:p-8 relative shadow-2xl transition-transform animate-slide-up">
                 <button onclick="toggleProfileModal()" class="absolute top-4 right-5 text-gray-400 hover:text-black text-2xl leading-none">&times;</button>
@@ -361,7 +360,6 @@
             </div>
         </div>
 
-        <!-- Order Success Modal -->
         <div id="orderSuccessModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex justify-center items-center p-4">
             <div class="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 relative shadow-2xl text-center animate-fade-in border-t-8 border-green-500">
                 <div class="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-5 shadow-inner">
@@ -388,32 +386,10 @@
 
     </div>
 
-    <!-- Admin Placeholder -->
-    <div id="admin-view" class="hidden flex-grow flex-col min-h-screen bg-stone-100">
-        <div class="flex items-center justify-center h-screen flex-col text-center p-6">
-            <i class="fa-solid fa-person-digging text-6xl text-gray-400 mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-700">Admin Area Reserved</h2>
-            <button onclick="closeAdminMode()" class="mt-8 text-primary font-bold underline hover:text-red-900">Return to Storefront</button>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 md:top-auto md:left-auto md:bottom-5 md:right-5 md:transform-none bg-stone-900/90 backdrop-blur-sm text-white px-5 py-3 md:px-6 md:py-4 rounded-full md:rounded-xl shadow-2xl hidden z-[100] text-xs md:text-sm font-medium transition-all flex items-center gap-3">
         <i class="fa-solid fa-circle-check text-green-400 text-base md:text-xl"></i>
         <span id="toastMsg" class="whitespace-nowrap"></span>
     </div>
-
-    <style>
-        .animate-slide-in-right { animation: slideIn 0.3s ease-out forwards; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        @supports (padding-bottom: env(safe-area-inset-bottom)) {
-            .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
-        }
-    </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
@@ -433,16 +409,29 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // STATE
         let allProducts = [];
         let cart = [];
         let currentUserId = null;
         let currentDetailProductId = null;
+        let currentDetailImages = [];
+        let currentDetailImageIndex = 0;
 
-        // AUTH & LOAD
         window.addEventListener('DOMContentLoaded', () => {
             signInAnonymously(auth).catch(e => console.log("Auth error:", e));
             fetchProducts();
+            
+            // Set up initial history state for the back button to work from the start
+            history.replaceState({ tab: 'home' }, '', '#home');
+        });
+
+        // Listen for the phone's hardware back button!
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.tab) {
+                // We pass 'false' so it doesn't push another state into history
+                window.switchCustomerTab(event.state.tab, false);
+            } else {
+                window.switchCustomerTab('home', false);
+            }
         });
 
         onAuthStateChanged(auth, async (user) => {
@@ -457,7 +446,6 @@
             }
         });
 
-        // UI HELPERS
         window.showToast = (msg) => {
             document.getElementById('toastMsg').innerText = msg;
             const t = document.getElementById('toast');
@@ -465,7 +453,8 @@
             setTimeout(() => t.classList.add('hidden'), 3500);
         };
 
-        window.switchCustomerTab = (tab) => {
+        // Upgraded switch tab function to support the back button
+        window.switchCustomerTab = (tab, pushToHistory = true) => {
             document.getElementById('tab-home').classList.add('hidden');
             document.getElementById('tab-collection').classList.add('hidden');
             document.getElementById('tab-product-detail').classList.add('hidden');
@@ -485,7 +474,6 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
-            // Update mobile nav colors
             const navBtns = document.querySelectorAll('.mobile-nav-btn');
             navBtns.forEach(btn => {
                 if(btn.dataset.target === tab) {
@@ -496,6 +484,11 @@
                     btn.classList.remove('text-primary');
                 }
             });
+
+            // This drops a "breadcrumb" in the phone's memory so the back button knows where to go
+            if(pushToHistory) {
+                history.pushState({ tab: tab }, '', '#' + tab);
+            }
         };
 
         const fetchProducts = async () => {
@@ -508,7 +501,6 @@
                 });
                 window.filterProducts('All');
             } catch (e) {
-                console.error("Error fetching products:", e);
                 document.getElementById('productGrid').innerHTML = '<p class="col-span-full text-center text-red-500 py-12">Failed to load products.</p>';
             }
         };
@@ -716,18 +708,28 @@
             if(!p) return;
             currentDetailProductId = id;
 
-            // Main Image
-            const mainImg = document.getElementById('detailImg');
-            mainImg.src = (p.images && p.images.length > 0) ? p.images[0] : (p.imageUrl || 'https://placehold.co/400x500/8B2C46/FFFFFF');
+            // Load images array
+            currentDetailImages = (p.images && p.images.length > 0) ? p.images : (p.imageUrl ? [p.imageUrl] : ['https://placehold.co/400x500/8B2C46/FFFFFF']);
+            currentDetailImageIndex = 0; // Reset index to the first image
             
-            // Thumbnails Logic
+            document.getElementById('detailImg').src = currentDetailImages[0];
+            
             const thumbContainer = document.getElementById('detailThumbnails');
-            if(p.images && p.images.length > 1) {
-                thumbContainer.innerHTML = p.images.map(img => 
-                    `<img src="${img}" onclick="document.getElementById('detailImg').src='${img}'" class="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-primary transition-colors flex-shrink-0 bg-stone-100">`
+            const prevBtn = document.getElementById('prevImgBtn');
+            const nextBtn = document.getElementById('nextImgBtn');
+
+            // Show arrows and thumbnails ONLY if there is more than 1 image
+            if(currentDetailImages.length > 1) {
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+                
+                thumbContainer.innerHTML = currentDetailImages.map((img, index) => 
+                    `<img src="${img}" onclick="setGalleryImage(${index})" class="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-primary transition-colors flex-shrink-0 bg-stone-100">`
                 ).join('');
                 thumbContainer.classList.remove('hidden');
             } else {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
                 thumbContainer.classList.add('hidden');
             }
 
@@ -757,9 +759,29 @@
             const savedName = document.getElementById('custName').value;
             if(savedName) document.getElementById('reviewName').value = savedName;
 
-            window.switchCustomerTab('product-detail');
+            window.switchCustomerTab('product-detail'); // This automatically pushes state now!
             loadReviews(id);
             loadRecommendations(p);
+        };
+
+        // NEW: Function to cycle images with arrows
+        window.changeGalleryImage = (direction) => {
+            currentDetailImageIndex += direction;
+            
+            // Loop back around if they go past the end or beginning
+            if(currentDetailImageIndex >= currentDetailImages.length) {
+                currentDetailImageIndex = 0;
+            } else if (currentDetailImageIndex < 0) {
+                currentDetailImageIndex = currentDetailImages.length - 1;
+            }
+            
+            document.getElementById('detailImg').src = currentDetailImages[currentDetailImageIndex];
+        };
+
+        // Click a thumbnail to jump straight to that image
+        window.setGalleryImage = (index) => {
+            currentDetailImageIndex = index;
+            document.getElementById('detailImg').src = currentDetailImages[currentDetailImageIndex];
         };
 
         const loadReviews = async (productId) => {
@@ -862,9 +884,6 @@
                     </div>`;
             });
         };
-
-        // ADMIN TOGGLES
-        // Removing triggerAdminMode and closeAdminMode as they are no longer needed for a single-page setup.
     </script>
 </body>
 </html>
