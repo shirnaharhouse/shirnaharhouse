@@ -304,14 +304,15 @@
         </div>
 
         <!-- Footer -->
-        <footer class="bg-stone-900 text-stone-400 py-8 text-center border-t border-stone-800 mt-auto pb-24 md:pb-8">
+        <footer class="bg-stone-900 text-stone-400 py-8 text-center border-t border-stone-800 mt-auto">
             <p>&copy; 2026 Shirnahar House. All rights reserved.</p>
             <p class="text-xs mt-2">Serving customers proudly in Tripura.</p>
-            <button ondblclick="window.location.href='admin.html'" class="w-10 h-10 mt-4 opacity-10 hover:opacity-100 transition"><i class="fa-solid fa-lock"></i></button>
+            <!-- SECRET ADMIN LOGIN BUTTON (Changed to a single tap for mobile compatibility) -->
+            <button onclick="window.location.href='dashboard.html'" class="w-10 h-10 mt-4 opacity-10 hover:opacity-100 transition"><i class="fa-solid fa-lock"></i></button>
         </footer>
 
-        <!-- Cart Drawer -->
-        <div id="cartDrawer" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex justify-end transition-opacity">
+        <!-- Cart Drawer (Hidden by default) -->
+        <div id="cartDrawer" class="fixed inset-0 bg-black/60 z-[60] hidden flex justify-end transition-opacity">
             <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl relative animate-slide-in-right">
                 <div class="p-5 md:p-6 bg-primary text-white flex justify-between items-center">
                     <h3 class="text-xl md:text-2xl font-bold"><i class="fa-solid fa-cart-shopping mr-2"></i> Your Cart</h3>
