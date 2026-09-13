@@ -512,6 +512,18 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
+            // NEW: Instant Load Magic using Local Storage!
+            // This shows the UI immediately without waiting for Firebase to connect.
+            if (localStorage.getItem('shirnahar_user_setup') === 'true') {
+                // Returning user: Show storefront instantly
+                document.getElementById('customer-view').classList.remove('hidden');
+                document.getElementById('customer-view').classList.add('flex');
+            } else {
+                // New user: Show the welcome screen instantly so they aren't staring at a blank page
+                document.getElementById('customerSetupOverlay').classList.remove('hidden');
+                document.getElementById('customerSetupOverlay').classList.add('flex');
+            }
+
             signInAnonymously(auth).catch(e => console.log("Auth error:", e));
             fetchProducts();
             
@@ -536,7 +548,10 @@
                 const docSnap = await getDoc(doc(db, "customers", user.uid));
                 
                 if (docSnap.exists() && docSnap.data().name) {
-                    // Profile exists, show storefront
+                    // Profile exists, save to phone memory for instant loading next time
+                    localStorage.setItem('shirnahar_user_setup', 'true');
+                    
+                    // Show storefront
                     document.getElementById('customerSetupOverlay').classList.add('hidden');
                     document.getElementById('customerSetupOverlay').classList.remove('flex');
                     document.getElementById('customer-view').classList.remove('hidden');
@@ -546,7 +561,10 @@
                     document.getElementById('custPhone').value = docSnap.data().phone || '';
                     document.getElementById('custAddress').value = docSnap.data().address || '';
                 } else {
-                    // No profile yet, show setup screen
+                    // No profile yet, clear local memory just in case
+                    localStorage.removeItem('shirnahar_user_setup');
+                    
+                    // Show setup screen
                     document.getElementById('customerSetupOverlay').classList.remove('hidden');
                     document.getElementById('customerSetupOverlay').classList.add('flex');
                     document.getElementById('customer-view').classList.add('hidden');
@@ -568,6 +586,9 @@
 
             try {
                 await setDoc(doc(db, "customers", currentUserId), { name, phone, address });
+                
+                // NEW: Save to phone memory for instant loading next time they open the website
+                localStorage.setItem('shirnahar_user_setup', 'true');
                 
                 // Populate the hidden profile modal for future edits
                 document.getElementById('custName').value = name;
@@ -865,6 +886,7 @@
             if(!name || !phone || !address) return showToast("Please fill in all details.");
             if (currentUserId) {
                 await setDoc(doc(db, "customers", currentUserId), { name, phone, address });
+                localStorage.setItem('shirnahar_user_setup', 'true'); // Keep memory in sync
                 showToast("Details saved!");
                 toggleProfileModal();
             }
