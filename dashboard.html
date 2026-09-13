@@ -496,7 +496,20 @@
                     imagesArray = ["https://placehold.co/400x500/8B2C46/FFFFFF?text=No+Photo"];
                 }
 
-                await addDoc(collection(db, "products"), {
+                const docRef = await addDoc(collection(db, "products"), {
+                    name: document.getElementById('prodName').value.trim(), 
+                    price: parseFloat(document.getElementById('prodPrice').value), 
+                    stock: parseInt(document.getElementById('prodStock').value), 
+                    category: document.getElementById('prodCategory').value, 
+                    description: document.getElementById('prodDesc').value.trim(), 
+                    images: imagesArray,
+                    imageUrl: imagesArray[0],
+                    createdAt: Date.now()
+                });
+
+                // Optimistically add to local UI instantly without reloading everything
+                adminProducts.unshift({
+                    id: docRef.id,
                     name: document.getElementById('prodName').value.trim(), 
                     price: parseFloat(document.getElementById('prodPrice').value), 
                     stock: parseInt(document.getElementById('prodStock').value), 
@@ -508,7 +521,7 @@
                 });
 
                 closeProductModal();
-                loadAdminData();
+                renderProducts(); // Re-render instantly
                 showToast("Product saved!");
             } catch (err) {
                 alert("Error saving. Try again.");
@@ -542,12 +555,25 @@
             const btn = document.getElementById('confirmStockBtn');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
             
+            const pIndex = adminProducts.findIndex(p => p.id === id);
+            const oldStock = pIndex !== -1 ? adminProducts[pIndex].stock : 0;
+            
             try {
-                await updateDoc(doc(db, "products", id), { stock: newStock });
+                // Instantly update UI locally
+                if(pIndex !== -1) {
+                    adminProducts[pIndex].stock = newStock;
+                    renderProducts();
+                }
                 closeStockModal();
-                loadAdminData();
+                
+                await updateDoc(doc(db, "products", id), { stock: newStock });
                 showToast("Stock updated");
             } catch(e) {
+                // Revert if database fails
+                if(pIndex !== -1) {
+                    adminProducts[pIndex].stock = oldStock;
+                    renderProducts();
+                }
                 alert("Failed to update.");
             } finally {
                 btn.innerHTML = `Confirm Update`;
@@ -556,9 +582,21 @@
 
         window.deleteProduct = async (id) => {
             if(!confirm("Delete this dress forever?")) return;
-            await deleteDoc(doc(db, "products", id));
-            loadAdminData();
-            showToast("Item deleted");
+            
+            // Instantly remove from UI
+            const originalData = [...adminProducts];
+            adminProducts = adminProducts.filter(p => p.id !== id);
+            renderProducts();
+
+            try {
+                await deleteDoc(doc(db, "products", id));
+                showToast("Item deleted");
+            } catch (e) {
+                // Revert if database fails
+                adminProducts = originalData;
+                renderProducts();
+                alert("Failed to delete item.");
+            }
         };
 
         // NEW: Fetch all orders and store them globally for easy filtering
@@ -666,22 +704,35 @@
         // NEW: Function to permanently delete an order
         window.deleteAdminOrder = async (orderId) => {
             if(!confirm("Are you sure you want to permanently delete this order? This keeps your dashboard clean but cannot be undone.")) return;
+            
+            // Instantly remove from UI
+            const filterStatus = document.getElementById('orderFilter').value;
+            const originalData = [...adminOrdersData];
+            adminOrdersData = adminOrdersData.filter(o => o.id !== orderId);
+            renderAdminOrders(filterStatus);
+
             try {
                 await deleteDoc(doc(db, "orders", orderId));
                 showToast("Order permanently deleted");
-                loadAdminOrders(); // Refresh list
             } catch (e) {
+                // Revert if database fails
+                adminOrdersData = originalData;
+                renderAdminOrders(filterStatus);
                 alert("Failed to delete order.");
             }
         };
 
         // MODIFIED: Handle marking an order as cancelled (ask to restore stock)
         window.updateOrderStatus = async (orderId, newStatus) => {
+            const orderIndex = adminOrdersData.findIndex(o => o.id === orderId);
+            if(orderIndex === -1) return;
+            const originalStatus = adminOrdersData[orderIndex].status;
+
             try {
                 if (newStatus === 'Cancelled') {
                     const wantToRestore = confirm("Do you want to automatically restore the inventory stock for this cancelled order?");
                     if (wantToRestore) {
-                        const orderData = adminOrdersData.find(o => o.id === orderId);
+                        const orderData = adminOrdersData[orderIndex];
                         if(orderData && orderData.items) {
                             for (const item of orderData.items) {
                                 const prodDoc = doc(db, "products", item.id);
@@ -696,10 +747,18 @@
                     }
                 }
                 
+                // Instantly update UI locally
+                adminOrdersData[orderIndex].status = newStatus;
+                const filterStatus = document.getElementById('orderFilter').value;
+                renderAdminOrders(filterStatus);
+
                 await updateDoc(doc(db, "orders", orderId), { status: newStatus });
                 showToast(`Order marked ${newStatus}`);
-                loadAdminOrders(); // This will re-fetch and apply the current filter correctly
             } catch (e) {
+                // Revert if database fails
+                adminOrdersData[orderIndex].status = originalStatus;
+                const filterStatus = document.getElementById('orderFilter').value;
+                renderAdminOrders(filterStatus);
                 alert("Status update failed");
                 console.error(e);
             }
