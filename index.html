@@ -71,7 +71,38 @@
     </style>
 </head>
 <body class="font-sans flex flex-col min-h-screen">
-    <div id="customer-view" class="flex-grow flex flex-col pb-16 md:pb-0">
+    
+    <!-- NEW: Customer Onboarding / Account Creation Overlay -->
+    <div id="customerSetupOverlay" class="fixed inset-0 z-[100] flex-col justify-center items-center p-6 bg-[var(--bg-soft-blush)] hidden">
+        <div class="w-full max-w-sm text-center bg-white p-8 rounded-3xl shadow-xl border border-pink-100">
+            <div class="w-16 h-16 bg-pink-50 text-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <i class="fa-solid fa-seedling text-3xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 font-serif mb-2">Welcome</h2>
+            <p class="text-gray-500 mb-6 text-sm">Create your profile to start shopping.</p>
+            
+            <form id="setupProfileForm" onsubmit="handleCreateAccount(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 tracking-wider">Full Name</label>
+                    <input type="text" id="setupName" required class="w-full border border-gray-200 rounded-2xl p-3.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-slate-50" placeholder="e.g. Aditi Sharma">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 tracking-wider">Phone Number</label>
+                    <input type="tel" id="setupPhone" required class="w-full border border-gray-200 rounded-2xl p-3.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-slate-50" placeholder="+91">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 tracking-wider">Tripura Address</label>
+                    <textarea id="setupAddress" required rows="2" class="w-full border border-gray-200 rounded-2xl p-3.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-slate-50 resize-none" placeholder="House No, Street, City, Pincode"></textarea>
+                </div>
+                <button type="submit" id="createAccountBtn" class="w-full bg-primary text-white py-4 rounded-2xl font-bold hover:bg-red-900 transition shadow-lg shadow-pink-900/20 mt-2 text-lg">
+                    Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODIFIED: Added 'hidden' to hide the store until they login/create account -->
+    <div id="customer-view" class="flex-grow flex flex-col pb-16 md:pb-0 hidden">
         
         <!-- Desktop Top Navigation -->
         <nav class="bg-white text-gray-800 p-4 sticky top-0 z-40 shadow-sm border-b border-gray-100">
@@ -141,7 +172,6 @@
                         <button onclick="switchCustomerTab('collection')" class="btn-primary px-8 py-3.5 rounded-xl font-bold text-lg w-full sm:w-auto min-w-[200px] shadow-lg shadow-pink-900/20">Explore Collection</button>
                     </div>
                 </div>
-                <!-- Decorative elements -->
                 <div class="absolute top-10 left-10 w-32 h-32 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
                 <div class="absolute top-10 right-10 w-32 h-32 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
                 <div class="absolute -bottom-8 left-20 w-48 h-48 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
@@ -202,12 +232,9 @@
             </button>
             
             <div class="flex flex-col md:flex-row gap-8 md:gap-12">
-                <!-- Product Image Gallery -->
                 <div class="md:w-1/2">
                     <div class="relative pt-[130%] md:pt-[120%] bg-stone-50 overflow-hidden rounded-2xl shadow-sm border border-stone-100 group">
                         <img id="detailImg" src="" alt="Product" class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-300">
-                        
-                        <!-- Image Navigation Arrows -->
                         <button id="prevImgBtn" onclick="changeGalleryImage(-1)" class="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white/90 text-primary w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shadow-md hidden hover:bg-white hover:scale-110 transition z-10">
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
@@ -215,11 +242,9 @@
                             <i class="fa-solid fa-chevron-right"></i>
                         </button>
                     </div>
-                    <!-- Thumbnails row -->
                     <div id="detailThumbnails" class="flex gap-2 mt-3 overflow-x-auto pb-2 hidden scrollbar-hide"></div>
                 </div>
 
-                <!-- Product Information -->
                 <div class="md:w-1/2 flex flex-col justify-center">
                     <span id="detailCategory" class="text-[10px] md:text-xs font-bold text-accent uppercase tracking-widest mb-3 border border-accent/30 w-fit px-3 py-1 rounded-full bg-yellow-50"></span>
                     <h2 id="detailTitle" class="text-3xl md:text-5xl font-bold text-gray-900 font-serif mb-3 md:mb-4 leading-tight"></h2>
@@ -231,7 +256,6 @@
                     <h4 class="font-bold text-gray-900 mb-2 font-serif text-base md:text-lg">Product Details</h4>
                     <p id="detailDesc" class="text-gray-600 font-light leading-relaxed mb-6 md:mb-10 whitespace-pre-wrap text-sm md:text-base"></p>
                     
-                    <!-- Standard inline button (No longer sticky/floating) -->
                     <div class="mt-2 w-full">
                         <button id="detailAddToCartBtn" class="w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-3">
                             <i class="fa-solid fa-bag-shopping text-xl"></i> <span>Add to Bag</span>
@@ -243,7 +267,6 @@
             <!-- Reviews & Recommendations Section -->
             <div class="mt-12 md:mt-24 border-t border-stone-200 pt-10 md:pt-16">
                 <div class="flex flex-col lg:flex-row gap-12 md:gap-16">
-                    
                     <div class="lg:w-2/3">
                         <h3 class="text-2xl md:text-3xl font-bold text-primary font-serif mb-6 md:mb-8 flex items-center gap-3">
                             <i class="fa-regular fa-star text-accent"></i> Customer Reviews
@@ -277,7 +300,6 @@
                                 </div>
                             </form>
                         </div>
-
                         <div id="reviewsList" class="space-y-4 md:space-y-5"></div>
                     </div>
 
@@ -316,8 +338,6 @@
         <div id="tab-orders" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden animate-fade-in my-6">
             <div class="max-w-2xl mx-auto">
                 <h2 class="text-3xl md:text-4xl font-bold text-primary font-serif mb-6 text-center">My Orders</h2>
-                
-                <!-- Dynamic Orders List -->
                 <div id="customerOrdersList" class="space-y-4 md:space-y-6">
                     <!-- Orders will be injected here via JavaScript -->
                 </div>
@@ -329,7 +349,7 @@
             <p class="text-xs mt-2">Serving customers proudly in Tripura.</p>
             <button onclick="window.location.href='dashboard.html'" class="w-10 h-10 mt-4 opacity-10 hover:opacity-100 transition"><i class="fa-solid fa-lock"></i></button>
         </footer>
-
+        
         <div id="cartDrawer" class="fixed inset-0 z-[60] bg-black/60 hidden flex justify-end transition-opacity">
             <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl relative animate-slide-in-right">
                 <div class="p-5 md:p-6 bg-primary text-white flex justify-between items-center">
@@ -407,10 +427,25 @@
         <span id="toastMsg" class="whitespace-nowrap"></span>
     </div>
 
+    <!-- NEW: Custom Confirm/Alert Modal for Customer Storefront -->
+    <div id="customConfirmModal" class="fixed inset-0 z-[110] hidden bg-black/60 flex-col justify-center items-center p-6 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="w-16 h-16 bg-pink-50 text-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-pink-100">
+                <i id="ccIcon" class="fa-solid fa-bell text-3xl"></i>
+            </div>
+            <h3 id="ccTitle" class="text-xl font-bold text-gray-900 font-serif text-center mb-2"></h3>
+            <p id="ccMessage" class="text-sm text-gray-500 text-center mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button id="ccCancelBtn" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition">Cancel</button>
+                <button id="ccConfirmBtn" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-red-900 transition shadow-md">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, getDoc, setDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, doc, updateDoc, getDoc, setDoc, query, orderBy, where, limit } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
@@ -423,7 +458,11 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        
+        // Enabling Offline caching for extremely fast loading
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+        });
 
         let allProducts = [];
         let cart = [];
@@ -431,12 +470,51 @@
         let currentDetailProductId = null;
         let currentDetailImages = [];
         let currentDetailImageIndex = 0;
+        let customerOrdersData = []; // NEW: Keep track of orders locally for fast UI updates
+
+        // NEW: Custom Confirm Dialog Logic (Replaces alert() and confirm())
+        window.customConfirm = (title, message, confirmTxt = "Yes", cancelTxt = "Cancel", isAlert = false, iconClass = "fa-bell") => {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customConfirmModal');
+                const modalInner = modal.querySelector('div.bg-white');
+                
+                document.getElementById('ccTitle').innerText = title;
+                document.getElementById('ccMessage').innerText = message;
+                document.getElementById('ccConfirmBtn').innerText = confirmTxt;
+                document.getElementById('ccCancelBtn').innerText = cancelTxt;
+                document.getElementById('ccIcon').className = `fa-solid ${iconClass} text-3xl`;
+
+                if(isAlert) document.getElementById('ccCancelBtn').classList.add('hidden');
+                else document.getElementById('ccCancelBtn').classList.remove('hidden');
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modalInner.classList.remove('scale-95');
+                }, 10);
+
+                const cleanup = () => {
+                    modal.classList.add('opacity-0');
+                    modalInner.classList.add('scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.getElementById('ccConfirmBtn').onclick = null;
+                        document.getElementById('ccCancelBtn').onclick = null;
+                    }, 300);
+                };
+
+                document.getElementById('ccConfirmBtn').onclick = () => { cleanup(); resolve(true); };
+                document.getElementById('ccCancelBtn').onclick = () => { cleanup(); resolve(false); };
+            });
+        };
 
         window.addEventListener('DOMContentLoaded', () => {
             signInAnonymously(auth).catch(e => console.log("Auth error:", e));
             fetchProducts();
             
-            // NEW ROBUST HASH ROUTING FOR MOBILE BACK BUTTONS
             if (!window.location.hash) {
                 window.location.replace('#home');
             } else {
@@ -444,26 +522,71 @@
             }
         });
 
-        // Listen for the phone's hardware back button!
         window.addEventListener('hashchange', handleHashChange);
 
         function handleHashChange() {
             const tab = window.location.hash.replace('#', '') || 'home';
-            // We pass 'false' so it doesn't create an infinite loop of history
             window.switchCustomerTab(tab, false);
         }
 
+        // Logic to enforce Account Creation before they can see the store
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
                 const docSnap = await getDoc(doc(db, "customers", user.uid));
-                if (docSnap.exists()) {
+                
+                if (docSnap.exists() && docSnap.data().name) {
+                    // Profile exists, show storefront
+                    document.getElementById('customerSetupOverlay').classList.add('hidden');
+                    document.getElementById('customerSetupOverlay').classList.remove('flex');
+                    document.getElementById('customer-view').classList.remove('hidden');
+                    document.getElementById('customer-view').classList.add('flex');
+                    
                     document.getElementById('custName').value = docSnap.data().name || '';
                     document.getElementById('custPhone').value = docSnap.data().phone || '';
                     document.getElementById('custAddress').value = docSnap.data().address || '';
+                } else {
+                    // No profile yet, show setup screen
+                    document.getElementById('customerSetupOverlay').classList.remove('hidden');
+                    document.getElementById('customerSetupOverlay').classList.add('flex');
+                    document.getElementById('customer-view').classList.add('hidden');
+                    document.getElementById('customer-view').classList.remove('flex');
                 }
             }
         });
+
+        // Function to handle the initial account creation
+        window.handleCreateAccount = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('createAccountBtn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creating...`;
+            btn.disabled = true;
+
+            const name = document.getElementById('setupName').value.trim();
+            const phone = document.getElementById('setupPhone').value.trim();
+            const address = document.getElementById('setupAddress').value.trim();
+
+            try {
+                await setDoc(doc(db, "customers", currentUserId), { name, phone, address });
+                
+                // Populate the hidden profile modal for future edits
+                document.getElementById('custName').value = name;
+                document.getElementById('custPhone').value = phone;
+                document.getElementById('custAddress').value = address;
+
+                // Hide overlay and show app
+                document.getElementById('customerSetupOverlay').classList.add('hidden');
+                document.getElementById('customerSetupOverlay').classList.remove('flex');
+                document.getElementById('customer-view').classList.remove('hidden');
+                document.getElementById('customer-view').classList.add('flex');
+                
+                showToast("Welcome to Shirnahar House!");
+            } catch(err) {
+                showToast("Error creating account.");
+                btn.innerHTML = "Create Account";
+                btn.disabled = false;
+            }
+        };
 
         window.showToast = (msg) => {
             document.getElementById('toastMsg').innerText = msg;
@@ -472,7 +595,6 @@
             setTimeout(() => t.classList.add('hidden'), 3500);
         };
 
-        // Upgraded switch tab function to support the back button
         window.switchCustomerTab = (tab, pushToHistory = true) => {
             document.getElementById('tab-home').classList.add('hidden');
             document.getElementById('tab-collection').classList.add('hidden');
@@ -510,7 +632,6 @@
                 }
             });
 
-            // This safely changes the URL hash so the phone records it in history
             if(pushToHistory) {
                 window.location.hash = tab;
             }
@@ -518,7 +639,8 @@
 
         const fetchProducts = async () => {
             try {
-                const q = query(collection(db, "products"), orderBy('createdAt', 'desc'));
+                // ADDED LIMIT for performance
+                const q = query(collection(db, "products"), orderBy('createdAt', 'desc'), limit(100));
                 const querySnapshot = await getDocs(q);
                 allProducts = [];
                 querySnapshot.forEach((docSnap) => {
@@ -584,6 +706,80 @@
                     </div>
                 `;
             });
+        };
+
+        window.openProductDetail = (id) => {
+            const p = allProducts.find(x => x.id === id);
+            if(!p) return;
+            currentDetailProductId = id;
+
+            currentDetailImages = (p.images && p.images.length > 0) ? p.images : (p.imageUrl ? [p.imageUrl] : ['https://placehold.co/400x500/8B2C46/FFFFFF']);
+            currentDetailImageIndex = 0;
+            
+            document.getElementById('detailImg').src = currentDetailImages[0];
+            
+            const thumbContainer = document.getElementById('detailThumbnails');
+            const prevBtn = document.getElementById('prevImgBtn');
+            const nextBtn = document.getElementById('nextImgBtn');
+
+            if(currentDetailImages.length > 1) {
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+                
+                thumbContainer.innerHTML = currentDetailImages.map((img, index) => 
+                    `<img src="${img}" onclick="setGalleryImage(${index})" class="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-primary transition-colors flex-shrink-0 bg-stone-100">`
+                ).join('');
+                thumbContainer.classList.remove('hidden');
+            } else {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+                thumbContainer.classList.add('hidden');
+            }
+
+            document.getElementById('detailCategory').innerText = p.category;
+            document.getElementById('detailTitle').innerText = p.name;
+            document.getElementById('detailPrice').innerText = `₹${p.price.toLocaleString('en-IN')}`;
+            document.getElementById('detailDesc').innerText = p.description || 'No description provided.';
+            
+            const stock = p.stock !== undefined ? p.stock : 0;
+            document.getElementById('detailStockBadge').innerHTML = stock > 0 ? 
+                `<span class="px-3 py-1 bg-green-100 text-green-800 text-[10px] md:text-xs font-bold rounded-full shadow-sm">${stock} in stock</span>` : 
+                `<span class="px-3 py-1 bg-red-100 text-red-800 text-[10px] md:text-xs font-bold rounded-full shadow-sm">Out of Stock</span>`;
+
+            const btn = document.getElementById('detailAddToCartBtn');
+            if(stock > 0) {
+                btn.disabled = false;
+                btn.className = "w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-3";
+                btn.innerHTML = `<i class="fa-solid fa-bag-shopping text-xl"></i> <span>Add to Bag</span>`;
+                btn.onclick = () => window.addToCart(p.id);
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full bg-stone-200 text-gray-500 py-3 md:py-4 rounded-xl font-bold text-lg cursor-not-allowed flex justify-center items-center gap-3 shadow-inner border border-stone-300";
+                btn.innerHTML = `Out of Stock`;
+                btn.onclick = null;
+            }
+
+            const savedName = document.getElementById('custName').value;
+            if(savedName) document.getElementById('reviewName').value = savedName;
+
+            window.switchCustomerTab('product-detail');
+            loadReviews(id);
+            loadRecommendations(p);
+        };
+
+        window.changeGalleryImage = (direction) => {
+            currentDetailImageIndex += direction;
+            if(currentDetailImageIndex >= currentDetailImages.length) {
+                currentDetailImageIndex = 0;
+            } else if (currentDetailImageIndex < 0) {
+                currentDetailImageIndex = currentDetailImages.length - 1;
+            }
+            document.getElementById('detailImg').src = currentDetailImages[currentDetailImageIndex];
+        };
+
+        window.setGalleryImage = (index) => {
+            currentDetailImageIndex = index;
+            document.getElementById('detailImg').src = currentDetailImages[currentDetailImageIndex];
         };
 
         window.addToCart = (id) => {
@@ -728,87 +924,6 @@
             }
         };
 
-        window.openProductDetail = (id) => {
-            const p = allProducts.find(x => x.id === id);
-            if(!p) return;
-            currentDetailProductId = id;
-
-            // Load images array
-            currentDetailImages = (p.images && p.images.length > 0) ? p.images : (p.imageUrl ? [p.imageUrl] : ['https://placehold.co/400x500/8B2C46/FFFFFF']);
-            currentDetailImageIndex = 0; // Reset index to the first image
-            
-            document.getElementById('detailImg').src = currentDetailImages[0];
-            
-            const thumbContainer = document.getElementById('detailThumbnails');
-            const prevBtn = document.getElementById('prevImgBtn');
-            const nextBtn = document.getElementById('nextImgBtn');
-
-            // Show arrows and thumbnails ONLY if there is more than 1 image
-            if(currentDetailImages.length > 1) {
-                prevBtn.classList.remove('hidden');
-                nextBtn.classList.remove('hidden');
-                
-                thumbContainer.innerHTML = currentDetailImages.map((img, index) => 
-                    `<img src="${img}" onclick="setGalleryImage(${index})" class="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-primary transition-colors flex-shrink-0 bg-stone-100">`
-                ).join('');
-                thumbContainer.classList.remove('hidden');
-            } else {
-                prevBtn.classList.add('hidden');
-                nextBtn.classList.add('hidden');
-                thumbContainer.classList.add('hidden');
-            }
-
-            document.getElementById('detailCategory').innerText = p.category;
-            document.getElementById('detailTitle').innerText = p.name;
-            document.getElementById('detailPrice').innerText = `₹${p.price.toLocaleString('en-IN')}`;
-            document.getElementById('detailDesc').innerText = p.description || 'No description provided.';
-            
-            const stock = p.stock !== undefined ? p.stock : 0;
-            document.getElementById('detailStockBadge').innerHTML = stock > 0 ? 
-                `<span class="px-3 py-1 bg-green-100 text-green-800 text-[10px] md:text-xs font-bold rounded-full shadow-sm">${stock} in stock</span>` : 
-                `<span class="px-3 py-1 bg-red-100 text-red-800 text-[10px] md:text-xs font-bold rounded-full shadow-sm">Out of Stock</span>`;
-
-            const btn = document.getElementById('detailAddToCartBtn');
-            if(stock > 0) {
-                btn.disabled = false;
-                btn.className = "w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition shadow-lg flex justify-center items-center gap-3";
-                btn.innerHTML = `<i class="fa-solid fa-bag-shopping text-xl"></i> <span>Add to Bag</span>`;
-                btn.onclick = () => window.addToCart(p.id);
-            } else {
-                btn.disabled = true;
-                btn.className = "w-full bg-stone-200 text-gray-500 py-3 md:py-4 rounded-xl font-bold text-lg cursor-not-allowed flex justify-center items-center gap-3 shadow-inner border border-stone-300";
-                btn.innerHTML = `Out of Stock`;
-                btn.onclick = null;
-            }
-
-            const savedName = document.getElementById('custName').value;
-            if(savedName) document.getElementById('reviewName').value = savedName;
-
-            window.switchCustomerTab('product-detail'); // This automatically pushes state now!
-            loadReviews(id);
-            loadRecommendations(p);
-        };
-
-        // NEW: Function to cycle images with arrows
-        window.changeGalleryImage = (direction) => {
-            currentDetailImageIndex += direction;
-            
-            // Loop back around if they go past the end or beginning
-            if(currentDetailImageIndex >= currentDetailImages.length) {
-                currentDetailImageIndex = 0;
-            } else if (currentDetailImageIndex < 0) {
-                currentDetailImageIndex = currentDetailImages.length - 1;
-            }
-            
-            document.getElementById('detailImg').src = currentDetailImages[currentDetailImageIndex];
-        };
-
-        // Click a thumbnail to jump straight to that image
-        window.setGalleryImage = (index) => {
-            currentDetailImageIndex = index;
-            document.getElementById('detailImg').src = currentDetailImages[currentDetailImageIndex];
-        };
-
         const loadReviews = async (productId) => {
             const list = document.getElementById('reviewsList');
             list.innerHTML = `<div class="text-center text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br><span class="text-xs">Loading...</span></div>`;
@@ -910,7 +1025,7 @@
             });
         };
 
-        // NEW: LOAD CUSTOMER ORDERS
+        // NEW: LOAD CUSTOMER ORDERS (Optimized for instant rendering)
         window.loadCustomerOrders = async () => {
             const list = document.getElementById('customerOrdersList');
             if(!currentUserId) {
@@ -921,128 +1036,145 @@
             list.innerHTML = `<div class="text-center py-12"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl mb-3"></i><p class="text-sm text-gray-500">Loading your orders...</p></div>`;
 
             try {
-                // Fetch orders for this specific customer
+                // FIX: Removed orderBy() from the query to prevent Firebase Index errors.
+                // We will just filter by the customer ID, and sort it instantly in JavaScript below!
                 const q = query(collection(db, "orders"), where("customerId", "==", currentUserId));
                 const snap = await getDocs(q);
-                let orders = [];
-                snap.forEach(d => orders.push({id: d.id, ...d.data()}));
                 
-                // Sort newest first
-                orders.sort((a,b) => b.createdAt - a.createdAt);
-
-                if(orders.length === 0) {
-                    list.innerHTML = `
-                        <div class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm border border-stone-100">
-                            <i class="fa-solid fa-box-open text-5xl text-stone-300 mb-4"></i>
-                            <p class="font-bold text-gray-800 text-lg mb-1">No orders yet</p>
-                            <p class="text-gray-500 text-sm mb-6">Looks like you haven't made a purchase yet.</p>
-                            <button onclick="switchCustomerTab('collection')" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow hover:bg-red-900 transition">Start Shopping</button>
-                        </div>`;
-                    return;
-                }
-
-                list.innerHTML = '';
-                orders.forEach(o => {
-                    const date = new Date(o.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-                    
-                    // 24 HOUR CANCELLATION RULE CALCULATION
-                    const timeDiffMillis = Date.now() - o.createdAt;
-                    const hours24InMillis = 24 * 60 * 60 * 1000;
-                    const canCancel = o.status === 'Pending' && timeDiffMillis <= hours24InMillis;
-
-                    const statusColors = {
-                        'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
-                        'Dispatched': 'bg-blue-100 text-blue-800 border-blue-200',
-                        'Delivered': 'bg-green-100 text-green-800 border-green-200',
-                        'Cancelled': 'bg-red-100 text-red-800 border-red-200'
-                    };
-                    const badgeClass = statusColors[o.status] || 'bg-gray-100 text-gray-800';
-
-                    let itemsHtml = o.items.map(i => `
-                        <div class="flex gap-3 mt-3 items-center bg-stone-50 p-2 rounded-xl border border-stone-100">
-                            <img src="${i.img || 'https://placehold.co/100/8B2C46/FFFFFF'}" class="w-12 h-16 object-cover rounded-lg shadow-sm border border-stone-200">
-                            <div class="flex-grow">
-                                <p class="font-bold text-sm text-gray-800 line-clamp-1">${i.name}</p>
-                                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Qty: ${i.qty}</p>
-                            </div>
-                            <p class="font-bold text-primary font-serif">₹${(i.price * i.qty).toLocaleString('en-IN')}</p>
-                        </div>
-                    `).join('');
-
-                    let cancelBtn = canCancel ? 
-                        `<button onclick='cancelCustomerOrder("${o.id}")' class="w-full md:w-auto px-5 py-2.5 border border-red-500 text-red-500 bg-red-50 rounded-xl font-bold text-sm hover:bg-red-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-xmark mr-1"></i> Cancel Order</button>` : '';
-
-                    let statusNote = canCancel ? `<p class="text-[10px] text-red-400 mt-2 text-center md:text-right">*Can be cancelled within 24hrs of ordering</p>` : '';
-
-                    list.innerHTML += `
-                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-stone-100 relative">
-                            <div class="flex justify-between items-start border-b border-stone-100 pb-3 mb-3">
-                                <div>
-                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Order Placed</p>
-                                    <p class="font-bold text-gray-800 text-sm">${date}</p>
-                                </div>
-                                <span class="px-3 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider border shadow-sm ${badgeClass}">${o.status}</span>
-                            </div>
-                            
-                            <div class="mb-4">
-                                ${itemsHtml}
-                            </div>
-                            
-                            <div class="border-t border-stone-100 pt-4 flex flex-col md:flex-row justify-between items-center gap-3">
-                                <div class="text-center md:text-left">
-                                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">Total (COD)</p>
-                                    <p class="text-xl text-primary font-serif font-bold">₹${o.totalAmount.toLocaleString('en-IN')}</p>
-                                </div>
-                                <div>
-                                    ${cancelBtn}
-                                    ${statusNote}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
+                customerOrdersData = [];
+                snap.forEach(d => customerOrdersData.push({id: d.id, ...d.data()}));
+                
+                // Sort the orders locally (Newest first)
+                customerOrdersData.sort((a, b) => b.createdAt - a.createdAt);
+                
+                renderCustomerOrders();
             } catch(e) {
                 console.error(e);
                 list.innerHTML = `<p class="text-center text-red-500 py-10 text-sm">Failed to load orders.</p>`;
             }
         };
 
-        // NEW: CANCEL CUSTOMER ORDER
+        window.renderCustomerOrders = () => {
+            const list = document.getElementById('customerOrdersList');
+            if(customerOrdersData.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm border border-stone-100">
+                        <i class="fa-solid fa-box-open text-5xl text-stone-300 mb-4"></i>
+                        <p class="font-bold text-gray-800 text-lg mb-1">No orders yet</p>
+                        <p class="text-gray-500 text-sm mb-6">Looks like you haven't made a purchase yet.</p>
+                        <button onclick="switchCustomerTab('collection')" class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow hover:bg-red-900 transition">Start Shopping</button>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            customerOrdersData.forEach(o => {
+                const date = new Date(o.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+                
+                // 24 HOUR CANCELLATION RULE CALCULATION
+                const timeDiffMillis = Date.now() - o.createdAt;
+                const hours24InMillis = 24 * 60 * 60 * 1000;
+                const canCancel = o.status === 'Pending' && timeDiffMillis <= hours24InMillis;
+
+                const statusColors = {
+                    'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
+                    'Dispatched': 'bg-blue-100 text-blue-800 border-blue-200',
+                    'Delivered': 'bg-green-100 text-green-800 border-green-200',
+                    'Cancelled': 'bg-red-100 text-red-800 border-red-200'
+                };
+                const badgeClass = statusColors[o.status] || 'bg-gray-100 text-gray-800';
+
+                let itemsHtml = o.items.map(i => `
+                    <div class="flex gap-3 mt-3 items-center bg-stone-50 p-2 rounded-xl border border-stone-100">
+                        <img src="${i.img || 'https://placehold.co/100/8B2C46/FFFFFF'}" class="w-12 h-16 object-cover rounded-lg shadow-sm border border-stone-200">
+                        <div class="flex-grow">
+                            <p class="font-bold text-sm text-gray-800 line-clamp-1">${i.name}</p>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Qty: ${i.qty}</p>
+                        </div>
+                        <p class="font-bold text-primary font-serif">₹${(i.price * i.qty).toLocaleString('en-IN')}</p>
+                    </div>
+                `).join('');
+
+                // NEW: Small, beautiful compact button aligned right!
+                let cancelBtn = canCancel ? 
+                    `<button onclick='cancelCustomerOrder("${o.id}")' class="px-4 py-2 border border-red-200 text-red-500 bg-red-50 rounded-xl font-bold text-xs hover:bg-red-500 hover:text-white transition shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-xmark text-sm"></i> Cancel</button>` : '';
+
+                let statusNote = canCancel ? `<p class="text-[9px] text-red-400 mt-1.5 text-right font-medium">*Within 24hrs</p>` : '';
+
+                list.innerHTML += `
+                    <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-stone-100 relative">
+                        <div class="flex justify-between items-start border-b border-stone-100 pb-3 mb-3">
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Order Placed</p>
+                                <p class="font-bold text-gray-800 text-sm">${date}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider border shadow-sm ${badgeClass}">${o.status}</span>
+                        </div>
+                        
+                        <div class="mb-5">
+                            ${itemsHtml}
+                        </div>
+                        
+                        <div class="border-t border-stone-100 pt-4 flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Total (COD)</p>
+                                <p class="text-xl text-primary font-serif font-bold">₹${o.totalAmount.toLocaleString('en-IN')}</p>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                ${cancelBtn}
+                                ${statusNote}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        };
+
+        // NEW: CANCEL CUSTOMER ORDER (Optimistic & No Popups)
         window.cancelCustomerOrder = async (orderId) => {
-            if(!confirm("Are you sure you want to cancel this beautiful dress?")) return;
+            const confirmCancel = await customConfirm("Cancel Order?", "Are you sure you want to cancel this order? This cannot be undone.", "Yes, Cancel", "Keep Order", false, "fa-box-open");
+            if(!confirmCancel) return;
+            
+            // 1. Instantly update the UI Optimistically!
+            const orderIndex = customerOrdersData.findIndex(o => o.id === orderId);
+            if(orderIndex === -1) return;
+            const orderData = customerOrdersData[orderIndex];
+            const originalStatus = orderData.status;
+
+            // Double check 24 hours securely
+            if(Date.now() - orderData.createdAt > 24 * 60 * 60 * 1000) {
+                showToast("Too late! Orders cannot be cancelled after 24 hours.");
+                return;
+            }
+
+            customerOrdersData[orderIndex].status = "Cancelled";
+            renderCustomerOrders(); // Re-render instantly from memory!
             
             try {
                 const orderDoc = doc(db, "orders", orderId);
-                const orderSnap = await getDoc(orderDoc);
                 
-                if(orderSnap.exists()) {
-                    const orderData = orderSnap.data();
-                    
-                    // Double check 24 hours rule securely in case they kept the tab open
-                    if(Date.now() - orderData.createdAt > 24 * 60 * 60 * 1000) {
-                        showToast("Too late! Orders cannot be cancelled after 24 hours.");
-                        return;
+                // Restore stock automatically so others can buy it!
+                for(const item of orderData.items) {
+                    const prodDoc = doc(db, "products", item.id);
+                    const prodSnap = await getDoc(prodDoc);
+                    if(prodSnap.exists()) {
+                        const currentStock = prodSnap.data().stock || 0;
+                        await updateDoc(prodDoc, { stock: currentStock + item.qty });
                     }
-
-                    // Restore stock automatically so others can buy it!
-                    for(const item of orderData.items) {
-                        const prodDoc = doc(db, "products", item.id);
-                        const prodSnap = await getDoc(prodDoc);
-                        if(prodSnap.exists()) {
-                            const currentStock = prodSnap.data().stock || 0;
-                            await updateDoc(prodDoc, { stock: currentStock + item.qty });
-                        }
-                    }
-                    
-                    // Change status to Cancelled
-                    await updateDoc(orderDoc, { status: "Cancelled" });
-                    
-                    showToast("Order cancelled successfully.");
-                    loadCustomerOrders(); // Refresh the list instantly
-                    fetchProducts(); // Refresh storefront inventory
+                    // Update local inventory array immediately so shop is up to date without reloading!
+                    const localProd = allProducts.find(p => p.id === item.id);
+                    if(localProd) localProd.stock += item.qty;
                 }
+                
+                // Change status to Cancelled in Database
+                await updateDoc(orderDoc, { status: "Cancelled" });
+                showToast("Order cancelled successfully.");
+                
             } catch (e) {
                 console.error("Cancel error:", e);
+                // Revert changes if it fails!
+                customerOrdersData[orderIndex].status = originalStatus;
+                renderCustomerOrders();
                 showToast("Failed to cancel order.");
             }
         }
