@@ -84,6 +84,7 @@
                 <div class="hidden md:flex space-x-8 items-center absolute left-1/2 transform -translate-x-1/2">
                     <button onclick="switchCustomerTab('home')" class="text-gray-600 hover:text-primary transition font-medium">Home</button>
                     <button onclick="switchCustomerTab('collection')" class="text-gray-600 hover:text-primary transition font-medium">Collection</button>
+                    <button onclick="switchCustomerTab('orders')" class="text-gray-600 hover:text-primary transition font-medium">My Orders</button>
                     <button onclick="switchCustomerTab('community')" class="text-gray-600 hover:text-primary transition font-medium flex items-center gap-1">
                         Community <span class="bg-pink-100 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider">Soon</span>
                     </button>
@@ -308,6 +309,30 @@
             </div>
         </div>
 
+        <!-- NEW: ORDERS TAB PLACEHOLDER -->
+        <div id="tab-orders" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden animate-fade-in my-6">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary font-serif mb-6 text-center">My Orders</h2>
+                
+                <!-- Toggle Tabs -->
+                <div class="flex bg-white rounded-xl p-1 shadow-sm border border-gray-100 mb-6">
+                    <button class="flex-1 py-3 rounded-lg bg-primary text-white font-bold text-sm md:text-base shadow transition">Current Orders</button>
+                    <button class="flex-1 py-3 rounded-lg text-gray-500 font-bold text-sm md:text-base hover:text-gray-800 transition">Past Orders</button>
+                </div>
+
+                <!-- Placeholder Area -->
+                <div class="text-center py-20 bg-white/60 backdrop-blur-sm rounded-3xl border border-dashed border-pink-200 shadow-sm relative">
+                    <div class="w-20 h-20 bg-pink-50 text-pink-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                        <i class="fa-solid fa-box-open text-4xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-xl mb-2">Developer Space</h3>
+                    <p class="text-sm md:text-base text-gray-500 max-w-sm mx-auto">
+                        The order tracking logic will be built here next. Customers will be able to check if their dress is pending, dispatched, or delivered!
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <footer class="bg-stone-900 text-stone-400 py-8 text-center border-t border-stone-800 mt-auto">
             <p>&copy; 2026 Shirnahar House. All rights reserved.</p>
             <p class="text-xs mt-2">Serving customers proudly in Tripura.</p>
@@ -356,6 +381,11 @@
                         <textarea id="custAddress" rows="3" class="w-full border rounded-lg p-3 text-sm focus:outline-none focus:border-primary" placeholder="House No, Street, City, Pincode"></textarea>
                     </div>
                     <button onclick="saveCustomerProfile()" class="w-full bg-primary text-white py-3 md:py-4 rounded-xl font-bold hover:bg-red-900 transition shadow mt-2">Save Details</button>
+                    
+                    <!-- NEW ORDER HISTORY BUTTON -->
+                    <button onclick="toggleProfileModal(); switchCustomerTab('orders');" class="w-full bg-stone-100 text-gray-700 py-3 md:py-4 rounded-xl font-bold hover:bg-stone-200 transition shadow-sm mt-3 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-box-open"></i> Track My Orders
+                    </button>
                 </div>
             </div>
         </div>
@@ -462,6 +492,7 @@
             document.getElementById('tab-collection').classList.add('hidden');
             document.getElementById('tab-product-detail').classList.add('hidden');
             document.getElementById('tab-community').classList.add('hidden');
+            document.getElementById('tab-orders').classList.add('hidden');
             
             if(tab === 'home') document.getElementById('tab-home').classList.remove('hidden');
             if(tab === 'collection') {
@@ -474,6 +505,10 @@
             }
             if(tab === 'community') {
                 document.getElementById('tab-community').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if(tab === 'orders') {
+                document.getElementById('tab-orders').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
