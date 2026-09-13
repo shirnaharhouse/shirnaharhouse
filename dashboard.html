@@ -362,7 +362,10 @@
 
         window.handleLogout = async () => {
             const res = await customConfirm("Log Out", "Are you sure you want to log out of the dashboard?", "Log Out", "Cancel", false, "fa-arrow-right-from-bracket");
-            if(res) signOut(auth);
+            if(res) {
+                await signOut(auth);
+                window.location.replace('index.html'); // Instantly redirect back to storefront
+            }
         };
 
         window.showToast = (msg) => {
