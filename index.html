@@ -1107,17 +1107,20 @@
         // NEW: LOAD CUSTOMER ORDERS (Optimized for instant rendering)
         window.loadCustomerOrders = async () => {
             const list = document.getElementById('customerOrdersList');
-            if(!currentUserId) {
-                list.innerHTML = `<p class="text-center text-gray-500 py-10 text-sm">Checking authentication...</p>`;
+            
+            // Get the phone number from the hidden profile or local memory
+            const userPhone = document.getElementById('custPhone').value.trim() || localStorage.getItem('shirnahar_user_phone');
+            
+            if(!userPhone) {
+                list.innerHTML = `<p class="text-center text-gray-500 py-10 text-sm">Checking profile details...</p>`;
                 return;
             }
             
             list.innerHTML = `<div class="text-center py-12"><i class="fa-solid fa-spinner fa-spin text-primary text-3xl mb-3"></i><p class="text-sm text-gray-500">Loading your orders...</p></div>`;
 
             try {
-                // FIX: Removed orderBy() from the query to prevent Firebase Index errors.
-                // We will just filter by the customer ID, and sort it instantly in JavaScript below!
-                const q = query(collection(db, "orders"), where("customerId", "==", currentUserId));
+                // FIX: We now search the database using the Phone Number instead of the fragile temporary ID!
+                const q = query(collection(db, "orders"), where("customerPhone", "==", userPhone));
                 const snap = await getDocs(q);
                 
                 customerOrdersData = [];
