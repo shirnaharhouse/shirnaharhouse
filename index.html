@@ -193,7 +193,7 @@
         </div>
 
         <div id="tab-product-detail" class="container mx-auto p-4 md:p-6 md:px-12 flex-grow hidden animate-fade-in bg-white/50 backdrop-blur-sm rounded-3xl my-2 md:my-6">
-            <button onclick="switchCustomerTab('collection')" class="text-gray-500 hover:text-primary mb-6 flex items-center gap-2 font-bold transition text-sm">
+            <button onclick="window.history.back()" class="text-gray-500 hover:text-primary mb-6 flex items-center gap-2 font-bold transition text-sm">
                 <i class="fa-solid fa-arrow-left"></i> Back
             </button>
             
@@ -420,19 +420,22 @@
             signInAnonymously(auth).catch(e => console.log("Auth error:", e));
             fetchProducts();
             
-            // Set up initial history state for the back button to work from the start
-            history.replaceState({ tab: 'home' }, '', '#home');
+            // NEW ROBUST HASH ROUTING FOR MOBILE BACK BUTTONS
+            if (!window.location.hash) {
+                window.location.replace('#home');
+            } else {
+                handleHashChange();
+            }
         });
 
         // Listen for the phone's hardware back button!
-        window.addEventListener('popstate', (event) => {
-            if (event.state && event.state.tab) {
-                // We pass 'false' so it doesn't push another state into history
-                window.switchCustomerTab(event.state.tab, false);
-            } else {
-                window.switchCustomerTab('home', false);
-            }
-        });
+        window.addEventListener('hashchange', handleHashChange);
+
+        function handleHashChange() {
+            const tab = window.location.hash.replace('#', '') || 'home';
+            // We pass 'false' so it doesn't create an infinite loop of history
+            window.switchCustomerTab(tab, false);
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -485,9 +488,9 @@
                 }
             });
 
-            // This drops a "breadcrumb" in the phone's memory so the back button knows where to go
+            // This safely changes the URL hash so the phone records it in history
             if(pushToHistory) {
-                history.pushState({ tab: tab }, '', '#' + tab);
+                window.location.hash = tab;
             }
         };
 
