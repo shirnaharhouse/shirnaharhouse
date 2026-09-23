@@ -390,10 +390,10 @@
         </a>
         
         <!-- Cart -->
-        <a href="index.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative">
+        <a href="cart.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative">
             <div class="relative">
                 <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
-                <span class="absolute -top-1 -right-2 bg-brand text-white text-[9px] font-bold rounded-full h-[15px] w-[15px] flex items-center justify-center shadow-sm">3</span>
+                <span class="absolute -top-1 -right-2 bg-brand text-white text-[9px] font-bold rounded-full h-[15px] w-[15px] flex items-center justify-center shadow-sm border border-white">3</span>
             </div>
             <span class="text-[10px] font-medium tracking-wide">Cart</span>
         </a>
@@ -406,7 +406,36 @@
     </nav>
 
     <!-- Interactive Scripts for Account Flow -->
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = 'shirnahar-house';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
+            measurementId: "G-L4MK6TB4EX"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let userId = null;
+
+        // Expose to window for inline HTML onclick handlers
+        window.showToast = showToast;
+        window.showSection = showSection;
+        window.handleRegister = handleRegister;
+        window.handleLogin = handleLogin;
+        window.handleLogout = handleLogout;
+        window.loadProfile = loadProfile;
+        window.openEditProfile = openEditProfile;
+        window.handleEditProfile = handleEditProfile;
+
         // Custom Toast Notification system 
         function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
             const container = document.getElementById('toast-container');
@@ -463,8 +492,10 @@
         }
 
         // Form Validation & Handling
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
+            if(!userId) return;
+
             const pass = document.getElementById('reg-pass').value;
             const confirm = document.getElementById('reg-pass-confirm').value;
             const errorLabel = document.getElementById('pass-error');
@@ -489,26 +520,26 @@
             confirmInput.classList.add('border-gray-200', 'focus:ring-brand', 'focus:border-brand');
             confirmInput.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
             
-            // Save user data to localStorage (Simulating a database)
-            const userData = {
-                firstName: firstName,
-                lastName: lastName,
-                address: address,
-                phone: phone
-            };
-            localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
+            showToast('Saving account securely to cloud...', 'info', 'fas fa-spinner fa-spin');
             
-            // Auto-login the user immediately after registration
-            localStorage.setItem('shirnahar_logged_in', 'true');
-            
-            showToast('Account created successfully! Welcome to Shirnahar House.', 'success', 'fas fa-user-check');
-            e.target.reset(); 
-            
-            // Swap seamlessly to their new profile
-            setTimeout(() => {
-                loadProfile();
-                showSection('profile-section');
-            }, 1500);
+            try {
+                // Save user data securely to Firestore Database
+                const userData = { firstName, lastName, address, phone };
+                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData);
+                
+                localStorage.setItem('shirnahar_logged_in', 'true'); // Keep UI flag
+                
+                showToast('Account created successfully! Welcome to Shirnahar House.', 'success', 'fas fa-user-check');
+                e.target.reset(); 
+                
+                setTimeout(() => {
+                    loadProfile();
+                    showSection('profile-section');
+                }, 1500);
+            } catch (err) {
+                console.error(err);
+                showToast('Error connecting to database.', 'error', 'fas fa-exclamation-triangle');
+            }
         }
 
         function handleLogin(e) {
@@ -536,75 +567,94 @@
             }, 1000);
         }
         
-        function loadProfile() {
-            // Retrieve saved database info
-            const savedData = localStorage.getItem('shirnahar_user_data');
+        async function loadProfile() {
+            if(!userId) return;
             
-            if(savedData) {
-                const user = JSON.parse(savedData);
-                document.getElementById('profile-name-display').innerText = `${user.firstName} ${user.lastName}`;
-                document.getElementById('profile-initials').innerText = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
-                document.getElementById('profile-phone-display').innerText = `+91 ${user.phone}`;
-                document.getElementById('profile-address-display').innerText = user.address;
-            } else {
-                // Fallback in case they somehow bypassed registration
-                document.getElementById('profile-name-display').innerText = "Guest User";
-                document.getElementById('profile-initials').innerText = "GU";
-                document.getElementById('profile-address-display').innerText = "No address saved on file.";
+            try {
+                // Fetch strictly from user's secure private Firestore collection
+                const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
+                
+                if(docSnap.exists()) {
+                    const user = docSnap.data();
+                    document.getElementById('profile-name-display').innerText = `${user.firstName || ''} ${user.lastName || ''}`;
+                    document.getElementById('profile-initials').innerText = `${(user.firstName || 'G').charAt(0)}${(user.lastName || 'U').charAt(0)}`.toUpperCase();
+                    document.getElementById('profile-phone-display').innerText = `+91 ${user.phone || '----------'}`;
+                    document.getElementById('profile-address-display').innerText = user.address || 'No address saved.';
+                } else {
+                    document.getElementById('profile-name-display').innerText = "Guest User";
+                    document.getElementById('profile-initials').innerText = "GU";
+                    document.getElementById('profile-address-display').innerText = "No address saved on file.";
+                }
+            } catch(e) {
+                console.error("Error loading profile", e);
             }
         }
         
-        function openEditProfile() {
-            // Load current saved data into the input fields
-            const savedData = localStorage.getItem('shirnahar_user_data');
-            if (savedData) {
-                const user = JSON.parse(savedData);
-                document.getElementById('edit-firstname').value = user.firstName || '';
-                document.getElementById('edit-lastname').value = user.lastName || '';
-                document.getElementById('edit-phone').value = user.phone || '';
-                document.getElementById('edit-address').value = user.address || '';
+        async function openEditProfile() {
+            if(!userId) return;
+            
+            try {
+                // Fetch fresh data from Firestore before editing
+                const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
+                if (docSnap.exists()) {
+                    const user = docSnap.data();
+                    document.getElementById('edit-firstname').value = user.firstName || '';
+                    document.getElementById('edit-lastname').value = user.lastName || '';
+                    document.getElementById('edit-phone').value = user.phone || '';
+                    document.getElementById('edit-address').value = user.address || '';
+                }
+                showSection('edit-profile-section');
+            } catch (e) {
+                showToast('Could not load profile to edit.', 'error');
             }
-            showSection('edit-profile-section');
         }
 
-        function handleEditProfile(e) {
+        async function handleEditProfile(e) {
             e.preventDefault();
+            if(!userId) return;
             
-            // Get existing data so we don't overwrite passwords if we saved them
-            const savedData = localStorage.getItem('shirnahar_user_data');
-            let userData = savedData ? JSON.parse(savedData) : {};
+            showToast('Saving changes...', 'info', 'fas fa-spinner fa-spin');
             
-            // Capture updated data from the form
-            userData.firstName = document.getElementById('edit-firstname').value;
-            userData.lastName = document.getElementById('edit-lastname').value;
-            userData.phone = document.getElementById('edit-phone').value;
-            userData.address = document.getElementById('edit-address').value;
-            
-            // Save updated data
-            localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
-            
-            showToast('Profile updated successfully!', 'success', 'fas fa-check-circle');
-            
-            // Reload the updated profile dashboard
-            loadProfile();
-            
-            // Return to profile view
-            showSection('profile-section');
-        }
-        
-        // Smart Check: Run instantly when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('shirnahar_logged_in') === 'true') {
-                // The user was already logged in! Skip welcome screen and show profile immediately.
-                document.getElementById('welcome-section').classList.add('hidden', 'opacity-0', 'translate-y-4');
+            try {
+                const userData = {
+                    firstName: document.getElementById('edit-firstname').value,
+                    lastName: document.getElementById('edit-lastname').value,
+                    phone: document.getElementById('edit-phone').value,
+                    address: document.getElementById('edit-address').value
+                };
+                
+                // Update Firestore Database (merge: true ensures we don't delete other data if it exists)
+                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
+                
+                showToast('Profile updated successfully!', 'success', 'fas fa-check-circle');
                 
                 loadProfile();
+                showSection('profile-section');
+            } catch(e) {
+                showToast('Error saving profile.', 'error', 'fas fa-exclamation-triangle');
+            }
+        }
+        
+        // Smart Check: Run securely when the page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            // First, authenticate with Firebase Cloud securely
+            try {
+                await signInAnonymously(auth);
+                userId = auth.currentUser?.uid;
                 
-                const profileSec = document.getElementById('profile-section');
-                profileSec.classList.remove('hidden');
-                // Force a browser reflow for clean animation
-                void profileSec.offsetWidth;
-                profileSec.classList.remove('opacity-0', 'translate-y-4');
+                // If the UI remembers they logged in, jump straight to their newly fetched profile
+                if (localStorage.getItem('shirnahar_logged_in') === 'true') {
+                    document.getElementById('welcome-section').classList.add('hidden', 'opacity-0', 'translate-y-4');
+                    
+                    await loadProfile();
+                    
+                    const profileSec = document.getElementById('profile-section');
+                    profileSec.classList.remove('hidden');
+                    void profileSec.offsetWidth;
+                    profileSec.classList.remove('opacity-0', 'translate-y-4');
+                }
+            } catch (err) {
+                console.error("Secure Authentication Failed:", err);
             }
         });
     </script>
