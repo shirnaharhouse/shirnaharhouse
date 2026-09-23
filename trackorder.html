@@ -53,24 +53,23 @@
     <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center">
-                    <a href="account.html" class="flex items-center text-sm font-medium text-gray-600 hover:text-brand transition-colors group">
-                        <div class="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-brand-light flex items-center justify-center border border-gray-200 group-hover:border-brand/30 transition-all mr-2">
-                            <i class="fas fa-arrow-left text-gray-600 group-hover:text-brand group-hover:-translate-x-0.5 transition-transform text-sm"></i>
-                        </div>
-                        <span class="hidden sm:inline-block">Back to Account</span>
-                    </a>
+                
+                <!-- Empty div to keep the logo perfectly centered -->
+                <div class="flex items-center w-12 sm:w-32">
                 </div>
+                
                 <div class="flex flex-col items-center">
                     <a href="index.html" class="font-serif text-2xl sm:text-3xl font-bold text-brand-dark tracking-tight hover:opacity-90 transition">
                         Shirnahar House
                     </a>
                 </div>
-                <div class="flex items-center space-x-3 text-gray-500">
+                
+                <div class="flex items-center justify-end w-12 sm:w-32 text-gray-500">
                     <a href="cart.html" class="hover:text-brand transition flex flex-col items-center relative group">
                         <i class="fas fa-shopping-bag text-xl"></i>
                     </a>
                 </div>
+
             </div>
         </div>
     </header>
@@ -146,46 +145,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         let userId = null;
+        let useFallback = false;
 
         // Expose functions to window
         window.showToast = showToast;
         window.cancelOrder = cancelOrder;
         window.viewProduct = viewProduct;
 
-        // We will use this realistic mock data to show how the UI looks. 
-        // When real orders are processed in cart.html, they will replace this array.
-        let userOrders = [
-            {
-                id: "SH-10984",
-                date: "Oct 23, 2026",
-                status: "Pending", // Options: Pending, Shipped, Delivered, Cancelled
-                total: 4500,
-                paymentMethod: "UPI",
-                items: [
-                    { name: "Royal Blue Banarasi Silk Saree", qty: 1, price: 4500, image: "https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?auto=format&fit=crop&w=200&q=80" }
-                ]
-            },
-            {
-                id: "SH-09321",
-                date: "Oct 18, 2026",
-                status: "Shipped",
-                total: 2800,
-                paymentMethod: "Cash on Delivery",
-                items: [
-                    { name: "Embroidered Salwar Suit", qty: 1, price: 2800, image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=200&q=80" }
-                ]
-            },
-            {
-                id: "SH-08112",
-                date: "Sep 05, 2026",
-                status: "Delivered",
-                total: 1200,
-                paymentMethod: "UPI",
-                items: [
-                    { name: "Maroon Cotton Handloom", qty: 1, price: 1200, image: "https://images.unsplash.com/photo-1583391733958-69345e5251a3?auto=format&fit=crop&w=200&q=80" }
-                ]
-            }
-        ];
+        // Empty array to hold REAL orders fetched from Cart/Database
+        let userOrders = [];
 
         function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
             const container = document.getElementById('toast-container');
@@ -249,7 +217,7 @@
             emptyState.classList.add('hidden');
             emptyState.classList.remove('flex');
 
-            // Automatically sort orders from newest to oldest (Recent Buy first)
+            // Automatically sort orders from newest to oldest
             userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             let html = '';
@@ -259,7 +227,6 @@
                 const statusIcon = getStatusIcon(order.status);
                 const canCancel = order.status.toLowerCase() === 'pending';
 
-                // Generate Items HTML
                 let itemsHtml = '';
                 order.items.forEach(item => {
                     const safeName = item.name.replace(/'/g, "\\'");
@@ -275,15 +242,14 @@
                                     <p class="text-[10px] font-bold text-brand opacity-0 group-hover:opacity-100 transition-opacity mt-1">View <i class="fas fa-arrow-right"></i></p>
                                 </div>
                             </div>
-                        </div> <!-- Added missing closing tag here -->
-                        `;
+                        </div>
+                    `;
                 });
 
-                // Generate Action Buttons
                 let actionsHtml = '';
                 if (canCancel) {
                     actionsHtml = `
-                        <button onclick="cancelOrder('${order.id}')" class="text-xs font-bold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors">
+                        <button onclick="cancelOrder('${order.id}')" class="text-xs font-bold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors shadow-sm">
                             Cancel Order
                         </button>
                     `;
@@ -291,7 +257,6 @@
 
                 html += `
                     <div class="order-card-transition bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6" id="order-${order.id}">
-                        <!-- Card Header -->
                         <div class="bg-gray-50 px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Order Placed</span>
@@ -307,13 +272,9 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Card Body (Items) -->
                         <div class="px-5 py-2 divide-y divide-gray-100">
                             ${itemsHtml}
                         </div>
-
-                        <!-- Card Footer -->
                         <div class="bg-gray-50/50 px-5 py-4 border-t border-gray-100 flex items-center justify-between">
                             <div>
                                 <p class="text-xs text-gray-500 font-medium">Total Paid (${order.paymentMethod})</p>
@@ -331,23 +292,28 @@
         }
 
         async function cancelOrder(orderId) {
-            // Find order in local state
             const orderIndex = userOrders.findIndex(o => o.id === orderId);
             if(orderIndex === -1) return;
 
-            // Visual feedback of loading
             showToast('Processing cancellation...', 'info', 'fas fa-spinner fa-spin');
 
-            setTimeout(async () => {
+            try {
                 // Update local array
                 userOrders[orderIndex].status = "Cancelled";
                 
-                // Re-render UI
-                renderOrders();
+                // Update Backend (or local storage)
+                if (!useFallback && userId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'orders', orderId), { status: "Cancelled" });
+                } else {
+                    localStorage.setItem('shirnahar_local_orders', JSON.stringify(userOrders));
+                }
                 
-                // Show success
+                renderOrders();
                 showToast('Order cancelled successfully.', 'success', 'fas fa-check-circle');
-            }, 800); // Simulate network delay
+            } catch (err) {
+                console.error(err);
+                showToast('Error cancelling order.', 'error');
+            }
         }
 
         function viewProduct(name, price, image) {
@@ -361,32 +327,26 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Authenticate with Firebase securely
             try {
                 await signInAnonymously(auth);
                 userId = auth.currentUser?.uid;
                 
-                // 2. In a fully connected app, we would fetch actual orders here:
-                /*
-                const ordersRef = collection(db, 'artifacts', appId, 'users', userId, 'orders');
-                const q = query(ordersRef, orderBy("date", "desc"));
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
+                if (userId) {
+                    // Fetch real orders from database
+                    const q = query(collection(db, 'artifacts', appId, 'users', userId, 'orders'));
+                    const querySnapshot = await getDocs(q);
+                    
                     userOrders = [];
                     querySnapshot.forEach((doc) => {
-                        userOrders.push({ id: doc.id, ...doc.data() });
+                        userOrders.push(doc.data());
                     });
-                }
-                */
-
-                // For now, we will render our realistic mock data so the UI is visible and testable
-                setTimeout(() => {
+                    
                     renderOrders();
-                }, 500); // Tiny delay to show the nice loading spinner initially
-
+                }
             } catch (err) {
-                console.warn("Firebase Auth blocked. Rendering mock orders locally.", err);
+                console.warn("Firebase Auth blocked. Rendering orders from local storage.", err);
+                useFallback = true;
+                userOrders = JSON.parse(localStorage.getItem('shirnahar_local_orders')) || [];
                 renderOrders();
             }
         });
