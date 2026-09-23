@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Your Orders | Shirnahar House</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#fdf6e3', 
+                            DEFAULT: '#b45309', 
+                            dark: '#78350f', 
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Mobile nav safe area padding */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+        html { scroll-behavior: smooth; }
+        
+        /* Order card transition */
+        .order-card-transition {
+            transition: all 0.4s ease;
+        }
+    </style>
+</head>
+<body class="bg-[#fcfaf6] font-sans text-gray-900 antialiased min-h-screen flex flex-col pb-16 md:pb-0 selection:bg-brand-light selection:text-brand-dark">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-24 right-4 sm:right-6 z-[100] flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
+
+    <!-- Minimal Header -->
+    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center">
+                    <a href="account.html" class="flex items-center text-sm font-medium text-gray-600 hover:text-brand transition-colors group">
+                        <div class="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-brand-light flex items-center justify-center border border-gray-200 group-hover:border-brand/30 transition-all mr-2">
+                            <i class="fas fa-arrow-left text-gray-600 group-hover:text-brand group-hover:-translate-x-0.5 transition-transform text-sm"></i>
+                        </div>
+                        <span class="hidden sm:inline-block">Back to Account</span>
+                    </a>
+                </div>
+                <div class="flex flex-col items-center">
+                    <a href="index.html" class="font-serif text-2xl sm:text-3xl font-bold text-brand-dark tracking-tight hover:opacity-90 transition">
+                        Shirnahar House
+                    </a>
+                </div>
+                <div class="flex items-center space-x-3 text-gray-500">
+                    <a href="cart.html" class="hover:text-brand transition flex flex-col items-center relative group">
+                        <i class="fas fa-shopping-bag text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-serif font-bold text-gray-900 mb-2">Your Orders</h1>
+            <p class="text-gray-500 text-sm">View your order history, track shipments, or manage cancellations.</p>
+        </div>
+
+        <!-- Orders Container -->
+        <div id="orders-container" class="space-y-6">
+            <!-- Dynamic Order Cards will be injected here by JavaScript -->
+            <div class="flex justify-center py-12">
+                <i class="fas fa-spinner fa-spin text-brand text-3xl"></i>
+            </div>
+        </div>
+
+        <!-- Empty State (Hidden by default) -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
+            <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
+                <i class="fas fa-box-open text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-serif font-bold text-gray-900 mb-2">No Orders Yet</h3>
+            <p class="text-gray-500 text-sm mb-6 max-w-xs">You haven't placed any orders with Shirnahar House yet.</p>
+            <a href="index.html" class="bg-brand hover:bg-brand-dark text-white px-8 py-3 rounded-full font-medium transition shadow-md shadow-brand/20">
+                Start Shopping
+            </a>
+        </div>
+        
+    </main>
+
+    <!-- Mobile Bottom Navigation (Hidden on desktop) -->
+    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
+        <a href="index.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-home text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Home</span>
+        </a>
+        <a href="account.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-user text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Account</span>
+        </a>
+        <a href="trackorder.html" class="flex flex-col items-center w-16 text-brand pb-2 relative">
+            <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-brand rounded-b-md"></div>
+            <i class="fas fa-truck text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Orders</span>
+        </a>
+        <a href="cart.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative">
+            <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Cart</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, updateDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = 'shirnahar-house';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
+            measurementId: "G-L4MK6TB4EX"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let userId = null;
+
+        // Expose functions to window
+        window.showToast = showToast;
+        window.cancelOrder = cancelOrder;
+        window.viewProduct = viewProduct;
+
+        // We will use this realistic mock data to show how the UI looks. 
+        // When real orders are processed in cart.html, they will replace this array.
+        let userOrders = [
+            {
+                id: "SH-10984",
+                date: "Oct 23, 2026",
+                status: "Pending", // Options: Pending, Shipped, Delivered, Cancelled
+                total: 4500,
+                paymentMethod: "UPI",
+                items: [
+                    { name: "Royal Blue Banarasi Silk Saree", qty: 1, price: 4500, image: "https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?auto=format&fit=crop&w=200&q=80" }
+                ]
+            },
+            {
+                id: "SH-09321",
+                date: "Oct 18, 2026",
+                status: "Shipped",
+                total: 2800,
+                paymentMethod: "Cash on Delivery",
+                items: [
+                    { name: "Embroidered Salwar Suit", qty: 1, price: 2800, image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=200&q=80" }
+                ]
+            },
+            {
+                id: "SH-08112",
+                date: "Sep 05, 2026",
+                status: "Delivered",
+                total: 1200,
+                paymentMethod: "UPI",
+                items: [
+                    { name: "Maroon Cotton Handloom", qty: 1, price: 1200, image: "https://images.unsplash.com/photo-1583391733958-69345e5251a3?auto=format&fit=crop&w=200&q=80" }
+                ]
+            }
+        ];
+
+        function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-white border-brand/20 text-gray-900' : 'bg-red-50 border-red-200 text-red-900';
+            const ico = type === 'success' ? 'text-brand' : 'text-red-500';
+
+            toast.className = `flex items-center w-full p-4 space-x-3 rounded-2xl shadow-xl border ${bg} transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <div class="w-9 h-9 rounded-full ${ico} bg-white shadow-sm flex items-center justify-center">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="text-sm font-medium flex-1">${message}</div>
+            `;
+            container.appendChild(toast);
+            
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function formatINR(num) {
+            return '₹' + Math.round(num).toLocaleString('en-IN');
+        }
+
+        function getStatusColor(status) {
+            switch(status.toLowerCase()) {
+                case 'pending': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200';
+                case 'delivered': return 'bg-green-50 text-green-700 border-green-200';
+                case 'cancelled': return 'bg-red-50 text-red-700 border-red-200';
+                default: return 'bg-gray-50 text-gray-700 border-gray-200';
+            }
+        }
+
+        function getStatusIcon(status) {
+            switch(status.toLowerCase()) {
+                case 'pending': return '<i class="fas fa-clock mr-1.5 text-[10px]"></i>';
+                case 'shipped': return '<i class="fas fa-truck-fast mr-1.5 text-[10px]"></i>';
+                case 'delivered': return '<i class="fas fa-box-open mr-1.5 text-[10px]"></i>';
+                case 'cancelled': return '<i class="fas fa-times-circle mr-1.5 text-[10px]"></i>';
+                default: return '';
+            }
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('orders-container');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (!userOrders || userOrders.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            // Automatically sort orders from newest to oldest (Recent Buy first)
+            userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            let html = '';
+            
+            userOrders.forEach((order, index) => {
+                const statusColor = getStatusColor(order.status);
+                const statusIcon = getStatusIcon(order.status);
+                const canCancel = order.status.toLowerCase() === 'pending';
+
+                // Generate Items HTML
+                let itemsHtml = '';
+                order.items.forEach(item => {
+                    const safeName = item.name.replace(/'/g, "\\'");
+                    itemsHtml += `
+                        <div onclick="viewProduct('${safeName}', ${item.price}, '${item.image}')" class="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors px-2 -mx-2 rounded-xl group">
+                            <div class="w-16 h-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://placehold.co/200x250/fdf6e3/b45309?text=Image+Not+Found'">
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-brand transition-colors">${item.name}</p>
+                                <div class="text-right">
+                                    <p class="text-sm font-bold text-gray-900">${formatINR(item.price * item.qty)}</p>
+                                    <p class="text-[10px] font-bold text-brand opacity-0 group-hover:opacity-100 transition-opacity mt-1">View <i class="fas fa-arrow-right"></i></p>
+                                </div>
+                            </div>
+                        </div> <!-- Added missing closing tag here -->
+                        `;
+                });
+
+                // Generate Action Buttons
+                let actionsHtml = '';
+                if (canCancel) {
+                    actionsHtml = `
+                        <button onclick="cancelOrder('${order.id}')" class="text-xs font-bold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors">
+                            Cancel Order
+                        </button>
+                    `;
+                }
+
+                html += `
+                    <div class="order-card-transition bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6" id="order-${order.id}">
+                        <!-- Card Header -->
+                        <div class="bg-gray-50 px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Order Placed</span>
+                                <span class="text-sm font-medium text-gray-900">${order.date}</span>
+                            </div>
+                            <div class="flex items-center justify-between sm:justify-end flex-1 gap-4">
+                                <div class="sm:text-right">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Order ID</span>
+                                    <span class="text-sm font-medium text-gray-900">#${order.id}</span>
+                                </div>
+                                <div class="px-3 py-1 rounded-full text-xs font-bold border ${statusColor} flex items-center shadow-sm">
+                                    ${statusIcon} ${order.status}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Body (Items) -->
+                        <div class="px-5 py-2 divide-y divide-gray-100">
+                            ${itemsHtml}
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="bg-gray-50/50 px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Total Paid (${order.paymentMethod})</p>
+                                <p class="text-lg font-serif font-bold text-brand-dark">${formatINR(order.total)}</p>
+                            </div>
+                            <div class="flex gap-3">
+                                ${actionsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        async function cancelOrder(orderId) {
+            // Find order in local state
+            const orderIndex = userOrders.findIndex(o => o.id === orderId);
+            if(orderIndex === -1) return;
+
+            // Visual feedback of loading
+            showToast('Processing cancellation...', 'info', 'fas fa-spinner fa-spin');
+
+            setTimeout(async () => {
+                // Update local array
+                userOrders[orderIndex].status = "Cancelled";
+                
+                // Re-render UI
+                renderOrders();
+                
+                // Show success
+                showToast('Order cancelled successfully.', 'success', 'fas fa-check-circle');
+            }, 800); // Simulate network delay
+        }
+
+        function viewProduct(name, price, image) {
+            showToast('Loading product details...', 'info', 'fas fa-spinner fa-spin');
+            // Save the product details to local memory so the front page knows what to open
+            localStorage.setItem('shirnahar_view_product', JSON.stringify({name, price, image}));
+            // Smoothly redirect to front page
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Authenticate with Firebase securely
+            try {
+                await signInAnonymously(auth);
+                userId = auth.currentUser?.uid;
+                
+                // 2. In a fully connected app, we would fetch actual orders here:
+                /*
+                const ordersRef = collection(db, 'artifacts', appId, 'users', userId, 'orders');
+                const q = query(ordersRef, orderBy("date", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    userOrders = [];
+                    querySnapshot.forEach((doc) => {
+                        userOrders.push({ id: doc.id, ...doc.data() });
+                    });
+                }
+                */
+
+                // For now, we will render our realistic mock data so the UI is visible and testable
+                setTimeout(() => {
+                    renderOrders();
+                }, 500); // Tiny delay to show the nice loading spinner initially
+
+            } catch (err) {
+                console.warn("Firebase Auth blocked. Rendering mock orders locally.", err);
+                renderOrders();
+            }
+        });
+    </script>
+</body>
+</html>
