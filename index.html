@@ -1306,72 +1306,79 @@
         // Initialize badge on load
         updateFallbackBadge();
 
-        // 3.5 Global Event Delegator for Add to Cart & Wishlist (Bulletproof)
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            
-            const html = btn.innerHTML.toLowerCase();
-            const text = btn.innerText.toLowerCase().trim();
-            
-            // --- ADD TO CART LOGIC ---
-            const isAddBtn = html.includes('fa-shopping-bag') || text === 'add to cart' || html.includes(' add') || text === 'add';
-            const isSearchBtn = text.includes('search') || btn.type === 'submit';
-            
-            if (isAddBtn && !isSearchBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                let title = "Premium Authentic Piece";
-                let price = 1500;
-                let img = "https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80";
-
-                const card = btn.closest('.group');
-                if (card) {
-                    const titleEl = card.querySelector('h3') || card.querySelector('h4');
-                    const imgEl = card.querySelector('img');
-                    const priceEls = card.querySelectorAll('.text-lg.font-bold, .text-xl.font-bold, p.text-brand-dark.font-bold, p.text-brand.font-bold');
-
-                    if (titleEl) title = titleEl.innerText;
-                    if (imgEl) img = imgEl.src;
-                    if (priceEls.length > 0) {
-                        price = parseInt(priceEls[0].innerText.replace(/[^0-9]/g, '')) || 1500;
-                    }
-                } else if (btn.id === 'detail-add-cart-btn') {
-                    title = document.getElementById('detail-title').innerText;
-                    img = document.getElementById('detail-image').src;
-                    price = parseInt(document.getElementById('detail-current-price').innerText.replace(/[^0-9]/g, '')) || 1500;
-                }
-
-                // Add to cart unified handler
-                handleAddToCart(title, price, img);
-                showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
-            }
-
-            // --- WISHLIST LOGIC ---
-            if (html.includes('fa-heart') && !isAddBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const icon = btn.querySelector('.fa-heart');
+        // 3.5 Explicit Cart Attachments (Bulletproof)
+        function attachCartAndWishlist() {
+            // Target all Add to Cart buttons in the grid
+            document.querySelectorAll('.group button').forEach(btn => {
+                const html = btn.innerHTML.toLowerCase();
                 
-                if (icon) {
-                    if (icon.classList.contains('far')) {
-                        icon.classList.remove('far', 'text-gray-900', 'text-gray-400');
-                        icon.classList.add('fas', 'text-red-500');
-                        showToast('Added to your wishlist.', 'success', 'fas fa-heart');
-                    } else {
-                        icon.classList.remove('fas', 'text-red-500');
-                        icon.classList.add('far');
-                        if(btn.parentElement.classList.contains('bg-white') || btn.classList.contains('bg-white')) {
-                            icon.classList.add('text-gray-900');
-                        } else {
-                            icon.classList.add('text-gray-400');
-                        }
-                        showToast('Removed from wishlist.', 'info', 'far fa-heart');
-                    }
+                // Add to Cart Logic
+                if (html.includes('fa-shopping-bag') || html.includes('add')) {
+                    btn.onclick = (e) => {
+                        e.preventDefault(); 
+                        e.stopPropagation(); // Stops the card from opening
+                        
+                        const card = btn.closest('.group');
+                        if (!card) return;
+                        
+                        const titleEl = card.querySelector('h3') || card.querySelector('h4');
+                        const imgEl = card.querySelector('img');
+                        const priceEls = card.querySelectorAll('.text-lg.font-bold, p.text-brand-dark.font-bold, p.text-brand.font-bold');
+                        
+                        const title = titleEl ? titleEl.innerText : "Premium Item";
+                        const img = imgEl ? imgEl.src : "";
+                        const price = priceEls.length > 0 ? parseInt(priceEls[0].innerText.replace(/[^0-9]/g, '')) || 1500 : 1500;
+                        
+                        handleAddToCart(title, price, img);
+                        showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
+                    };
                 }
+                
+                // Wishlist Logic
+                if (html.includes('fa-heart')) {
+                    btn.onclick = (e) => {
+                        e.preventDefault(); 
+                        e.stopPropagation();
+                        const icon = btn.querySelector('.fa-heart');
+                        if (icon) {
+                            if (icon.classList.contains('far')) {
+                                icon.classList.remove('far', 'text-gray-900', 'text-gray-400');
+                                icon.classList.add('fas', 'text-red-500');
+                                showToast('Added to your wishlist.', 'success', 'fas fa-heart');
+                            } else {
+                                icon.classList.remove('fas', 'text-red-500');
+                                icon.classList.add('far');
+                                if(btn.parentElement.classList.contains('bg-white') || btn.classList.contains('bg-white')) {
+                                    icon.classList.add('text-gray-900');
+                                } else {
+                                    icon.classList.add('text-gray-400');
+                                }
+                                showToast('Removed from wishlist.', 'info', 'far fa-heart');
+                            }
+                        }
+                    };
+                }
+            });
+
+            // Target the Add to Cart button in the Detail View
+            const detailAdd = document.getElementById('detail-add-cart-btn');
+            if (detailAdd) {
+                detailAdd.onclick = (e) => {
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    
+                    const title = document.getElementById('detail-title').innerText;
+                    const img = document.getElementById('detail-image').src;
+                    const price = parseInt(document.getElementById('detail-current-price').innerText.replace(/[^0-9]/g, '')) || 1500;
+                    
+                    handleAddToCart(title, price, img);
+                    showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
+                };
             }
-        });
+        }
+        
+        // Execute immediately
+        attachCartAndWishlist();
 
         // 4. Search Functionality (Simulated)
         const searchInputs = document.querySelectorAll('input[type="text"][placeholder*="Search"]');
