@@ -150,7 +150,7 @@
                     </a>
                     <a href="cart.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center relative group">
                         <i class="fas fa-shopping-bag text-xl mb-1"></i>
-                        <span id="cart-badge" class="absolute top-0 right-0 md:right-2 -mt-1 -mr-2 bg-brand text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center group-hover:bg-brand-dark transition-transform duration-300">3</span>
+                        <span id="cart-badge" class="absolute top-0 right-0 md:right-2 -mt-1 -mr-2 bg-brand text-white text-[10px] font-bold rounded-full h-4 w-4 items-center justify-center group-hover:bg-brand-dark transition-transform duration-300" style="display: none;">0</span>
                         <span class="text-xs hidden md:block font-medium">Cart</span>
                     </a>
                 </div>
@@ -1186,17 +1186,30 @@
             link.addEventListener('click', () => toggleMenu(false));
         });
 
-        // 3. Shopping Cart Logic
-        let cartCount = 3; // Starts at 3 matching the initial HTML mockup
+        // 3. Shopping Cart Logic (Dynamic with LocalStorage)
+        let cartItems = JSON.parse(localStorage.getItem('shirnahar_cart')) || [];
         const cartBadge = document.getElementById('cart-badge');
+
+        function getCartCount() {
+            return cartItems.reduce((total, item) => total + item.quantity, 0);
+        }
 
         function updateCartBadge() {
             if (cartBadge) {
-                cartBadge.textContent = cartCount;
-                cartBadge.classList.add('scale-150');
-                setTimeout(() => cartBadge.classList.remove('scale-150'), 200);
+                const count = getCartCount();
+                if (count > 0) {
+                    cartBadge.style.display = 'flex';
+                    cartBadge.textContent = count;
+                    cartBadge.classList.add('scale-150');
+                    setTimeout(() => cartBadge.classList.remove('scale-150'), 200);
+                } else {
+                    cartBadge.style.display = 'none';
+                }
             }
         }
+
+        // Initialize badge on load
+        updateCartBadge();
 
         // Attach functionality dynamically to all buttons across the page
         document.querySelectorAll('button').forEach(btn => {
@@ -1210,7 +1223,49 @@
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation(); // prevent triggering parent clicks
-                    cartCount++;
+
+                    // Extract product details based on whether it's a grid card or the detail view
+                    let title = "Premium Authentic Piece";
+                    let price = 1500;
+                    let img = "https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80";
+
+                    const card = btn.closest('.group');
+                    if (card) {
+                        const titleEl = card.querySelector('h3') || card.querySelector('h4');
+                        const imgEl = card.querySelector('img');
+                        const priceEls = card.querySelectorAll('.text-lg.font-bold, .text-xl.font-bold, p.text-brand-dark.font-bold, p.text-brand.font-bold');
+
+                        if (titleEl) title = titleEl.innerText;
+                        if (imgEl) img = imgEl.src;
+                        if (priceEls.length > 0) {
+                            price = parseInt(priceEls[0].innerText.replace(/[^0-9]/g, '')) || 1500;
+                        }
+                    } else if (btn.id === 'detail-add-cart-btn') {
+                        title = document.getElementById('detail-title').innerText;
+                        img = document.getElementById('detail-image').src;
+                        price = parseInt(document.getElementById('detail-current-price').innerText.replace(/[^0-9]/g, '')) || 1500;
+                    }
+
+                    // Check if item is already in cart array
+                    const existingItem = cartItems.find(item => item.name === title);
+                    if (existingItem) {
+                        existingItem.quantity += 1;
+                    } else {
+                        cartItems.push({
+                            id: Date.now() + Math.floor(Math.random() * 1000), // unique ID
+                            name: title,
+                            category: "Premium Wear", 
+                            price: price,
+                            mrp: Math.floor(price * 1.3), // generate a simulated 30% higher MRP
+                            size: "Free Size",
+                            image: img,
+                            quantity: 1,
+                            stockLeft: 10
+                        });
+                    }
+
+                    // Save the updated cart to the browser's memory
+                    localStorage.setItem('shirnahar_cart', JSON.stringify(cartItems));
                     updateCartBadge();
                     showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
                 });
@@ -1314,7 +1369,11 @@
                         
                         setTimeout(() => {
                             targetElement.scrollIntoView({ behavior: 'smooth' });
-                            history.pushState(null, null, targetId); 
+                            try {
+                                history.pushState(null, null, targetId); 
+                            } catch (err) {
+                                console.warn('History API blocked locally. Ignoring.');
+                            }
                         }, 350);
                     }
                 } else {
@@ -1416,7 +1475,12 @@
                 origPrice: formattedOrigPrice,
                 isJewellery: isJewellery
             };
-            history.pushState(stateObj, title, slug);
+            
+            try {
+                history.pushState(stateObj, title, slug);
+            } catch (err) {
+                console.warn('History API pushState failed. This is totally normal when opening files locally via file://');
+            }
             
             const homeView = document.getElementById('home-view');
             const productView = document.getElementById('product-view');
@@ -1520,17 +1584,18 @@
             const detailAddCart = document.getElementById('detail-add-cart-btn');
             const detailBuyNow = document.getElementById('detail-buy-now-btn');
             
-            if(detailAddCart) {
-                detailAddCart.addEventListener('click', () => {
-                    cartCount++;
-                    updateCartBadge();
-                    showToast('Product successfully added to your cart!', 'success', 'fas fa-shopping-bag');
-                });
-            }
+            // Note: detailAddCart is now handled automatically by the global loop above, 
+            // so we removed the duplicate logic here to prevent adding items twice.
             
             if(detailBuyNow) {
                 detailBuyNow.addEventListener('click', () => {
+                    // Automatically click the "Add to Cart" button to ensure item is saved
+                    if(detailAddCart) detailAddCart.click();
+                    
                     showToast('Proceeding to secure checkout...', 'info', 'fas fa-shield-alt');
+                    
+                    // Redirect directly to the Cart/Checkout page
+                    setTimeout(() => window.location.href = 'cart.html', 1200);
                 });
             }
         });
