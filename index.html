@@ -1103,7 +1103,36 @@
     </footer>
 
     <!-- Scripts for Interactivity -->
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = 'shirnahar-house';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
+            measurementId: "G-L4MK6TB4EX"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let userId = null;
+
+        // Expose functions to window
+        window.showToast = showToast;
+        window.toggleMenu = toggleMenu;
+        window.switchTab = switchTab;
+        window.openProduct = openProduct;
+        window.closeProduct = closeProduct;
+        window.setRating = setRating;
+        window.submitReview = submitReview;
+        window.toggleAccordion = toggleAccordion;
+
         // Disable automatic scroll restoration so the browser doesn't fight our custom SPA transitions
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
@@ -1186,17 +1215,11 @@
             link.addEventListener('click', () => toggleMenu(false));
         });
 
-        // 3. Shopping Cart Logic (Dynamic with LocalStorage)
-        let cartItems = JSON.parse(localStorage.getItem('shirnahar_cart')) || [];
+        // 3. Shopping Cart Logic (Dynamic with Firebase)
         const cartBadge = document.getElementById('cart-badge');
 
-        function getCartCount() {
-            return cartItems.reduce((total, item) => total + item.quantity, 0);
-        }
-
-        function updateCartBadge() {
+        function updateCartBadge(count) {
             if (cartBadge) {
-                const count = getCartCount();
                 if (count > 0) {
                     cartBadge.style.display = 'flex';
                     cartBadge.textContent = count;
@@ -1208,8 +1231,41 @@
             }
         }
 
-        // Initialize badge on load
-        updateCartBadge();
+        // --- Helper Function for Add to Cart ---
+        async function handleAddToCart(title, price, img) {
+            if(!userId) {
+                showToast('Connecting securely to your cart...', 'info', 'fas fa-spinner fa-spin');
+                return;
+            }
+
+            showToast('Saving to your cloud bag...', 'info', 'fas fa-spinner fa-spin');
+
+            try {
+                const docId = title.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                const itemRef = doc(db, 'artifacts', appId, 'users', userId, 'cart', docId);
+                
+                const snap = await getDoc(itemRef);
+                if(snap.exists()) {
+                    await setDoc(itemRef, { quantity: snap.data().quantity + 1 }, { merge: true });
+                } else {
+                    await setDoc(itemRef, {
+                        name: title,
+                        category: "Premium Wear", 
+                        price: price,
+                        mrp: Math.floor(price * 1.3), 
+                        size: "Free Size",
+                        image: img,
+                        quantity: 1,
+                        stockLeft: 10
+                    });
+                }
+
+                showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
+            } catch(err) {
+                console.error("Cart error:", err);
+                showToast('Failed to add item.', 'error');
+            }
+        }
 
         // Attach functionality dynamically to all buttons across the page
         document.querySelectorAll('button').forEach(btn => {
@@ -1220,7 +1276,7 @@
             if (html.includes('fa-shopping-bag') || text === 'add to cart' || html.includes(' add') || text === 'add') {
                 if(text.includes('search') || btn.type === 'submit') return;
                 
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async (e) => {
                     e.preventDefault();
                     e.stopPropagation(); // prevent triggering parent clicks
 
@@ -1230,7 +1286,7 @@
                     let img = "https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80";
 
                     const card = btn.closest('.group');
-                    if (card) {
+                    if (card && card.closest('section')) {
                         const titleEl = card.querySelector('h3') || card.querySelector('h4');
                         const imgEl = card.querySelector('img');
                         const priceEls = card.querySelectorAll('.text-lg.font-bold, .text-xl.font-bold, p.text-brand-dark.font-bold, p.text-brand.font-bold');
@@ -1246,28 +1302,7 @@
                         price = parseInt(document.getElementById('detail-current-price').innerText.replace(/[^0-9]/g, '')) || 1500;
                     }
 
-                    // Check if item is already in cart array
-                    const existingItem = cartItems.find(item => item.name === title);
-                    if (existingItem) {
-                        existingItem.quantity += 1;
-                    } else {
-                        cartItems.push({
-                            id: Date.now() + Math.floor(Math.random() * 1000), // unique ID
-                            name: title,
-                            category: "Premium Wear", 
-                            price: price,
-                            mrp: Math.floor(price * 1.3), // generate a simulated 30% higher MRP
-                            size: "Free Size",
-                            image: img,
-                            quantity: 1,
-                            stockLeft: 10
-                        });
-                    }
-
-                    // Save the updated cart to the browser's memory
-                    localStorage.setItem('shirnahar_cart', JSON.stringify(cartItems));
-                    updateCartBadge();
-                    showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
+                    handleAddToCart(title, price, img);
                 });
             }
 
@@ -1581,16 +1616,19 @@
                 });
             });
             
-            const detailAddCart = document.getElementById('detail-add-cart-btn');
             const detailBuyNow = document.getElementById('detail-buy-now-btn');
             
             // Note: detailAddCart is now handled automatically by the global loop above, 
             // so we removed the duplicate logic here to prevent adding items twice.
             
             if(detailBuyNow) {
-                detailBuyNow.addEventListener('click', () => {
-                    // Automatically click the "Add to Cart" button to ensure item is saved
-                    if(detailAddCart) detailAddCart.click();
+                detailBuyNow.addEventListener('click', async () => {
+                    // Automatically add the item to cart first using our helper function
+                    const title = document.getElementById('detail-title').innerText;
+                    const img = document.getElementById('detail-image').src;
+                    const price = parseInt(document.getElementById('detail-current-price').innerText.replace(/[^0-9]/g, '')) || 1500;
+                    
+                    await handleAddToCart(title, price, img);
                     
                     showToast('Proceeding to secure checkout...', 'info', 'fas fa-shield-alt');
                     
@@ -1751,12 +1789,29 @@
         }
 
         // Initialize features when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             setupPagination('saree-grid', 'saree-pagination', 4);
             setupPagination('content-threepiece', 'threepiece-pagination', 3);
             setupPagination('content-twopiece', 'twopiece-pagination', 3);
             setupPagination('content-onepiece', 'onepiece-pagination', 3);
             setupPagination('jewellery-grid', 'jewellery-pagination', 4);
+
+            // Connect to Firebase Securely
+            try {
+                await signInAnonymously(auth);
+                userId = auth.currentUser?.uid;
+
+                // Subscribe to real-time cart updates from the cloud
+                if(userId) {
+                    onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'cart'), (snapshot) => {
+                        let totalCount = 0;
+                        snapshot.forEach(doc => { totalCount += (doc.data().quantity || 1); });
+                        updateCartBadge(totalCount);
+                    });
+                }
+            } catch(e) {
+                console.error("Firebase Auth error", e);
+            }
         });
         
     </script>
