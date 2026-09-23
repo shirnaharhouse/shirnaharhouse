@@ -1859,6 +1859,27 @@
                 useFallback = true;
                 updateFallbackBadge();
             }
+
+            // MAGIC BRIDGE: Check if customer clicked an order from the Track Orders page
+            const pendingProductStr = localStorage.getItem('shirnahar_view_product');
+            if (pendingProductStr) {
+                // Delete the memory immediately so it doesn't open every time they visit
+                localStorage.removeItem('shirnahar_view_product');
+                
+                try {
+                    const productData = JSON.parse(pendingProductStr);
+                    // Create a virtual HTML card so the app can open it perfectly natively
+                    const virtualCard = document.createElement('div');
+                    virtualCard.innerHTML = `
+                        <h3>${productData.name}</h3>
+                        <img src="${productData.image}">
+                        <span class="text-lg font-bold">₹${productData.price.toLocaleString('en-IN')}</span>
+                    `;
+                    
+                    // Add a tiny delay to ensure the page finishes drawing before sliding open the product
+                    setTimeout(() => openProduct(virtualCard), 400);
+                } catch(e) { console.error('Error parsing pending product', e); }
+            }
         });
         
     </script>
