@@ -331,13 +331,44 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = 'shirnahar-house';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
+            measurementId: "G-L4MK6TB4EX"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let userId = null;
+
+        // Map functions to window so HTML onClick works smoothly
+        window.showToast = showToast;
+        window.clearEntireCart = clearEntireCart;
+        window.removeCartItem = removeCartItem;
+        window.updateQty = updateQty;
+        window.goToStep = goToStep;
+        window.handleBackNavigation = handleBackNavigation;
+        window.advanceStep = advanceStep;
+        window.toggleAddressForm = toggleAddressForm;
+        window.saveAddressChanges = saveAddressChanges;
+        window.cancelAddressEdit = cancelAddressEdit;
+        window.applyCoupon = applyCoupon;
+        window.removeCoupon = removeCoupon;
+
         // --- Setup Data & Utilities ---
         let currentStep = 1; // 1: Bag, 2: Address, 3: Payment
         let appliedCoupon = null;
-
-        // Fetch dynamic items directly from LocalStorage instead of hardcoded array
-        let cartItems = JSON.parse(localStorage.getItem('shirnahar_cart')) || [];
+        let cartItems = []; // Controlled directly by Firebase now!
 
         function formatINR(num) { return '₹' + Math.round(num).toLocaleString('en-IN'); }
 
@@ -356,10 +387,6 @@
         }
 
         // --- Core UI Functions ---
-        function saveCart() {
-            localStorage.setItem('shirnahar_cart', JSON.stringify(cartItems));
-        }
-
         function renderCart() {
             const list = document.getElementById('cart-items-list');
             const emptyView = document.getElementById('cart-empty-view');
@@ -376,6 +403,13 @@
                 return;
             }
             
+            // Show structure correctly if items exist
+            mainLayout.classList.remove('hidden');
+            emptyView.classList.add('hidden');
+            emptyView.classList.remove('flex');
+            document.getElementById('mobile-checkout-strip').classList.remove('hidden');
+            document.querySelector('.sticky.top-20').classList.remove('hidden');
+
             let html = '';
             cartItems.forEach((item, i) => {
                 html += `
@@ -385,7 +419,7 @@
                         </div>
                         <div class="flex-1 flex flex-col justify-between">
                             <div class="flex justify-between items-start">
-                                <div><h3 class="font-serif font-bold text-gray-900 line-clamp-1">${item.name}</h3><p class="text-xs text-gray-500 mt-1">Size: ${item.size}</p></div>
+                                <div><h3 class="font-serif font-bold text-gray-900 line-clamp-1">${item.name}</h3><p class="text-xs text-gray-500 mt-1">Size: ${item.size || 'Free Size'}</p></div>
                                 <button onclick="removeCartItem(${i})" class="text-gray-400 hover:text-red-500"><i class="far fa-trash-can"></i></button>
                             </div>
                             <div class="flex items-end justify-between mt-3 pt-3 border-t border-gray-100">
@@ -403,25 +437,46 @@
             updateOrderSummary();
         }
 
-        function updateQty(index, delta) {
-            cartItems[index].quantity += delta;
-            if (cartItems[index].quantity <= 0) cartItems.splice(index, 1);
-            saveCart();
-            renderCart();
+        async function updateQty(index, delta) {
+            if(!userId) return;
+            const item = cartItems[index];
+            const newQty = item.quantity + delta;
+            
+            try {
+                if (newQty <= 0) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id));
+                } else {
+                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id), { quantity: newQty }, { merge: true });
+                }
+            } catch(e) {
+                showToast('Failed to update quantity.', 'error');
+            }
         }
 
-        function removeCartItem(index) {
-            cartItems.splice(index, 1);
-            saveCart();
-            renderCart();
-            if(cartItems.length === 0 && currentStep > 1) goToStep(1);
+        async function removeCartItem(index) {
+            if(!userId) return;
+            const item = cartItems[index];
+            
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id));
+                if(cartItems.length <= 1 && currentStep > 1) goToStep(1); // Drop back to bag if removing last item
+            } catch(e) {
+                showToast('Failed to remove item.', 'error');
+            }
         }
 
-        function clearEntireCart() {
-            cartItems = [];
-            saveCart();
-            renderCart();
-            if(currentStep > 1) goToStep(1);
+        async function clearEntireCart() {
+            if(!userId) return;
+            
+            try {
+                // Delete all documents in parallel
+                await Promise.all(cartItems.map(item => 
+                    deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id))
+                ));
+                if(currentStep > 1) goToStep(1);
+            } catch(e) {
+                showToast('Failed to clear cart.', 'error');
+            }
         }
 
         function updateOrderSummary() {
@@ -522,33 +577,44 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function advanceStep() {
+        async function advanceStep() {
             if (currentStep === 1) {
                 if (cartItems.length === 0) return;
                 
-                // Fetch saved account data
-                const savedData = localStorage.getItem('shirnahar_user_data');
+                // Fetch saved account data securely from Firestore
                 const savedCard = document.getElementById('saved-address-card');
                 const formContainer = document.getElementById('address-form-container');
 
-                if(savedData) {
-                    const user = JSON.parse(savedData);
-                    // Pre-fill form just in case they want to edit
-                    document.getElementById('chk-fname').value = user.firstName || '';
-                    document.getElementById('chk-lname').value = user.lastName || '';
-                    document.getElementById('chk-phone').value = user.phone || '';
-                    document.getElementById('chk-address').value = user.address || '';
-                    
-                    // Display the elegant saved address card
-                    document.getElementById('display-name').innerText = `${user.firstName} ${user.lastName}`;
-                    document.getElementById('display-address').innerText = user.address;
-                    document.getElementById('display-phone').innerText = `+91 ${user.phone}`;
-                    
-                    savedCard.classList.remove('hidden');
-                    formContainer.classList.add('hidden');
+                if(userId) {
+                    try {
+                        const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
+                        if(docSnap.exists() && docSnap.data().address) {
+                            const user = docSnap.data();
+                            // Pre-fill form just in case they want to edit
+                            document.getElementById('chk-fname').value = user.firstName || '';
+                            document.getElementById('chk-lname').value = user.lastName || '';
+                            document.getElementById('chk-phone').value = user.phone || '';
+                            document.getElementById('chk-address').value = user.address || '';
+                            
+                            // Display the elegant saved address card
+                            document.getElementById('display-name').innerText = `${user.firstName || ''} ${user.lastName || ''}`;
+                            document.getElementById('display-address').innerText = user.address;
+                            document.getElementById('display-phone').innerText = `+91 ${user.phone || ''}`;
+                            
+                            savedCard.classList.remove('hidden');
+                            formContainer.classList.add('hidden');
+                        } else {
+                            // User is logged in but has no saved address
+                            savedCard.classList.add('hidden');
+                            formContainer.classList.remove('hidden');
+                        }
+                    } catch(e) {
+                        console.error("Error fetching address:", e);
+                    }
                 } else {
-                    savedCard.classList.add('hidden');
-                    formContainer.classList.remove('hidden');
+                    // Not logged in UI (Should be redirected really, but fallback works)
+                    window.location.href = 'account.html';
+                    return;
                 }
                 
                 currentStep = 2;
@@ -564,7 +630,25 @@
                         form.reportValidity();
                         return;
                     }
-                    saveAddressChanges(); // Lock in changes before moving to step 3
+                    
+                    // Save new data to Firestore Profile securely
+                    const userData = {
+                        firstName: document.getElementById('chk-fname').value,
+                        lastName: document.getElementById('chk-lname').value,
+                        phone: document.getElementById('chk-phone').value,
+                        address: document.getElementById('chk-address').value
+                    };
+                    
+                    if(userId) {
+                        await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
+                    }
+                    
+                    // Update display card for next time
+                    document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
+                    document.getElementById('display-address').innerText = userData.address;
+                    document.getElementById('display-phone').innerText = `+91 ${userData.phone}`;
+                    document.getElementById('saved-address-card').classList.remove('hidden');
+                    formContainer.classList.add('hidden');
                 }
                 
                 currentStep = 3;
@@ -575,8 +659,7 @@
                 showToast('Processing secure payment...', 'info', 'fas fa-spinner fa-spin');
                 setTimeout(() => {
                     showToast('Order Placed Successfully! Redirecting...', 'success', 'fas fa-box-open');
-                    cartItems = []; 
-                    saveCart(); // Empty localstorage after success
+                    clearEntireCart(); // Automatically calls Firestore deletes
                     setTimeout(() => window.location.href = 'index.html', 2000);
                 }, 1500);
             }
@@ -598,7 +681,7 @@
             document.getElementById('address-form-container').classList.remove('hidden');
         }
 
-        function saveAddressChanges() {
+        async function saveAddressChanges() {
             const form = document.getElementById('checkout-address-form');
             if(!form.checkValidity()) {
                 form.reportValidity();
@@ -612,7 +695,11 @@
                 phone: document.getElementById('chk-phone').value,
                 address: document.getElementById('chk-address').value
             };
-            localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
+            
+            if(userId) {
+                showToast('Saving address...', 'info', 'fas fa-spinner fa-spin');
+                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
+            }
             
             // Update display card
             document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
@@ -627,8 +714,9 @@
         }
 
         function cancelAddressEdit() {
-            const savedData = localStorage.getItem('shirnahar_user_data');
-            if(savedData) {
+            // Check if we actually have data loaded into the display card
+            const name = document.getElementById('display-name').innerText;
+            if(name && name !== 'Name') {
                 // Return to the card view if they had data saved previously
                 document.getElementById('address-form-container').classList.add('hidden');
                 document.getElementById('saved-address-card').classList.remove('hidden');
@@ -659,10 +747,29 @@
             updateOrderSummary();
         }
 
-        // Boot
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCart();
-            renderStepUI();
+        // Boot and authenticate with Firebase
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await signInAnonymously(auth);
+                userId = auth.currentUser?.uid;
+
+                // Subscribe to real-time cart updates from Firestore!
+                if(userId) {
+                    onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'cart'), (snapshot) => {
+                        cartItems = [];
+                        snapshot.forEach(doc => {
+                            cartItems.push({ id: doc.id, ...doc.data() });
+                        });
+                        // Automatically re-renders the cart when database updates
+                        renderCart();
+                        renderStepUI(); 
+                    }, (error) => {
+                        console.error("Cart subscription failed:", error);
+                    });
+                }
+            } catch(e) {
+                console.error("Auth error", e);
+            }
         });
     </script>
 </body>
