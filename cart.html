@@ -178,6 +178,12 @@
                                 <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Complete Delivery Address</label>
                                 <textarea id="chk-address" required rows="3" placeholder="House No, Building, Street, City, State, Pincode" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none bg-gray-50 focus:bg-white text-sm transition resize-none"></textarea>
                             </div>
+                            
+                            <!-- Save & Cancel Buttons for Address Edit -->
+                            <div class="pt-2 mt-2 flex justify-end gap-3 border-t border-gray-100">
+                                <button type="button" onclick="cancelAddressEdit()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 font-medium transition">Cancel</button>
+                                <button type="button" onclick="saveAddressChanges()" class="bg-brand hover:bg-brand-dark text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md shadow-brand/20 transition">Save Address</button>
+                            </div>
                         </form>
                     </div>
 
@@ -330,10 +336,8 @@
         let currentStep = 1; // 1: Bag, 2: Address, 3: Payment
         let appliedCoupon = null;
 
-        let cartItems = [
-            { id: 101, name: "Royal Blue Banarasi Silk Saree", category: "Pure Silk", price: 4500, mrp: 5999, size: "Free Size", image: "https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?auto=format&fit=crop&w=500&q=80", quantity: 1, stockLeft: 3 },
-            { id: 102, name: "Embroidered Salwar Suit Set", category: "Kurta & Bottom", price: 2800, mrp: 3500, size: "M (Medium)", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=500&q=80", quantity: 1, stockLeft: 5 }
-        ];
+        // Fetch dynamic items directly from LocalStorage instead of hardcoded array
+        let cartItems = JSON.parse(localStorage.getItem('shirnahar_cart')) || [];
 
         function formatINR(num) { return '₹' + Math.round(num).toLocaleString('en-IN'); }
 
@@ -352,6 +356,10 @@
         }
 
         // --- Core UI Functions ---
+        function saveCart() {
+            localStorage.setItem('shirnahar_cart', JSON.stringify(cartItems));
+        }
+
         function renderCart() {
             const list = document.getElementById('cart-items-list');
             const emptyView = document.getElementById('cart-empty-view');
@@ -397,18 +405,21 @@
 
         function updateQty(index, delta) {
             cartItems[index].quantity += delta;
-            if (cartItems[index].quantity <= 0) removeCartItem(index);
-            else renderCart();
+            if (cartItems[index].quantity <= 0) cartItems.splice(index, 1);
+            saveCart();
+            renderCart();
         }
 
         function removeCartItem(index) {
             cartItems.splice(index, 1);
+            saveCart();
             renderCart();
             if(cartItems.length === 0 && currentStep > 1) goToStep(1);
         }
 
         function clearEntireCart() {
             cartItems = [];
+            saveCart();
             renderCart();
             if(currentStep > 1) goToStep(1);
         }
@@ -553,22 +564,7 @@
                         form.reportValidity();
                         return;
                     }
-                    
-                    // Save new data silently for future
-                    const userData = {
-                        firstName: document.getElementById('chk-fname').value,
-                        lastName: document.getElementById('chk-lname').value,
-                        phone: document.getElementById('chk-phone').value,
-                        address: document.getElementById('chk-address').value
-                    };
-                    localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
-                    
-                    // Update display card for next time
-                    document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
-                    document.getElementById('display-address').innerText = userData.address;
-                    document.getElementById('display-phone').innerText = `+91 ${userData.phone}`;
-                    document.getElementById('saved-address-card').classList.remove('hidden');
-                    formContainer.classList.add('hidden');
+                    saveAddressChanges(); // Lock in changes before moving to step 3
                 }
                 
                 currentStep = 3;
@@ -580,6 +576,7 @@
                 setTimeout(() => {
                     showToast('Order Placed Successfully! Redirecting...', 'success', 'fas fa-box-open');
                     cartItems = []; 
+                    saveCart(); // Empty localstorage after success
                     setTimeout(() => window.location.href = 'index.html', 2000);
                 }, 1500);
             }
@@ -599,6 +596,45 @@
         function toggleAddressForm() {
             document.getElementById('saved-address-card').classList.add('hidden');
             document.getElementById('address-form-container').classList.remove('hidden');
+        }
+
+        function saveAddressChanges() {
+            const form = document.getElementById('checkout-address-form');
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Save new data
+            const userData = {
+                firstName: document.getElementById('chk-fname').value,
+                lastName: document.getElementById('chk-lname').value,
+                phone: document.getElementById('chk-phone').value,
+                address: document.getElementById('chk-address').value
+            };
+            localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
+            
+            // Update display card
+            document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
+            document.getElementById('display-address').innerText = userData.address;
+            document.getElementById('display-phone').innerText = `+91 ${userData.phone}`;
+            
+            // Swap views back
+            document.getElementById('address-form-container').classList.add('hidden');
+            document.getElementById('saved-address-card').classList.remove('hidden');
+            
+            showToast('Delivery address updated successfully.', 'success', 'fas fa-map-marker-alt');
+        }
+
+        function cancelAddressEdit() {
+            const savedData = localStorage.getItem('shirnahar_user_data');
+            if(savedData) {
+                // Return to the card view if they had data saved previously
+                document.getElementById('address-form-container').classList.add('hidden');
+                document.getElementById('saved-address-card').classList.remove('hidden');
+            } else {
+                showToast('Please save a delivery address to proceed.', 'info', 'fas fa-info-circle');
+            }
         }
 
         function applyCoupon() {
