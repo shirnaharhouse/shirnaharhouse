@@ -85,7 +85,7 @@
         </div>
     </header>
 
-    <div class="bg-white border-b border-gray-100 py-4 sticky top-20 z-30 shadow-sm">
+    <div id="stepper-nav" class="hidden bg-white border-b border-gray-100 py-4 sticky top-20 z-30 shadow-sm">
         <div class="max-w-3xl mx-auto px-4 flex items-center justify-between text-xs sm:text-sm font-medium relative">
             <div class="absolute left-8 right-8 top-1/2 h-0.5 bg-gray-200 -z-10 -translate-y-1/2"></div>
             <div id="stepper-progress-line" class="absolute left-8 top-1/2 h-0.5 bg-brand -z-10 -translate-y-1/2 transition-all duration-500 w-0"></div>
@@ -109,7 +109,14 @@
     </div>
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 pb-12">
-        <div id="cart-main-layout" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+        
+        <!-- Loading State (Shown initially before checking cart) -->
+        <div id="cart-loading-view" class="flex flex-col items-center justify-center py-32 w-full transition-opacity duration-300">
+            <i class="fas fa-spinner fa-spin text-4xl text-brand mb-4"></i>
+            <span class="text-sm font-medium text-gray-500 animate-pulse tracking-wide">Loading your bag...</span>
+        </div>
+
+        <div id="cart-main-layout" class="hidden grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
             
             <!-- Left Side: Dynamic Flow Sections -->
             <div class="lg:col-span-7 xl:col-span-8 relative min-h-[500px]">
@@ -318,7 +325,7 @@
         </div>
     </main>
 
-    <div id="mobile-checkout-strip" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3.5 z-40 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+    <div id="mobile-checkout-strip" class="hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3.5 z-40 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div class="flex items-center justify-between gap-4 max-w-md mx-auto">
             <div>
                 <span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block">Total Payable</span>
@@ -419,23 +426,31 @@
             const list = document.getElementById('cart-items-list');
             const emptyView = document.getElementById('cart-empty-view');
             const mainLayout = document.getElementById('cart-main-layout');
+            const loadingView = document.getElementById('cart-loading-view');
+            const stepperNav = document.getElementById('stepper-nav');
+            const mobileStrip = document.getElementById('mobile-checkout-strip');
+            
+            // Hide the loading spinner once data is checked
+            if (loadingView) loadingView.classList.add('hidden');
             
             list.innerHTML = '';
             
             if (cartItems.length === 0) {
+                mainLayout.classList.remove('grid');
                 mainLayout.classList.add('hidden');
                 emptyView.classList.remove('hidden');
                 emptyView.classList.add('flex');
-                document.getElementById('mobile-checkout-strip').classList.add('hidden');
-                document.querySelector('.sticky.top-20').classList.add('hidden');
+                if (mobileStrip) mobileStrip.classList.add('hidden');
+                if (stepperNav) stepperNav.classList.add('hidden');
                 return;
             }
             
+            mainLayout.classList.add('grid');
             mainLayout.classList.remove('hidden');
             emptyView.classList.add('hidden');
             emptyView.classList.remove('flex');
-            document.getElementById('mobile-checkout-strip').classList.remove('hidden');
-            document.querySelector('.sticky.top-20').classList.remove('hidden');
+            if (mobileStrip) mobileStrip.classList.remove('hidden');
+            if (stepperNav) stepperNav.classList.remove('hidden');
 
             let html = '';
             cartItems.forEach((item, i) => {
