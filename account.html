@@ -73,7 +73,7 @@
 <body class="bg-premium-gradient font-sans text-gray-900 antialiased min-h-screen flex flex-col pb-16 md:pb-0 selection:bg-brand-light selection:text-brand-dark">
 
     <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-20 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
     <!-- Minimal Top Bar -->
     <header class="w-full bg-transparent absolute top-0 z-50">
@@ -443,35 +443,29 @@
             
             const toast = document.createElement('div');
             
-            const bgColor = type === 'success' ? 'bg-white' : 'bg-red-50';
-            const textColor = type === 'success' ? 'text-gray-800' : 'text-red-800';
-            const borderColor = type === 'success' ? 'border-brand/20' : 'border-red-200';
-            const iconColor = type === 'success' ? 'text-brand' : 'text-red-500';
+            // Sleek, minimal in-website pill design instead of system-like popups
+            const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
+            const iconColor = type === 'success' ? 'text-green-400' : (type === 'info' ? 'text-brand-light' : 'text-white');
 
-            toast.className = `flex items-center w-full max-w-sm p-4 space-x-3 rounded-xl shadow-2xl border ${bgColor} ${borderColor} ${textColor} transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.className = `flex items-center px-5 py-3 space-x-3 rounded-full shadow-2xl ${bgColor} text-white transform transition-all duration-400 translate-y-12 opacity-0 pointer-events-auto`;
             
             toast.innerHTML = `
-                <div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-full ${iconColor} bg-white shadow-sm border border-gray-100">
-                    <i class="${icon} text-lg"></i>
-                </div>
-                <div class="ms-3 text-sm font-medium flex-1">${message}</div>
-                <button type="button" class="ms-auto -mx-1.5 -my-1.5 rounded-lg focus:ring-2 focus:ring-gray-200 p-1.5 hover:bg-black/5 inline-flex items-center justify-center h-8 w-8 transition-colors text-gray-400 hover:text-gray-600" onclick="this.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <i class="${icon} ${iconColor} text-lg"></i>
+                <span class="text-sm font-medium tracking-wide">${message}</span>
             `;
             
             container.appendChild(toast);
             
             // Animate in
             requestAnimationFrame(() => {
-                toast.classList.remove('translate-x-full', 'opacity-0');
+                toast.classList.remove('translate-y-12', 'opacity-0');
             });
             
-            // Auto dismiss after 3 seconds
+            // Auto dismiss after 2.5 seconds
             setTimeout(() => {
-                toast.classList.add('translate-x-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+                toast.classList.add('translate-y-12', 'opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 2500);
         }
 
         // View Switching Logic (SPA styling)
