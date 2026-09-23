@@ -57,7 +57,7 @@
 </head>
 <body class="bg-[#fcfaf6] font-sans text-gray-900 antialiased min-h-screen flex flex-col pb-28 md:pb-12">
 
-    <div id="toast-container" class="fixed top-6 right-4 sm:right-6 z-[100] flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
+    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
     <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -332,11 +332,13 @@
     </div>
 
     <script type="module">
+        // CORRECTED BROWSER IMPORTS (Do not use "firebase/app")
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'shirnahar-house';
+        // YOUR EXACT KEYS
         const firebaseConfig = {
             apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
             authDomain: "shirnahar-house.firebaseapp.com",
@@ -349,7 +351,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
         let userId = null;
+        let useFallback = false;
 
         // Map functions to window so HTML onClick works smoothly
         window.showToast = showToast;
@@ -366,24 +370,37 @@
         window.removeCoupon = removeCoupon;
 
         // --- Setup Data & Utilities ---
-        let currentStep = 1; // 1: Bag, 2: Address, 3: Payment
+        let currentStep = 1; 
         let appliedCoupon = null;
-        let cartItems = []; // Controlled directly by Firebase now!
+        let cartItems = []; 
 
         function formatINR(num) { return '₹' + Math.round(num).toLocaleString('en-IN'); }
 
         function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const bg = type === 'success' ? 'bg-white border-brand/20 text-gray-900' : 'bg-red-50 border-red-200 text-red-900';
-            const ico = type === 'success' ? 'text-brand' : 'text-red-500';
+            if (!container) return;
 
-            toast.className = `flex items-center w-full p-4 space-x-3 rounded-2xl shadow-xl border ${bg} transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<div class="w-9 h-9 rounded-full ${ico} bg-white shadow-sm flex items-center justify-center"><i class="${icon}"></i></div>
-                               <div class="text-sm font-medium flex-1">${message}</div>`;
+            const toast = document.createElement('div');
+            
+            // Sleek, minimal in-website pill design instead of system-like popups
+            const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
+            const iconColor = type === 'success' ? 'text-green-400' : (type === 'info' ? 'text-brand-light' : 'text-white');
+
+            toast.className = `flex items-center px-5 py-3 space-x-3 rounded-full shadow-2xl ${bgColor} text-white transform transition-all duration-400 translate-y-12 opacity-0 pointer-events-auto`;
+            
+            toast.innerHTML = `
+                <i class="${icon} ${iconColor} text-lg"></i>
+                <span class="text-sm font-medium tracking-wide">${message}</span>
+            `;
             container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
-            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3000);
+            
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-12', 'opacity-0');
+            });
+            setTimeout(() => {
+                toast.classList.add('translate-y-12', 'opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 2500);
         }
 
         // --- Core UI Functions ---
@@ -399,11 +416,10 @@
                 emptyView.classList.remove('hidden');
                 emptyView.classList.add('flex');
                 document.getElementById('mobile-checkout-strip').classList.add('hidden');
-                document.querySelector('.sticky.top-20').classList.add('hidden'); // hide stepper
+                document.querySelector('.sticky.top-20').classList.add('hidden');
                 return;
             }
             
-            // Show structure correctly if items exist
             mainLayout.classList.remove('hidden');
             emptyView.classList.add('hidden');
             emptyView.classList.remove('flex');
@@ -438,45 +454,53 @@
         }
 
         async function updateQty(index, delta) {
-            if(!userId) return;
             const item = cartItems[index];
             const newQty = item.quantity + delta;
             
-            try {
-                if (newQty <= 0) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id));
-                } else {
-                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id), { quantity: newQty }, { merge: true });
-                }
-            } catch(e) {
-                showToast('Failed to update quantity.', 'error');
+            if(useFallback || !userId) {
+                if (newQty <= 0) cartItems.splice(index, 1);
+                else cartItems[index].quantity = newQty;
+                localStorage.setItem('shirnahar_local_cart', JSON.stringify(cartItems));
+                renderCart();
+                return;
             }
+
+            try {
+                if (newQty <= 0) await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id));
+                else await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id), { quantity: newQty }, { merge: true });
+            } catch(e) { showToast('Failed to update quantity.', 'error'); }
         }
 
         async function removeCartItem(index) {
-            if(!userId) return;
             const item = cartItems[index];
             
+            if(useFallback || !userId) {
+                cartItems.splice(index, 1);
+                localStorage.setItem('shirnahar_local_cart', JSON.stringify(cartItems));
+                renderCart();
+                if(cartItems.length === 0 && currentStep > 1) goToStep(1);
+                return;
+            }
+
             try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id));
-                if(cartItems.length <= 1 && currentStep > 1) goToStep(1); // Drop back to bag if removing last item
-            } catch(e) {
-                showToast('Failed to remove item.', 'error');
-            }
+                if(cartItems.length <= 1 && currentStep > 1) goToStep(1); 
+            } catch(e) { showToast('Failed to remove item.', 'error'); }
         }
 
         async function clearEntireCart() {
-            if(!userId) return;
-            
-            try {
-                // Delete all documents in parallel
-                await Promise.all(cartItems.map(item => 
-                    deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id))
-                ));
+            if(useFallback || !userId) {
+                cartItems = [];
+                localStorage.setItem('shirnahar_local_cart', JSON.stringify(cartItems));
+                renderCart();
                 if(currentStep > 1) goToStep(1);
-            } catch(e) {
-                showToast('Failed to clear cart.', 'error');
+                return;
             }
+
+            try {
+                await Promise.all(cartItems.map(item => deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id))));
+                if(currentStep > 1) goToStep(1);
+            } catch(e) { showToast('Failed to clear cart.', 'error'); }
         }
 
         function updateOrderSummary() {
@@ -504,12 +528,10 @@
         }
 
         function renderStepUI() {
-            // Hide all sections first
             const steps = [document.getElementById('section-bag'), document.getElementById('section-address'), document.getElementById('section-payment')];
             steps.forEach((el, index) => {
                 if(index + 1 === currentStep) {
                     el.classList.remove('hidden');
-                    // slight delay to allow display block before opacity animation
                     setTimeout(() => {
                         el.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'z-0');
                         el.classList.add('opacity-100', 'translate-x-0', 'z-10', 'relative');
@@ -518,11 +540,10 @@
                 } else {
                     el.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'z-0', 'absolute');
                     el.classList.remove('opacity-100', 'translate-x-0', 'z-10', 'relative');
-                    setTimeout(() => el.classList.add('hidden'), 400); // hide after animation
+                    setTimeout(() => el.classList.add('hidden'), 400);
                 }
             });
 
-            // Update Stepper visuals
             const s1 = document.getElementById('step-1-indicator');
             const s2 = document.getElementById('step-2-indicator');
             const s3 = document.getElementById('step-3-indicator');
@@ -536,14 +557,12 @@
 
             if (currentStep === 1) {
                 line.style.width = '0%';
-                // Colors
                 s1.classList.add('text-brand'); s1.classList.remove('text-gray-400');
                 s1.querySelector('span').classList.add('bg-brand', 'text-white');
                 s2.classList.remove('text-brand'); s2.classList.add('text-gray-400');
                 s2.querySelector('span').classList.remove('bg-brand', 'text-white'); s2.querySelector('span').innerHTML = '2';
                 s3.classList.remove('text-brand'); s3.classList.add('text-gray-400');
                 s3.querySelector('span').classList.remove('bg-brand', 'text-white');
-                // Button
                 deskBtnText.innerText = 'Next'; deskBtnIcon.className = "fas fa-arrow-right ml-2.5";
                 mobBtnText.innerText = 'Next'; mobBtnIcon.className = "fas fa-arrow-right ml-2";
                 backText.innerText = "Continue Shopping";
@@ -556,7 +575,6 @@
                 s2.setAttribute('onclick', 'goToStep(2)');
                 s3.classList.remove('text-brand'); s3.classList.add('text-gray-400');
                 s3.querySelector('span').classList.remove('bg-brand', 'text-white'); s3.querySelector('span').innerHTML = '3';
-                // Button
                 deskBtnText.innerText = 'Next'; deskBtnIcon.className = "fas fa-arrow-right ml-2.5";
                 mobBtnText.innerText = 'Next'; mobBtnIcon.className = "fas fa-arrow-right ml-2";
                 backText.innerText = "Back to Bag";
@@ -566,11 +584,10 @@
                 s2.querySelector('span').innerHTML = '<i class="fas fa-check"></i>';
                 s3.classList.add('text-brand'); s3.classList.remove('text-gray-400');
                 s3.querySelector('span').classList.add('bg-brand', 'text-white');
-                // Button
                 deskBtnText.innerText = 'Place Order'; deskBtnIcon.className = "fas fa-lock ml-2.5";
                 mobBtnText.innerText = 'Place Order'; mobBtnIcon.className = "fas fa-lock ml-2";
                 backText.innerText = "Back to Address";
-                document.getElementById('coupon-section').style.display = 'none'; // hide coupons
+                document.getElementById('coupon-section').style.display = 'none';
             }
             
             if(currentStep < 3) document.getElementById('coupon-section').style.display = 'block';
@@ -581,22 +598,19 @@
             if (currentStep === 1) {
                 if (cartItems.length === 0) return;
                 
-                // Fetch saved account data securely from Firestore
                 const savedCard = document.getElementById('saved-address-card');
                 const formContainer = document.getElementById('address-form-container');
 
-                if(userId) {
+                if(!useFallback && userId) {
                     try {
                         const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
                         if(docSnap.exists() && docSnap.data().address) {
                             const user = docSnap.data();
-                            // Pre-fill form just in case they want to edit
                             document.getElementById('chk-fname').value = user.firstName || '';
                             document.getElementById('chk-lname').value = user.lastName || '';
                             document.getElementById('chk-phone').value = user.phone || '';
                             document.getElementById('chk-address').value = user.address || '';
                             
-                            // Display the elegant saved address card
                             document.getElementById('display-name').innerText = `${user.firstName || ''} ${user.lastName || ''}`;
                             document.getElementById('display-address').innerText = user.address;
                             document.getElementById('display-phone').innerText = `+91 ${user.phone || ''}`;
@@ -604,17 +618,26 @@
                             savedCard.classList.remove('hidden');
                             formContainer.classList.add('hidden');
                         } else {
-                            // User is logged in but has no saved address
                             savedCard.classList.add('hidden');
                             formContainer.classList.remove('hidden');
                         }
-                    } catch(e) {
-                        console.error("Error fetching address:", e);
-                    }
+                    } catch(e) { console.error(e); }
                 } else {
-                    // Not logged in UI (Should be redirected really, but fallback works)
-                    window.location.href = 'account.html';
-                    return;
+                    const fallbackData = JSON.parse(localStorage.getItem('shirnahar_user_data') || '{}');
+                    if(fallbackData.address) {
+                        document.getElementById('chk-fname').value = fallbackData.firstName || '';
+                        document.getElementById('chk-lname').value = fallbackData.lastName || '';
+                        document.getElementById('chk-phone').value = fallbackData.phone || '';
+                        document.getElementById('chk-address').value = fallbackData.address || '';
+                        document.getElementById('display-name').innerText = `${fallbackData.firstName} ${fallbackData.lastName}`;
+                        document.getElementById('display-address').innerText = fallbackData.address;
+                        document.getElementById('display-phone').innerText = `+91 ${fallbackData.phone}`;
+                        savedCard.classList.remove('hidden');
+                        formContainer.classList.add('hidden');
+                    } else {
+                        savedCard.classList.add('hidden');
+                        formContainer.classList.remove('hidden');
+                    }
                 }
                 
                 currentStep = 2;
@@ -622,16 +645,10 @@
             } 
             else if (currentStep === 2) {
                 const formContainer = document.getElementById('address-form-container');
-                
-                // Only validate the form if it is currently visible (user is adding/editing)
                 if(!formContainer.classList.contains('hidden')) {
                     const form = document.getElementById('checkout-address-form');
-                    if(!form.checkValidity()) {
-                        form.reportValidity();
-                        return;
-                    }
+                    if(!form.checkValidity()) { form.reportValidity(); return; }
                     
-                    // Save new data to Firestore Profile securely
                     const userData = {
                         firstName: document.getElementById('chk-fname').value,
                         lastName: document.getElementById('chk-lname').value,
@@ -639,11 +656,12 @@
                         address: document.getElementById('chk-address').value
                     };
                     
-                    if(userId) {
+                    if(!useFallback && userId) {
                         await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
+                    } else {
+                        localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
                     }
                     
-                    // Update display card for next time
                     document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
                     document.getElementById('display-address').innerText = userData.address;
                     document.getElementById('display-phone').innerText = `+91 ${userData.phone}`;
@@ -655,18 +673,17 @@
                 renderStepUI();
             } 
             else if (currentStep === 3) {
-                // Submit Order
                 showToast('Processing secure payment...', 'info', 'fas fa-spinner fa-spin');
                 setTimeout(() => {
                     showToast('Order Placed Successfully! Redirecting...', 'success', 'fas fa-box-open');
-                    clearEntireCart(); // Automatically calls Firestore deletes
+                    clearEntireCart(); 
                     setTimeout(() => window.location.href = 'index.html', 2000);
                 }, 1500);
             }
         }
 
         function goToStep(step) {
-            if (step > currentStep) return; // Prevent skipping ahead
+            if (step > currentStep) return; 
             currentStep = step;
             renderStepUI();
         }
@@ -683,12 +700,8 @@
 
         async function saveAddressChanges() {
             const form = document.getElementById('checkout-address-form');
-            if(!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+            if(!form.checkValidity()) { form.reportValidity(); return; }
             
-            // Save new data
             const userData = {
                 firstName: document.getElementById('chk-fname').value,
                 lastName: document.getElementById('chk-lname').value,
@@ -696,28 +709,25 @@
                 address: document.getElementById('chk-address').value
             };
             
-            if(userId) {
+            if(!useFallback && userId) {
                 showToast('Saving address...', 'info', 'fas fa-spinner fa-spin');
                 await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
+            } else {
+                localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
             }
             
-            // Update display card
             document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
             document.getElementById('display-address').innerText = userData.address;
             document.getElementById('display-phone').innerText = `+91 ${userData.phone}`;
             
-            // Swap views back
             document.getElementById('address-form-container').classList.add('hidden');
             document.getElementById('saved-address-card').classList.remove('hidden');
-            
             showToast('Delivery address updated successfully.', 'success', 'fas fa-map-marker-alt');
         }
 
         function cancelAddressEdit() {
-            // Check if we actually have data loaded into the display card
             const name = document.getElementById('display-name').innerText;
             if(name && name !== 'Name') {
-                // Return to the card view if they had data saved previously
                 document.getElementById('address-form-container').classList.add('hidden');
                 document.getElementById('saved-address-card').classList.remove('hidden');
             } else {
@@ -747,28 +757,32 @@
             updateOrderSummary();
         }
 
-        // Boot and authenticate with Firebase
+        // Boot and authenticate
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await signInAnonymously(auth);
                 userId = auth.currentUser?.uid;
 
-                // Subscribe to real-time cart updates from Firestore!
                 if(userId) {
                     onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'cart'), (snapshot) => {
                         cartItems = [];
-                        snapshot.forEach(doc => {
-                            cartItems.push({ id: doc.id, ...doc.data() });
-                        });
-                        // Automatically re-renders the cart when database updates
+                        snapshot.forEach(doc => { cartItems.push({ id: doc.id, ...doc.data() }); });
                         renderCart();
                         renderStepUI(); 
                     }, (error) => {
-                        console.error("Cart subscription failed:", error);
+                        console.warn("Firestore blocked read, using fallback mode.", error);
+                        useFallback = true;
+                        cartItems = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                        renderCart();
+                        renderStepUI(); 
                     });
                 }
             } catch(e) {
-                console.error("Auth error", e);
+                console.warn("Firebase Auth blocked locally, using fallback mode.", e);
+                useFallback = true;
+                cartItems = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                renderCart();
+                renderStepUI(); 
             }
         });
     </script>
