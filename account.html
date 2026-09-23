@@ -100,8 +100,14 @@
 
         <div class="px-6 md:px-8 flex-1 flex flex-col md:bg-white md:shadow-soft md:rounded-3xl md:mx-4 md:mb-12 md:pb-8 relative overflow-hidden">
             
-            <!-- Welcome View -->
-            <div id="welcome-section" class="w-full flex-1 flex flex-col transition-all duration-300 transform translate-x-0 opacity-100">
+            <!-- Loading State -->
+            <div id="account-loading-view" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm transition-opacity duration-300">
+                <i class="fas fa-circle-notch fa-spin text-4xl text-brand mb-4"></i>
+                <span class="text-sm font-medium text-gray-500 tracking-wide animate-pulse mt-2">Securely connecting...</span>
+            </div>
+
+            <!-- Welcome View (Hidden by default to prevent flashing) -->
+            <div id="welcome-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 transform translate-x-0 opacity-100">
                 <!-- Greeting -->
                 <div class="text-center mb-6 mt-2">
                     <h2 class="text-2xl font-serif text-gray-900 mb-1">Welcome Back</h2>
@@ -561,15 +567,20 @@
             }, 1000);
         }
         
-        async function loadProfile() {
-            if(!userId) return;
-            
+        async function loadProfile(forceLocal = false) {
             try {
-                // Fetch strictly from user's secure private Firestore collection
-                const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
+                let user = null;
                 
-                if(docSnap.exists()) {
-                    const user = docSnap.data();
+                if (forceLocal || !userId) {
+                    // Instantly pull from local memory if Firebase is too slow
+                    user = JSON.parse(localStorage.getItem('shirnahar_user_data'));
+                } else {
+                    // Fetch strictly from user's secure private Firestore collection
+                    const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
+                    if(docSnap.exists()) user = docSnap.data();
+                }
+                
+                if(user && (user.firstName || user.lastName)) {
                     document.getElementById('profile-name-display').innerText = `${user.firstName || ''} ${user.lastName || ''}`;
                     document.getElementById('profile-initials').innerText = `${(user.firstName || 'G').charAt(0)}${(user.lastName || 'U').charAt(0)}`.toUpperCase();
                     document.getElementById('profile-phone-display').innerText = `+91 ${user.phone || '----------'}`;
@@ -631,24 +642,51 @@
         
         // Smart Check: Run securely when the page loads
         document.addEventListener('DOMContentLoaded', async () => {
+            const loadingView = document.getElementById('account-loading-view');
+            
+            // FAILSAFE: If Firebase takes longer than 1.2s, instantly skip the loader!
+            const safetyTimer = setTimeout(() => {
+                if (loadingView && !loadingView.classList.contains('hidden')) {
+                    loadingView.classList.add('hidden');
+                    if (localStorage.getItem('shirnahar_logged_in') === 'true') {
+                        loadProfile(true); // Load instantly from local memory
+                        showSection('profile-section');
+                    } else {
+                        showSection('welcome-section');
+                    }
+                }
+            }, 1200);
+
             // First, authenticate with Firebase Cloud securely
             try {
                 await signInAnonymously(auth);
                 userId = auth.currentUser?.uid;
                 
+                clearTimeout(safetyTimer); // Firebase was fast! Cancel the safety timer.
+                
                 // If the UI remembers they logged in, jump straight to their newly fetched profile
                 if (localStorage.getItem('shirnahar_logged_in') === 'true') {
-                    document.getElementById('welcome-section').classList.add('hidden', 'opacity-0', 'translate-y-4');
-                    
                     await loadProfile();
                     
-                    const profileSec = document.getElementById('profile-section');
-                    profileSec.classList.remove('hidden');
-                    void profileSec.offsetWidth;
-                    profileSec.classList.remove('opacity-0', 'translate-y-4');
+                    if (loadingView) loadingView.classList.add('hidden');
+                    showSection('profile-section');
+                } else {
+                    // Not logged in, show the welcome screen
+                    if (loadingView) loadingView.classList.add('hidden');
+                    showSection('welcome-section');
                 }
             } catch (err) {
                 console.error("Secure Authentication Failed:", err);
+                clearTimeout(safetyTimer); // Cancel timer on error
+                
+                if (loadingView) loadingView.classList.add('hidden');
+                
+                if (localStorage.getItem('shirnahar_logged_in') === 'true') {
+                    loadProfile(true); // Load instantly from local memory
+                    showSection('profile-section');
+                } else {
+                    showSection('welcome-section');
+                }
             }
         });
     </script>
