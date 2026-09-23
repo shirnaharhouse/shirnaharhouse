@@ -89,10 +89,10 @@
             <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
                 <i class="far fa-user mb-1 text-lg"></i><span class="text-xs font-medium">Account</span>
             </a>
-            <a href="#track-order" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
+            <a href="trackorder.html" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
                 <i class="fas fa-truck mb-1 text-lg"></i><span class="text-xs font-medium">Track Order</span>
             </a>
-            <a href="#wishlist" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
+            <a href="wishlist.html" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
                 <i class="far fa-heart mb-1 text-lg"></i><span class="text-xs font-medium">Wishlist</span>
             </a>
         </div>
@@ -136,7 +136,7 @@
 
                 <!-- User Actions (Right) -->
                 <div class="flex items-center space-x-4 md:space-x-6">
-                    <a href="#track-order" class="text-gray-500 hover:text-brand transition flex flex-col items-center">
+                    <a href="trackorder.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center">
                         <i class="fas fa-truck text-xl mb-1"></i>
                         <span class="text-xs hidden md:block font-medium whitespace-nowrap">Track Order</span>
                     </a>
@@ -144,11 +144,11 @@
                         <i class="far fa-user text-xl mb-1"></i>
                         <span class="text-xs hidden md:block font-medium">Account</span>
                     </a>
-                    <a href="#wishlist" class="text-gray-500 hover:text-brand transition flex flex-col items-center hidden sm:flex">
+                    <a href="wishlist.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center hidden sm:flex">
                         <i class="far fa-heart text-xl mb-1"></i>
                         <span class="text-xs hidden md:block font-medium">Wishlist</span>
                     </a>
-                    <a href="#cart" class="text-gray-500 hover:text-brand transition flex flex-col items-center relative group">
+                    <a href="cart.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center relative group">
                         <i class="fas fa-shopping-bag text-xl mb-1"></i>
                         <span id="cart-badge" class="absolute top-0 right-0 md:right-2 -mt-1 -mr-2 bg-brand text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center group-hover:bg-brand-dark transition-transform duration-300">3</span>
                         <span class="text-xs hidden md:block font-medium">Cart</span>
@@ -1204,9 +1204,7 @@
             const text = btn.innerText.toLowerCase().trim();
             
             // --- ADD TO CART BUTTONS ---
-            // Identify buttons meant to add items to cart based on icon or text
             if (html.includes('fa-shopping-bag') || text === 'add to cart' || html.includes(' add') || text === 'add') {
-                // Ensure we don't accidentally hook up search buttons or submits
                 if(text.includes('search') || btn.type === 'submit') return;
                 
                 btn.addEventListener('click', (e) => {
@@ -1227,15 +1225,12 @@
                     
                     if (icon) {
                         if (icon.classList.contains('far')) {
-                            // Add to wishlist
                             icon.classList.remove('far', 'text-gray-900', 'text-gray-400');
                             icon.classList.add('fas', 'text-red-500');
                             showToast('Added to your wishlist.', 'success', 'fas fa-heart');
                         } else {
-                            // Remove from wishlist
                             icon.classList.remove('fas', 'text-red-500');
                             icon.classList.add('far');
-                            // Re-apply original gray coloring based on context
                             if(btn.parentElement.classList.contains('bg-white') || btn.classList.contains('bg-white')) {
                                 icon.classList.add('text-gray-900');
                             } else {
@@ -1259,7 +1254,6 @@
             showToast(`Searching for "${query}"...`, 'info', 'fas fa-spinner fa-spin');
         }
 
-        // Handle Enter key in search bars
         searchInputs.forEach(input => {
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -1270,7 +1264,6 @@
             });
         });
         
-        // Handle clicking the "Search" button natively
         document.querySelectorAll('button').forEach(btn => {
             if(btn.innerText.trim().toLowerCase() === 'search') {
                 btn.addEventListener('click', (e) => {
@@ -1301,11 +1294,9 @@
                 const targetId = this.getAttribute('href');
                 
                 // Demo sections that act as pages
-                if (['#wishlist', '#cart', '#track-order', '#contact'].includes(targetId)) {
+                if (['#contact', '#checkout', '#payment'].includes(targetId)) {
                     e.preventDefault();
-                    // Format the name nicely (e.g., #track-order -> Track-order)
                     let name = targetId.replace('#', '').split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                    
                     showToast(`Opening ${name} interface... (Demo)`, 'info', 'fas fa-layer-group');
                     return;
                 }
@@ -1316,28 +1307,24 @@
                 if (targetElement) {
                     const homeView = document.getElementById('home-view');
                     
-                    // If we are currently in the product view, we need to return to home view first
                     if (homeView.classList.contains('hidden')) {
                         e.preventDefault(); // Stop native jump
                         
-                        closeProductUI(false); // Triggers visual return to home but DON'T restore old scroll position
+                        closeProductUI(false); 
                         
-                        // Wait for the fade animation (300ms) to finish, then scroll smoothly to the new category
                         setTimeout(() => {
                             targetElement.scrollIntoView({ behavior: 'smooth' });
-                            history.pushState(null, null, targetId); // Update URL safely without jumping
+                            history.pushState(null, null, targetId); 
                         }, 350);
                     }
-                    // If already on home view, native CSS smooth scrolling handles it automatically
                 } else {
                     e.preventDefault();
-                    // Just a dead link (#) or missing section
                     showToast('This section is coming soon!', 'info', 'fas fa-clock');
                 }
             });
         });
 
-        // 7. Tab switching logic for Dresses section (Existing but ensuring it works)
+        // 7. Tab switching logic for Dresses section
         function switchTab(tabId) {
             const tabs = ['threepiece', 'twopiece', 'onepiece'];
             tabs.forEach(id => {
@@ -1358,7 +1345,7 @@
             });
         }
 
-        // 8. Basic scroll effect to header (Existing)
+        // 8. Basic scroll effect to header
         window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
             if (window.scrollY > 10) {
@@ -1368,7 +1355,6 @@
             }
         });
 
-        // Helper function to dynamically update accordion text based on product type
         function updateProductDetailsContent(isJewellery) {
             const accordionBtnText = document.querySelector('#accordion-fabric-btn span');
             const accordionContent = document.querySelector('#accordion-fabric-content ul');
@@ -1394,11 +1380,8 @@
 
         // 9. Product Detail View Logic (SPA transition)
         function openProduct(card) {
-            // Locate product info from the clicked card
             const titleEl = card.querySelector('h3') || card.querySelector('h4');
             const imgEl = card.querySelector('img');
-            
-            // Accommodate different price structures across our categories
             const priceEls = card.querySelectorAll('.text-lg.font-bold, .text-xl.font-bold, p.text-brand-dark.font-bold, p.text-brand.font-bold');
             
             if (!titleEl || !imgEl) return;
@@ -1411,23 +1394,19 @@
                 currentPrice = priceEls[0].innerText;
             }
 
-            // Generate a simulated original price to show discount logic
             let numPrice = parseInt(currentPrice.replace(/[^0-9]/g, ''));
             if(isNaN(numPrice)) numPrice = 1500;
-            let origPrice = Math.floor(numPrice * 1.3); // 30% makeup
+            let origPrice = Math.floor(numPrice * 1.3);
             let formattedOrigPrice = '₹' + origPrice.toLocaleString('en-IN');
 
-            // Check if it's a jewellery item for specific details
             const isJewellery = card.closest('#jewellery') !== null;
             updateProductDetailsContent(isJewellery);
 
-            // Inject data into the Product View Template
             document.getElementById('detail-image').src = imgSrc;
             document.getElementById('detail-title').innerText = title;
             document.getElementById('detail-current-price').innerText = currentPrice;
             document.getElementById('detail-original-price').innerText = formattedOrigPrice;
             
-            // Push state to browser history, storing the exact product data for the back button
             const slug = '#product-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             const stateObj = { 
                 view: 'product', 
@@ -1439,83 +1418,64 @@
             };
             history.pushState(stateObj, title, slug);
             
-            // Execute View Transition
             const homeView = document.getElementById('home-view');
             const productView = document.getElementById('product-view');
             
             if (!homeView.classList.contains('hidden')) {
-                // VERY IMPORTANT: Save exactly where they were scrolled on the homepage before hiding it!
                 homeScrollPosition = window.scrollY || window.pageYOffset;
-
-                // Fade out home
                 homeView.classList.add('opacity-0');
                 
                 setTimeout(() => {
                     homeView.classList.add('hidden');
                     productView.classList.remove('hidden');
-                    
-                    // Scroll to top of product view immediately
                     window.scrollTo({ top: 0, behavior: 'instant' });
                     
-                    // Fade in product view
                     setTimeout(() => {
                         productView.classList.remove('opacity-0');
                     }, 50);
-                }, 300); // Wait for CSS transition
+                }, 300);
             } else {
-                // Already in product view (clicked a recommendation card)
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                // Flash the image slightly to visually indicate content changed
                 const img = document.getElementById('detail-image');
                 img.style.opacity = '0.5';
                 setTimeout(() => img.style.opacity = '1', 200);
             }
         }
 
-        // Close Product View UI (Internal DOM manipulation)
-        // Accepts parameter to determine if we should jump to previous scroll position
         function closeProductUI(restoreScroll = true) {
             const homeView = document.getElementById('home-view');
             const productView = document.getElementById('product-view');
             
-            // Fade out product view
             productView.classList.add('opacity-0');
             
             setTimeout(() => {
                 productView.classList.add('hidden');
                 homeView.classList.remove('hidden');
                 
-                // If restoring, go perfectly back to where they clicked the product!
                 if (restoreScroll) {
                     window.scrollTo({ top: homeScrollPosition, behavior: 'instant' });
                 } else {
                     window.scrollTo({ top: 0, behavior: 'instant' });
                 }
                 
-                // Fade in home view
                 setTimeout(() => {
                     homeView.classList.remove('opacity-0');
                 }, 50);
             }, 300);
         }
 
-        // Close Product View and return Home (Called by on-page back button)
         function closeProduct() {
             if (location.hash.startsWith('#product')) {
-                // Triggers popstate event, going back down the history stack
                 history.back();
             } else {
                 closeProductUI(true);
             }
         }
 
-        // Handle hardware back button on mobile (or browser back button on desktop)
         window.addEventListener('popstate', (e) => {
             const productView = document.getElementById('product-view');
             
             if (e.state && e.state.view === 'product') {
-                // We navigated backwards/forwards to a PREVIOUS product in the stack!
-                // Redraw the screen using the state data saved in memory
                 document.getElementById('detail-image').src = e.state.imgSrc;
                 document.getElementById('detail-title').innerText = e.state.title;
                 document.getElementById('detail-current-price').innerText = e.state.currentPrice;
@@ -1525,20 +1485,16 @@
                 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 
-                // Subtle flash effect to indicate the content changed
                 const img = document.getElementById('detail-image');
                 img.style.opacity = '0.5';
                 setTimeout(() => img.style.opacity = '1', 200);
                 
-                // Ensure the view is open (just in case they pressed forward from home)
                 if (productView && productView.classList.contains('hidden')) {
                     document.getElementById('home-view').classList.add('hidden', 'opacity-0');
                     productView.classList.remove('hidden', 'opacity-0');
                 }
                 
             } else if (!location.hash.startsWith('#product') && productView && !productView.classList.contains('hidden')) {
-                // We navigated all the way back to the home catalog
-                // Pass true to perfectly restore the scroll position!
                 closeProductUI(true);
             }
         });
@@ -1546,25 +1502,21 @@
         // 10. Automatically attach listeners to all dynamically found products
         document.addEventListener('DOMContentLoaded', () => {
             
-            // Find all product-like cards on the homepage
             const productCards = document.querySelectorAll('#home-view section [class*="group"]');
             
             productCards.forEach(card => {
-                // Ignore the large featured category banners
                 const title = card.querySelector('h3');
                 if (title && (title.classList.contains('text-3xl') || title.classList.contains('text-2xl'))) {
-                    return; // Skip these
+                    return; 
                 }
                 
                 card.style.cursor = 'pointer';
                 card.addEventListener('click', (e) => {
-                    // Prevent triggering if a direct button (Wishlist/Cart) was clicked
                     if(e.target.closest('button') || e.target.closest('a')) return;
                     openProduct(card);
                 });
             });
             
-            // Wire up the new Buy Now & Add to Cart buttons in the product detail view
             const detailAddCart = document.getElementById('detail-add-cart-btn');
             const detailBuyNow = document.getElementById('detail-buy-now-btn');
             
@@ -1590,10 +1542,10 @@
             
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
-                icon.classList.add('rotate-180'); // Flip the chevron up
+                icon.classList.add('rotate-180');
             } else {
                 content.classList.add('hidden');
-                icon.classList.remove('rotate-180'); // Flip the chevron down
+                icon.classList.remove('rotate-180');
             }
         }
 
@@ -1628,14 +1580,12 @@
             const newReview = document.createElement('div');
             newReview.className = 'border-b border-gray-100 pb-6 opacity-0 transition-opacity duration-500 transform -translate-y-4';
             
-            // Generate star HTML
             let starsHtml = '';
             for(let i = 1; i <= 5; i++) {
                 if(i <= rating) starsHtml += '<i class="fas fa-star"></i>';
                 else starsHtml += '<i class="far fa-star text-gray-300"></i>';
             }
 
-            // Construct the new review HTML
             newReview.innerHTML = `
                 <div class="flex items-center mb-2">
                     <div class="flex text-yellow-400 text-sm mr-3">
@@ -1648,17 +1598,14 @@
                 <p class="text-gray-600 text-sm leading-relaxed">${text.replace(/\n/g, '<br>')}</p>
             `;
 
-            // Add it to the top of the list
             reviewList.insertBefore(newReview, reviewList.firstChild);
             
-            // Trigger animation
             requestAnimationFrame(() => {
                 newReview.classList.remove('opacity-0', '-translate-y-4');
             });
 
-            // Reset form
             event.target.reset();
-            setRating(0); // Reset visual stars
+            setRating(0); 
             
             showToast('Thank you! Your review has been posted.', 'success', 'fas fa-check-circle');
         }
@@ -1669,7 +1616,6 @@
             const paginationContainer = document.getElementById(paginationContainerId);
             if (!grid || !paginationContainer) return;
 
-            // We need a specific CSS class to hide elements securely without breaking Tailwind layout classes
             if (!document.getElementById('pagination-style')) {
                 const style = document.createElement('style');
                 style.id = 'pagination-style';
@@ -1677,21 +1623,16 @@
                 document.head.appendChild(style);
             }
 
-            // Gather all products in the grid
             const items = Array.from(grid.children);
             const totalPages = Math.ceil(items.length / itemsPerPage);
             let currentPage = 1;
 
-            // Function to change the visible products based on the page number
-            // Added isInitialLoad flag to prevent scrolling on page load
             function showPage(page, isInitialLoad = false) {
                 currentPage = page;
                 
                 items.forEach((item, index) => {
-                    // Check if the item index falls within the current page's range
                     if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
                         item.classList.remove('page-hidden');
-                        // Small animation effect
                         item.style.opacity = '0';
                         setTimeout(() => {
                             item.style.transition = 'opacity 0.4s ease';
@@ -1702,13 +1643,10 @@
                     }
                 });
                 
-                // Re-render the pagination buttons to update active states
                 renderPaginationButtons();
                 
-                // Scroll back to the top of the grid smoothly, but ONLY if they clicked a button (not on first load)
                 if (!isInitialLoad) {
-                    const yOffset = -100; // offset for fixed header
-                    // We must check if the element is visible to get accurate bounds (important for hidden tabs)
+                    const yOffset = -100;
                     if(grid.offsetParent !== null) { 
                         const y = grid.getBoundingClientRect().top + window.pageYOffset + yOffset;
                         window.scrollTo({top: y, behavior: 'smooth'});
@@ -1716,13 +1654,11 @@
                 }
             }
 
-            // Function to create the HTML for the buttons
             function renderPaginationButtons() {
                 paginationContainer.innerHTML = '';
                 
-                if(totalPages <= 1) return; // Hide pagination if only 1 page
+                if(totalPages <= 1) return; 
                 
-                // "Previous" arrow button
                 const prevBtn = document.createElement('button');
                 prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
                 prevBtn.className = `w-10 h-10 rounded-full flex items-center justify-center font-medium transition ${currentPage === 1 ? 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100' : 'bg-white text-gray-700 hover:bg-brand hover:text-white border border-gray-200 hover:border-brand shadow-sm'}`;
@@ -1730,7 +1666,6 @@
                 prevBtn.onclick = () => { if(currentPage > 1) showPage(currentPage - 1); };
                 paginationContainer.appendChild(prevBtn);
 
-                // Page Number buttons (1, 2, 3...)
                 for (let i = 1; i <= totalPages; i++) {
                     const btn = document.createElement('button');
                     btn.innerText = i;
@@ -1739,7 +1674,6 @@
                     paginationContainer.appendChild(btn);
                 }
 
-                // "Next" arrow button
                 const nextBtn = document.createElement('button');
                 nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
                 nextBtn.className = `w-10 h-10 rounded-full flex items-center justify-center font-medium transition ${currentPage === totalPages ? 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100' : 'bg-white text-gray-700 hover:bg-brand hover:text-white border border-gray-200 hover:border-brand shadow-sm'}`;
@@ -1748,21 +1682,15 @@
                 paginationContainer.appendChild(nextBtn);
             }
 
-            // Initialize the first page on load (pass true to prevent scrolling)
             showPage(1, true);
         }
 
         // Initialize features when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
-            // Start pagination for the Sarees section (4 items per page)
             setupPagination('saree-grid', 'saree-pagination', 4);
-            
-            // Initialize pagination for Dresses (3 items per page fits nicely with 3 columns)
             setupPagination('content-threepiece', 'threepiece-pagination', 3);
             setupPagination('content-twopiece', 'twopiece-pagination', 3);
             setupPagination('content-onepiece', 'onepiece-pagination', 3);
-            
-            // Initialize pagination for Jewellery (4 items per page fits 4 columns)
             setupPagination('jewellery-grid', 'jewellery-pagination', 4);
         });
         
