@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport locked to prevent accidental double-tap zooming on mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Products | Shirnahar House</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#fdf6e3', 
+                            DEFAULT: '#b45309', 
+                            dark: '#78350f', 
+                        },
+                        premium: {
+                            black: '#0f172a',
+                            gray: '#334155'
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'card-hover': '0 20px 40px -5px rgba(180,83,9,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html { scroll-behavior: smooth; }
+        .hide-scroll-bar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scroll-bar::-webkit-scrollbar { display: none; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+        
+        /* Mobile Specific Overrides for Native App Feel */
+        a, button, input { touch-action: manipulation; }
+        
+        @media (max-width: 639px) {
+            .mobile-img-h { height: 14rem !important; } /* Tighter aspect ratio for 2 columns */
+        }
+
+        .sticky-nav {
+            position: sticky;
+            top: 72px; 
+            z-index: 40;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .pattern-bg {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .group:hover .product-img { transform: scale(1.05); }
+        .product-img { transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Pagination Animation */
+        .page-hidden { display: none !important; } 
+        @keyframes fadeInUp { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+    </style>
+</head>
+<!-- overscroll-none prevents the elastic "bounce" effect on mobile screens -->
+<body class="bg-[#f8fafc] font-sans text-gray-800 antialiased selection:bg-brand-light selection:text-brand-dark overflow-x-hidden overscroll-none">
+
+    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-[72px]">
+                <div class="flex items-center md:hidden">
+                    <a href="index.html" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:text-brand transition focus:outline-none">
+                        <i class="fas fa-arrow-left text-lg"></i>
+                    </a>
+                </div>
+
+                <div class="flex-shrink-0 flex items-center justify-center md:justify-start flex-1 md:flex-none">
+                    <a href="index.html" class="font-serif text-2xl md:text-3xl font-bold text-gray-900 tracking-tight hover:text-brand transition-colors">
+                        Shirnahar<span class="text-brand">House</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-2 md:space-x-6">
+                    <a href="trackorder.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition"><i class="fas fa-truck text-lg"></i></a>
+                    <a href="account.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition"><i class="far fa-user text-lg"></i></a>
+                    <a href="wishlist.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-red-500 transition"><i class="far fa-heart text-lg"></i></a>
+                    <a href="cart.html" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition relative group">
+                        <i class="fas fa-shopping-bag text-lg"></i>
+                        <span id="cart-badge" class="absolute top-0 right-0 -mt-0.5 -mr-0.5 bg-brand text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-md border border-white transform group-hover:scale-110 transition-transform duration-300" style="display: none;">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sticky Category Nav -->
+    <div class="border-b border-gray-100 sticky-nav shadow-sm hidden md:block">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex space-x-8 py-3.5 overflow-x-auto hide-scroll-bar justify-center md:justify-start">
+                <a href="#sarees" class="category-link text-brand border-b-2 border-brand font-bold text-xs uppercase tracking-widest px-1 py-1.5 whitespace-nowrap transition-colors">Sarees</a>
+                <a href="#dresses" class="category-link text-gray-500 hover:text-brand font-bold text-xs uppercase tracking-widest px-1 py-1.5 whitespace-nowrap transition-colors border-b-2 border-transparent">Dresses</a>
+                <a href="#jewellery" class="category-link text-gray-500 hover:text-brand font-bold text-xs uppercase tracking-widest px-1 py-1.5 whitespace-nowrap transition-colors border-b-2 border-transparent">Jewellery</a>
+            </nav>
+        </div>
+    </div>
+
+    <main class="w-full relative">
+        <div id="catalog-view" class="transition-opacity duration-500 pb-20 md:pb-16">
+            
+            <!-- Hero Banner -->
+            <div class="relative bg-gradient-to-br from-gray-900 via-[#1e1b18] to-[#2d1b0f] text-white py-12 md:py-24 px-4 text-center overflow-hidden">
+                <div class="absolute inset-0 pattern-bg opacity-20"></div>
+                <div class="absolute top-0 left-0 w-64 h-64 bg-brand rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-pulse"></div>
+                <div class="relative z-10 max-w-3xl mx-auto">
+                    <span class="text-brand text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase mb-4 block opacity-90">The Authentic Collection</span>
+                    <h1 class="text-3xl md:text-6xl font-serif font-bold mb-4 leading-tight">Elegance, <span class="italic text-brand-light font-light">Redefined.</span></h1>
+                    <p class="text-gray-300 text-xs md:text-base max-w-xl mx-auto leading-relaxed px-4">Browse our hand-picked selections of traditional weaves and contemporary designs.</p>
+                </div>
+            </div>
+
+            <!-- SAREES SECTION -->
+            <section id="sarees" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 scroll-mt-24">
+                <div class="mb-6 sm:mb-10 text-center md:text-left">
+                    <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900">Premium Sarees</h2>
+                    <div class="h-1 w-16 bg-brand mt-3 rounded-full mx-auto md:mx-0"></div>
+                </div>
+
+                <!-- 2-column mobile grid -->
+                <div id="saree-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+                    <div class="col-span-full py-12 text-center text-gray-500"><i class="fas fa-spinner fa-spin text-3xl mb-3 text-brand"></i><p>Loading...</p></div>
+                </div>
+                <div class="mt-10 flex justify-center items-center space-x-2" id="saree-pagination"></div>
+            </section>
+
+            <!-- DRESSES SECTION -->
+            <section id="dresses" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-gray-100 scroll-mt-24 bg-white/50">
+                <div class="text-center mb-8 sm:mb-12">
+                    <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900 mb-4 sm:mb-6">Dress Collection</h2>
+                    <div class="inline-flex bg-white rounded-full p-1 shadow-sm border border-gray-200 overflow-x-auto max-w-[95%] hide-scroll-bar">
+                        <button onclick="switchTab('threepiece')" id="tab-threepiece" class="px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition-all duration-300 bg-brand text-white shadow-md whitespace-nowrap">Three Piece</button>
+                        <button onclick="switchTab('twopiece')" id="tab-twopiece" class="px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold text-gray-500 hover:text-gray-900 transition-all duration-300 whitespace-nowrap">Two Piece</button>
+                        <button onclick="switchTab('onepiece')" id="tab-onepiece" class="px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold text-gray-500 hover:text-gray-900 transition-all duration-300 whitespace-nowrap">One Piece</button>
+                    </div>
+                </div>
+
+                <div id="wrapper-threepiece" class="transition-all duration-500">
+                    <div id="content-threepiece" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8"></div>
+                    <div class="mt-10 flex justify-center items-center space-x-2" id="threepiece-pagination"></div>
+                </div>
+
+                <div id="wrapper-twopiece" class="hidden transition-all duration-500">
+                    <div id="content-twopiece" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8"></div>
+                    <div class="mt-10 flex justify-center items-center space-x-2" id="twopiece-pagination"></div>
+                </div>
+
+                <div id="wrapper-onepiece" class="hidden transition-all duration-500">
+                    <div id="content-onepiece" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8"></div>
+                    <div class="mt-10 flex justify-center items-center space-x-2" id="onepiece-pagination"></div>
+                </div>
+            </section>
+
+            <!-- JEWELLERY SECTION -->
+            <section id="jewellery" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-gray-100 scroll-mt-24">
+                <div class="mb-6 sm:mb-10 text-center md:text-left">
+                    <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900">Fine Jewellery</h2>
+                    <div class="h-1 w-16 bg-brand mt-3 rounded-full mx-auto md:mx-0"></div>
+                </div>
+
+                <div id="jewellery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8"></div>
+                <div class="mt-10 flex justify-center items-center space-x-2" id="jewellery-pagination"></div>
+            </section>
+        </div>
+
+        <div id="product-view" class="hidden fixed inset-0 z-[100] bg-white overflow-y-auto opacity-0 transition-opacity duration-500 pb-32">
+            
+            <!-- Sticky Header with Consistent Logo / Actions -->
+            <div class="sticky top-0 bg-white z-50 flex items-center justify-between px-4 h-14 border-b border-gray-200 shadow-sm">
+                <button onclick="handleBackNavigation()" class="w-8 h-8 flex items-center justify-center text-gray-800 -ml-1"><i class="fas fa-arrow-left text-xl"></i></button>
+                <div class="flex-shrink-0 flex items-center justify-center">
+                    <a href="index.html" class="font-serif text-xl font-bold text-gray-900 tracking-tight hover:text-brand transition-colors">
+                        Shirnahar<span class="text-brand">House</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 text-gray-700">
+                    <a href="trackorder.html" class="hidden sm:flex items-center"><i class="fas fa-truck text-lg"></i></a>
+                    <a href="account.html" class="hidden sm:flex items-center"><i class="far fa-user text-lg"></i></a>
+                    <a href="wishlist.html" class="hidden sm:flex items-center"><i class="far fa-heart text-lg"></i></a>
+                    <a href="cart.html" class="relative flex items-center">
+                        <i class="fas fa-shopping-bag text-xl"></i>
+                        <span id="detail-cart-badge" class="absolute -top-1.5 -right-2 bg-brand text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white" style="display: none;">0</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Title Above Image -->
+            <div class="px-4 py-3">
+                <h2 id="detail-title" class="text-[15px] text-gray-800 leading-snug font-medium line-clamp-2">Product Name</h2>
+            </div>
+
+            <!-- Swipable Image Carousel Section -->
+            <div class="relative w-full aspect-[4/5] sm:aspect-auto sm:h-[60vh] bg-gray-50">
+                <div id="detail-carousel" class="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scroll-bar">
+                    <img src="" class="w-full h-full object-cover flex-shrink-0 snap-center" id="detail-fallback-img">
+                </div>
+            </div>
+
+            <!-- Dots & Actions -->
+            <div class="px-4 py-3 flex justify-between items-center relative">
+                <div class="flex-1"></div>
+                
+                <!-- Centered Dots -->
+                <div id="carousel-dots" class="absolute left-1/2 transform -translate-x-1/2 flex space-x-1.5">
+                    <!-- Dots injected here -->
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex space-x-5 text-gray-700 text-xl z-10 mb-2">
+                    <button><i class="far fa-heart"></i></button>
+                    <button><i class="fas fa-share-nodes"></i></button>
+                </div>
+            </div>
+
+            <div class="h-1.5 bg-gray-200/60 w-full"></div>
+
+            <!-- Price & Review Section -->
+            <div class="px-4 py-4">
+                <div class="flex items-start gap-2 mb-1">
+                    <span class="text-3xl text-[#cc0c39] font-light hidden" id="detail-discount">-33%</span>
+                    <span class="text-3xl font-bold text-gray-900 flex items-start"><span class="text-lg mt-1 mr-0.5">₹</span><span id="detail-current-price">0</span></span>
+                </div>
+                <p class="text-xs text-gray-500 mb-2 font-medium" id="detail-mrp-container">M.R.P.: <span class="line-through">₹<span id="detail-original-price">0</span></span></p>
+                <p class="text-xs text-gray-700 font-medium mb-3">Inclusive of all taxes</p>
+
+                <!-- Inline Review Stars -->
+                <div class="flex items-center gap-2 mt-2">
+                    <div id="detail-stars-container" class="flex text-[#FFA41C] text-sm">
+                        <!-- Stars injected via JS -->
+                    </div>
+                    <span id="rating-count-text" class="text-xs text-blue-600 font-medium hover:underline cursor-pointer">0 ratings</span>
+                </div>
+                
+                <!-- Stock Status controlled by database via productcontrol.html -->
+                <p class="text-lg font-bold text-green-700 mt-4 mb-1" id="detail-stock-status">In stock</p>
+            </div>
+
+            <div class="h-1.5 bg-gray-200/60 w-full"></div>
+
+            <div class="px-4 py-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-gray-900">Customer Reviews</h3>
+                    <button onclick="openReviewModal()" class="bg-gray-100 hover:bg-brand hover:text-white text-gray-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Write a Review</button>
+                </div>
+                
+                <div id="dynamic-reviews-list" class="space-y-6">
+                    <!-- Reviews injected dynamically -->
+                </div>
+            </div>
+            
+            <div class="h-1.5 bg-gray-200/60 w-full"></div>
+
+            <!-- Recommendation Section -->
+            <div class="py-5 pb-8 bg-white">
+                <div class="px-4">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Customers who viewed this also viewed</h3>
+                    <div class="flex overflow-x-auto gap-4 hide-scroll-bar pb-4" id="recommendations-grid">
+                        <!-- Horizontal Scroll Cards injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Bottom Nav (Amazon style) -->
+            <div class="fixed bottom-0 w-full bg-white px-4 py-3 z-50 border-t border-gray-200 flex flex-col gap-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+                <button class="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 rounded-full py-3.5 text-sm font-medium transition-colors shadow-sm" id="btn-add-to-cart-overlay">Add to Cart</button>
+                <button onclick="handleBuyNow()" id="btn-buy-now-overlay" class="w-full bg-[#ffa41c] hover:bg-[#fa8900] text-gray-900 rounded-full py-3.5 text-sm font-medium transition-colors shadow-sm">Buy Now</button>
+            </div>
+        </div>
+
+        <!-- Write Review Modal -->
+        <div id="review-modal" class="hidden fixed inset-0 z-[120] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-[fadeInUp_0.3s_ease-out]">
+                <button onclick="closeReviewModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+                <h3 class="text-xl font-serif font-bold mb-4">Write a Customer Review</h3>
+                <form onsubmit="handleReviewSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Your Name</label>
+                        <input type="text" id="review-author" required class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none" placeholder="Enter your name">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Rating (1-5 Stars)</label>
+                        <select id="review-stars" class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none">
+                            <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                            <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                            <option value="3">⭐⭐⭐ (3/5)</option>
+                            <option value="2">⭐⭐ (2/5)</option>
+                            <option value="1">⭐ (1/5)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Headline</label>
+                        <input type="text" id="review-headline" required class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none" placeholder="e.g. Absolutely stunning fabric!">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Review</label>
+                        <textarea id="review-body" required rows="3" class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none resize-none" placeholder="Share your experience with this product..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-brand hover:bg-brand-dark text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        <a href="index.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-home text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Home</span>
+        </a>
+        <a href="products.html" class="flex flex-col items-center w-16 text-brand pb-2 relative">
+            <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-brand rounded-b-md"></div>
+            <i class="fas fa-layer-group text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Catalog</span>
+        </a>
+        <a href="account.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-user text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Account</span>
+        </a>
+        <a href="cart.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative group">
+            <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Cart</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = 'shirnahar-house';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let userId = null;
+        let useFallback = false;
+        let globalCatalog = []; 
+        let viewHistory = [];
+        let currentOpenProduct = null; 
+
+        window.showToast = showToast;
+        window.switchTab = switchTab;
+        window.openProduct = openProduct;
+        window.handleBackNavigation = handleBackNavigation;
+        window.openRecommendation = openRecommendation;
+        window.handleAddToCart = handleAddToCart;
+        window.openReviewModal = openReviewModal;
+        window.closeReviewModal = closeReviewModal;
+        window.handleReviewSubmit = handleReviewSubmit;
+        window.handleBuyNow = handleBuyNow;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `flex items-center px-4 py-3 space-x-3 rounded-xl shadow-xl bg-gray-900 text-white transform transition-all duration-300 translate-y-12 opacity-0 text-xs sm:text-sm`;
+            toast.innerHTML = `<i class="fas fa-check-circle text-green-400"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-12', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('translate-y-12', 'opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 2000);
+        }
+
+        function updateCartBadge(count) {
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                badge.style.display = count > 0 ? 'flex' : 'none';
+                badge.textContent = count > 99 ? '99+' : count;
+            }
+            const overlayBadge = document.getElementById('detail-cart-badge');
+            if (overlayBadge) {
+                overlayBadge.style.display = count > 0 ? 'flex' : 'none';
+                overlayBadge.textContent = count > 99 ? '99+' : count;
+            }
+        }
+        
+        function updateFallbackBadge() {
+            try {
+                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                let total = 0; localCart.forEach(i => total += i.quantity); updateCartBadge(total);
+            } catch (e) {}
+        }
+
+        async function loadCatalogFromFirebase() {
+            try {
+                const snapshot = await getDocs(collection(db, 'artifacts', appId, 'products'));
+                let products = [];
+                snapshot.forEach(doc => { if(doc.data().status !== 'draft') products.push({ id: doc.id, ...doc.data() }); });
+
+                if(products.length === 0) {
+                    products = [
+                        { id: 's1', title: 'Emerald Green Georgette Saree', category: 'sarees', price: 3250, image: 'https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80', images: ['https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80', 'https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80', 'https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80', 'https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80'], status: 'active', stock: 12, reviews: [{author: 'Aditi Sharma', rating: 5, headline: 'Beautiful Georgette Saree', body: 'The fabric is incredibly soft and drapes perfectly.', date: '20 Sep 2026'}] },
+                        { id: 's2', title: 'Banarasi Kanjivaram Silk', category: 'sarees', price: 4500, image: 'https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80', images: ['https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80'], status: 'active', stock: 5, reviews: [] },
+                        { id: 's3', title: 'Crimson Red Bridal Saree', category: 'sarees', price: 5500, image: 'https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80', images: ['https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80'], status: 'active', stock: 8, reviews: [] },
+                        { id: 's4', title: 'Soft Cotton Handloom', category: 'sarees', price: 1800, image: 'https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80', images: ['https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80'], status: 'active', stock: 20, reviews: [] },
+                        { id: 's5', title: 'Midnight Blue Chiffon Saree', category: 'sarees', price: 2999, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80', images: ['https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80'], status: 'active', stock: 4, reviews: [] },
+                        
+                        { id: 't1', title: 'Embroidered Salwar Suit', category: 'threepiece', price: 2950, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80', images: ['https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80'], status: 'active', stock: 15, reviews: [] },
+                        { id: 't2', title: 'Pastel Designer Kurta Set', category: 'threepiece', price: 3100, image: 'https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80', images: ['https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80'], status: 'active', reviews: [] },
+                        { id: 't3', title: 'Zari Work Anarkali', category: 'threepiece', price: 4200, image: 'https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80', images: ['https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80'], status: 'active', reviews: [] },
+                        { id: 't4', title: 'Cotton Silk Punjabi Suit', category: 'threepiece', price: 2100, image: 'https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80', images: ['https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80'], status: 'active', reviews: [] },
+                        { id: 't5', title: 'Velvet Winter Suit Set', category: 'threepiece', price: 5600, image: 'https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80', images: ['https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80'], status: 'active', reviews: [] },
+                        
+                        { id: 'j1', title: 'Gold Polki Choker', category: 'jewellery', price: 4500, image: 'https://images.unsplash.com/photo-1599643478524-fb66f7ca066b?w=500&q=80', images: ['https://images.unsplash.com/photo-1599643478524-fb66f7ca066b?w=500&q=80'], status: 'active', reviews: [] },
+                        { id: 'j2', title: 'Antique Bangles (Set of 2)', category: 'jewellery', price: 2800, image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&q=80', images: ['https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&q=80'], status: 'active', reviews: [] },
+                        { id: 'j3', title: 'Kundan Drop Earrings', category: 'jewellery', price: 1500, image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80', images: ['https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80'], status: 'active', reviews: [] },
+                        { id: 'j4', title: 'Pearl Bridal Set', category: 'jewellery', price: 6500, image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&q=80', images: ['https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&q=80'], status: 'active', reviews: [] },
+                        { id: 'j5', title: 'Ruby Gold Pendant', category: 'jewellery', price: 1800, image: 'https://images.unsplash.com/photo-1599643477877-53094032b3bd?w=500&q=80', images: ['https://images.unsplash.com/photo-1599643477877-53094032b3bd?w=500&q=80'], status: 'active', reviews: [] }
+                    ];
+                }
+                globalCatalog = products;
+                
+                renderCategoryGrid('saree-grid', products.filter(p => p.category === 'sarees'));
+                renderCategoryGrid('content-threepiece', products.filter(p => p.category === 'threepiece'));
+                renderCategoryGrid('content-twopiece', products.filter(p => p.category === 'twopiece'));
+                renderCategoryGrid('content-onepiece', products.filter(p => p.category === 'onepiece'));
+                renderCategoryGrid('jewellery-grid', products.filter(p => p.category === 'jewellery'));
+
+                setupPagination('saree-grid', 'saree-pagination', 4);
+                setupPagination('content-threepiece', 'threepiece-pagination', 4);
+                setupPagination('content-twopiece', 'twopiece-pagination', 4);
+                setupPagination('content-onepiece', 'onepiece-pagination', 4);
+                setupPagination('jewellery-grid', 'jewellery-pagination', 4);
+
+            } catch(e) { console.error(e); }
+        }
+
+        function renderCategoryGrid(gridId, items) {
+            const grid = document.getElementById(gridId);
+            if(!grid) return;
+            if(items.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 text-sm">New items arriving soon.</div>`;
+                return;
+            }
+            grid.innerHTML = items.map(product => {
+                const btnText = product.status === 'outofstock' ? 'Out of Stock' : 'Add to Bag';
+                const btnClass = product.status === 'outofstock' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-brand active:scale-95';
+                
+                return `
+                <div class="group bg-white rounded-xl sm:rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden cursor-pointer" onclick="openProduct('${product.id}')">
+                    <div class="relative mobile-img-h sm:h-72 w-full bg-gray-50">
+                        <img src="${product.image}" class="w-full h-full object-cover product-img ${product.status==='outofstock'?'grayscale opacity-60':''}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
+                        <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm" onclick="event.stopPropagation()"><i class="far fa-heart text-sm"></i></button>
+                    </div>
+                    <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                        <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug mb-1">${product.title}</h3>
+                        <div class="mt-auto pt-2 flex flex-col gap-2">
+                            <span class="text-sm sm:text-lg font-bold text-gray-900">₹${parseInt(product.price).toLocaleString('en-IN')}</span>
+                            <button class="w-full py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${btnClass}" onclick="event.stopPropagation(); handleAddToCart('${product.title}', ${product.price}, '${product.image}')">${btnText}</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function setupPagination(gridId, paginationId, itemsPerPage) {
+            const grid = document.getElementById(gridId);
+            const container = document.getElementById(paginationId);
+            if (!grid || !container) return;
+            
+            const items = Array.from(grid.children);
+            const totalPages = Math.ceil(items.length / itemsPerPage);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            function showPage(page) {
+                items.forEach((item, index) => {
+                    if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
+                        item.classList.remove('page-hidden');
+                    } else {
+                        item.classList.add('page-hidden');
+                    }
+                });
+                renderButtons(page);
+            }
+
+            function renderButtons(currentPage) {
+                container.innerHTML = '';
+                for (let i = 1; i <= totalPages; i++) {
+                    const btn = document.createElement('button'); btn.innerText = i;
+                    btn.className = `w-8 h-8 sm:w-10 sm:h-10 rounded-full text-xs sm:text-sm font-bold transition-all mx-1 ${currentPage === i ? 'bg-brand text-white shadow-md scale-110' : 'bg-white text-gray-500 border border-gray-200 hover:border-brand'}`;
+                    btn.onclick = () => { showPage(i); window.scrollTo({top: grid.offsetTop - 100, behavior: 'smooth'}); };
+                    container.appendChild(btn);
+                }
+            }
+            showPage(1);
+        }
+
+        async function handleAddToCart(title, price, img) {
+            try {
+                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                let existing = localCart.find(i => i.name === title);
+                if(existing) existing.quantity += 1;
+                else localCart.push({ id: Date.now().toString(), name: title, price: price, image: img, quantity: 1 });
+                localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
+                updateFallbackBadge(); 
+                showToast('Added to bag successfully');
+            } catch (e) { showToast('Added to cart'); }
+        }
+
+        function switchTab(tabId) {
+            ['threepiece', 'twopiece', 'onepiece'].forEach(id => {
+                const btn = document.getElementById(`tab-${id}`);
+                const wrapper = document.getElementById(`wrapper-${id}`);
+                if (id === tabId) {
+                    btn.classList.add('bg-brand', 'text-white', 'shadow-md'); btn.classList.remove('text-gray-500');
+                    wrapper.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('bg-brand', 'text-white', 'shadow-md'); btn.classList.add('text-gray-500');
+                    wrapper.classList.add('hidden');
+                }
+            });
+        }
+
+        function openProduct(productId) {
+            const product = globalCatalog.find(p => p.id === productId);
+            if (!product) return;
+
+            // Push catalog view to history stack
+            viewHistory.push({ type: 'catalog', scroll: window.scrollY });
+            renderProductDetails(product);
+        }
+
+        function openRecommendation(productId) {
+            const product = globalCatalog.find(p => p.id === productId);
+            if (!product) return;
+
+            // Push current product view to history stack before opening recommendation
+            if (currentOpenProduct) {
+                viewHistory.push({ 
+                    type: 'product', 
+                    id: currentOpenProduct.id, 
+                    scroll: document.getElementById('product-view').scrollTop || 0
+                });
+            }
+            renderProductDetails(product);
+        }
+
+        function renderProductDetails(product) {
+            currentOpenProduct = product;
+            
+            document.getElementById('detail-title').innerText = product.title;
+            
+            const price = parseInt(product.price);
+            // Future-proofing for productcontrol: use product.discount or calculate MRP
+            const discountPercent = product.discount || 33; // Default 33% if not set
+            const originalPrice = product.mrp || Math.round(price / (1 - (discountPercent > 0 ? discountPercent : 33) / 100));
+            
+            document.getElementById('detail-current-price').innerText = price.toLocaleString('en-IN');
+            
+            if (discountPercent > 0 || !product.mrp) {
+                document.getElementById('detail-original-price').innerText = originalPrice.toLocaleString('en-IN');
+                document.getElementById('detail-discount').innerText = `-${discountPercent}%`;
+                document.getElementById('detail-discount').classList.remove('hidden');
+                document.getElementById('detail-mrp-container').classList.remove('hidden');
+            } else {
+                document.getElementById('detail-discount').classList.add('hidden');
+                document.getElementById('detail-mrp-container').classList.add('hidden');
+            }
+
+            // Future-proofing stock control from productcontrol.html
+            const stockStatusEl = document.getElementById('detail-stock-status');
+            const addToCartBtn = document.getElementById('btn-add-to-cart-overlay');
+            const buyNowBtn = document.getElementById('btn-buy-now-overlay');
+            
+            // Set dynamic stock with fallback for older items without stock data
+            const availableStock = product.stock !== undefined ? product.stock : Math.floor(Math.random() * 8) + 3;
+            
+            if (product.status === 'outofstock' || availableStock === 0) {
+                stockStatusEl.innerText = 'Out of stock';
+                stockStatusEl.className = 'text-lg font-bold text-red-600 mt-4 mb-1';
+                addToCartBtn.disabled = true;
+                buyNowBtn.disabled = true;
+                addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                buyNowBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                // Show the actual number of pieces left in stock
+                stockStatusEl.innerText = `Only ${availableStock} left in stock - order soon`;
+                stockStatusEl.className = 'text-lg font-bold text-green-700 mt-4 mb-1';
+                addToCartBtn.disabled = false;
+                buyNowBtn.disabled = false;
+                addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                buyNowBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            addToCartBtn.onclick = () => {
+                if(product.status !== 'outofstock' && availableStock !== 0) {
+                    handleAddToCart(product.title, product.price, product.image);
+                }
+            };
+            
+            const carousel = document.getElementById('detail-carousel');
+            const dotsContainer = document.getElementById('carousel-dots');
+            
+            // Enforce maximum of 4 images dynamically to prepare for productcontrol.html
+            const images = (product.images && product.images.length > 0) ? product.images.slice(0, 4) : [product.image];
+            
+            carousel.innerHTML = images.map(img => `<img src="${img}" class="w-full h-full object-cover flex-shrink-0 snap-center">`).join('');
+            
+            if (images.length > 1) {
+                dotsContainer.innerHTML = images.map((_, i) => `<div class="dot w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${i === 0 ? 'bg-gray-800 scale-125' : 'bg-gray-300'}"></div>`).join('');
+                carousel.onscroll = () => {
+                    const scrollLeft = carousel.scrollLeft;
+                    const width = carousel.clientWidth;
+                    const activeIndex = Math.round(scrollLeft / width);
+                    const dots = dotsContainer.children;
+                    for (let i = 0; i < dots.length; i++) {
+                        dots[i].className = i === activeIndex ? "dot w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 bg-gray-800 scale-125" : "dot w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 bg-gray-300";
+                    }
+                };
+            } else {
+                dotsContainer.innerHTML = '';
+                carousel.onscroll = null;
+            }
+
+            renderReviews(product);
+
+            const recs = globalCatalog.filter(p => p.id !== product.id).sort(() => 0.5 - Math.random()).slice(0,6);
+            document.getElementById('recommendations-grid').innerHTML = recs.map(p => `
+                <div class="w-32 flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer shadow-sm" onclick="openRecommendation('${p.id}')">
+                    <img src="${p.image}" class="w-full h-40 object-cover">
+                    <div class="p-2">
+                        <p class="text-[10px] text-blue-600 hover:underline line-clamp-2 leading-tight mb-1">${p.title}</p>
+                        <p class="text-sm font-bold text-gray-900">₹${parseInt(p.price).toLocaleString('en-IN')}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('catalog-view').classList.add('hidden');
+            const pv = document.getElementById('product-view'); 
+            pv.classList.remove('hidden'); 
+            pv.scrollTop = 0;
+            carousel.scrollLeft = 0;
+            setTimeout(() => pv.classList.remove('opacity-0'), 50);
+        }
+
+        function renderReviews(product) {
+            const list = document.getElementById('dynamic-reviews-list');
+            const ratingText = document.getElementById('rating-count-text');
+            const starsContainer = document.getElementById('detail-stars-container');
+            const reviews = product.reviews || [];
+
+            // Future-proofing: Calculate dynamic average rating based on data
+            let avgRating = product.averageRating || 4.5; // Default mock rating
+            if (reviews.length > 0) {
+                const total = reviews.reduce((sum, rev) => sum + (rev.rating || 5), 0);
+                avgRating = total / reviews.length;
+            }
+
+            // Render Stars
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(avgRating)) starsHtml += '<i class="fas fa-star"></i>';
+                else if (i === Math.ceil(avgRating) && !Number.isInteger(avgRating)) starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                else starsHtml += '<i class="far fa-star"></i>';
+            }
+            starsContainer.innerHTML = starsHtml;
+
+            // Rating count text (using real reviews length + mock base for visual heft)
+            const displayCount = reviews.length + (product.mockReviewCount || 1240);
+            ratingText.innerText = `${displayCount} ratings`;
+
+            if (reviews.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-500 italic">No customer reviews yet. Be the first to review this product!</p>`;
+                return;
+            }
+
+            list.innerHTML = reviews.map(rev => `
+                <div>
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500"><i class="fas fa-user text-xs"></i></div>
+                        <span class="text-sm font-medium text-gray-900">${rev.author}</span>
+                    </div>
+                    <div class="flex items-center text-[#FFA41C] text-xs mb-1">
+                        ${'<i class="fas fa-star"></i>'.repeat(rev.rating)}${'<i class="far fa-star"></i>'.repeat(5 - rev.rating)}
+                        <span class="text-gray-900 font-bold ml-2 text-sm">${rev.headline}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Reviewed on ${rev.date}</p>
+                    <p class="text-sm text-gray-800 leading-relaxed mb-2">${rev.body}</p>
+                    <p class="text-xs text-gray-500 font-medium"><i class="fas fa-check text-orange-500 mr-1"></i> Verified Purchase</p>
+                </div>
+            `).join('');
+        }
+
+        function openReviewModal() {
+            document.getElementById('review-modal').classList.remove('hidden');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').classList.add('hidden');
+        }
+
+        function handleReviewSubmit(e) {
+            e.preventDefault();
+            if (!currentOpenProduct) return;
+
+            const newRev = {
+                author: document.getElementById('review-author').value,
+                rating: parseInt(document.getElementById('review-stars').value),
+                headline: document.getElementById('review-headline').value,
+                body: document.getElementById('review-body').value,
+                date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            };
+
+            if (!currentOpenProduct.reviews) currentOpenProduct.reviews = [];
+            currentOpenProduct.reviews.unshift(newRev);
+
+            renderReviews(currentOpenProduct);
+            closeReviewModal();
+            e.target.reset();
+            showToast('Review submitted successfully!');
+        }
+
+        function handleBuyNow() {
+            if (currentOpenProduct && currentOpenProduct.status !== 'outofstock' && currentOpenProduct.stock !== 0) {
+                handleAddToCart(currentOpenProduct.title, currentOpenProduct.price, currentOpenProduct.image);
+                setTimeout(() => {
+                    window.location.href = 'cart.html';
+                }, 400);
+            }
+        }
+
+        function handleBackNavigation() {
+            if (viewHistory.length === 0) return;
+            const last = viewHistory.pop();
+            
+            if (last.type === 'catalog') {
+                document.getElementById('product-view').classList.add('opacity-0');
+                setTimeout(() => { 
+                    document.getElementById('product-view').classList.add('hidden'); 
+                    document.getElementById('catalog-view').classList.remove('hidden'); 
+                    window.scrollTo(0, last.scroll); 
+                }, 300);
+            } else if (last.type === 'product') {
+                // Restore the previous product from the history stack
+                const prevProduct = globalCatalog.find(p => p.id === last.id);
+                if (prevProduct) {
+                    renderProductDetails(prevProduct);
+                    setTimeout(() => {
+                        document.getElementById('product-view').scrollTop = last.scroll;
+                    }, 50);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            updateFallbackBadge();
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        document.querySelectorAll('.category-link').forEach(link => {
+                            if(link.getAttribute('href') === `#${entry.target.id}`) { link.classList.add('text-brand', 'border-brand'); link.classList.remove('text-gray-500', 'border-transparent'); } 
+                            else { link.classList.remove('text-brand', 'border-brand'); link.classList.add('text-gray-500', 'border-transparent'); }
+                        });
+                    }
+                });
+            }, { rootMargin: '-100px 0px -50% 0px' });
+            document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+
+            await loadCatalogFromFirebase();
+        });
+    </script>
+</body>
+</html>
