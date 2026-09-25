@@ -87,11 +87,10 @@
 
     <main class="flex-grow w-full relative pattern-bg flex items-center justify-center py-8">
         
-        <!-- Auth Section (Visible when logged out) -->
+        <!-- Auth Section -->
         <div id="auth-section" class="w-full max-w-md px-4 auth-transition">
             <div class="bg-white rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden">
                 
-                <!-- Toggle Tabs -->
                 <div class="flex border-b border-gray-100">
                     <button onclick="switchAuthTab('login')" id="tab-login" class="flex-1 py-4 text-sm font-bold text-brand border-b-2 border-brand transition-colors">Login</button>
                     <button onclick="switchAuthTab('signup')" id="tab-signup" class="flex-1 py-4 text-sm font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition-colors">Sign Up</button>
@@ -120,14 +119,13 @@
                         </button>
                     </form>
 
-                    <!-- Sign Up Form (Hidden initially) -->
+                    <!-- Sign Up Form -->
                     <form id="signup-form" onsubmit="handleAuthSubmit(event, 'signup')" class="space-y-4 hidden" novalidate>
                         <div class="text-center mb-4">
                             <h2 class="text-2xl font-serif font-bold text-gray-900">Create Account</h2>
                             <p class="text-xs text-gray-500 mt-1">Join us to enjoy a personalized shopping experience.</p>
                         </div>
                         
-                        <!-- Personal Info -->
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Full Name</label>
@@ -142,7 +140,6 @@
                             </div>
                         </div>
 
-                        <!-- Delivery Address -->
                         <div class="space-y-3 border-t border-gray-100 pt-3 mt-3">
                             <h3 class="text-[11px] font-bold uppercase text-gray-800 tracking-wider ml-1 mb-2">Delivery Address</h3>
                             <div>
@@ -160,7 +157,6 @@
                             </div>
                         </div>
 
-                        <!-- Security -->
                         <div class="space-y-3 border-t border-gray-100 pt-3 mt-3">
                             <h3 class="text-[11px] font-bold uppercase text-gray-800 tracking-wider ml-1 mb-2">Security</h3>
                             <div>
@@ -180,7 +176,7 @@
             </div>
         </div>
 
-        <!-- Dashboard Section (Visible when logged in) -->
+        <!-- Dashboard Section -->
         <div id="dashboard-section" class="w-full max-w-4xl px-4 hidden auth-transition opacity-0 translate-y-4">
             
             <div class="bg-white rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] border border-gray-100 p-6 sm:p-10 mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
@@ -431,171 +427,83 @@
             if (isLoggedIn && user && !user.isAnonymous) {
                 
                 let name = '...';
-                let phone = user.email ? user.email.replace('@shirnahar.app', '') : '...';
+                let phone = user.email ? user.email.replace('@shirnahar.app', '').replace('+91', '') : '...';
                 let addressText = '...';
                 
                 currentUserData = { name: '', address: { street: '', city: '', state: 'Tripura' } };
 
                 try {
+                    // ADMIN CHECK: Query the specific path artifacts/shirnahar-house/admins/{user.uid}
+                    const adminDoc = await getDoc(doc(db, 'artifacts', appId, 'admins', user.uid));
+                    
+                    if (adminDoc.exists()) {
+                        showToast('Admin Login Successful! Redirecting...', 'success');
+                        setTimeout(() => window.location.href = 'dashboard.html', 800);
+                        return; // Stop execution, user is admin
+                    }
+
+                    // REGULAR USER LOGIC
                     const userDoc = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid));
                     if (userDoc.exists()) {
                         const data = userDoc.data();
                         currentUserData = data;
                         
                         if (data.name) name = data.name;
-                        if (data.phone) phone = data.phone;
-                        
+                        if (data.phone) phone = data.phone.replace('+91', '');
                         if (data.address) {
-                            const { street, city, state } = data.address;
-                            addressText = [street, city, state].filter(Boolean).join(', ');
+                            addressText = `${data.address.street}, ${data.address.city}, ${data.address.state}`;
                         }
                     }
-                } catch(e) { console.error(e); }
 
-                document.getElementById('user-display-name').innerText = name;
-                document.getElementById('user-display-email').innerText = phone;
-                document.getElementById('user-avatar').innerText = name.charAt(0).toUpperCase();
+                    document.getElementById('user-display-name').innerText = name;
+                    document.getElementById('user-display-email').innerText = '+91 ' + phone;
+                    document.getElementById('user-avatar').innerText = name.charAt(0).toUpperCase() || '-';
+                    
+                    document.getElementById('profile-name').innerText = name;
+                    document.getElementById('profile-phone').innerText = '+91 ' + phone;
+                    document.getElementById('profile-address').innerText = addressText;
 
-                const pName = document.getElementById('profile-name');
-                if(pName) pName.innerText = name;
-                
-                const pPhone = document.getElementById('profile-phone');
-                if(pPhone) pPhone.innerText = phone;
-                
-                const pAddr = document.getElementById('profile-address');
-                if(pAddr) pAddr.innerText = addressText || 'No address provided.';
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
 
-                authSection.classList.add('hidden');
-                dashSection.classList.remove('hidden');
+                authSection.classList.add('opacity-0', '-translate-y-4');
                 setTimeout(() => {
-                    dashSection.classList.remove('opacity-0', 'translate-y-4');
-                }, 50);
+                    authSection.classList.add('hidden');
+                    dashSection.classList.remove('hidden');
+                    
+                    requestAnimationFrame(() => {
+                        dashSection.classList.remove('opacity-0', 'translate-y-4');
+                    });
+                }, 400);
+
             } else {
                 dashSection.classList.add('opacity-0', 'translate-y-4');
                 setTimeout(() => {
                     dashSection.classList.add('hidden');
                     authSection.classList.remove('hidden');
-                    document.getElementById('tab-login').parentElement.classList.remove('hidden');
-                    switchAuthTab('login');
+                    
+                    requestAnimationFrame(() => {
+                        authSection.classList.remove('opacity-0', '-translate-y-4');
+                    });
                 }, 400);
-            }
-        }
-
-        function openEditModal() {
-            if (currentUserData) {
-                document.getElementById('edit-name').value = currentUserData.name || '';
-                document.getElementById('edit-address').value = currentUserData.address?.street || '';
-                document.getElementById('edit-city').value = currentUserData.address?.city || '';
-            }
-            document.getElementById('edit-profile-modal').classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-profile-modal').classList.add('hidden');
-        }
-
-        async function handleProfileUpdate(e) {
-            e.preventDefault();
-            const btn = document.getElementById('edit-submit-btn');
-            const ogText = btn.innerText;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            btn.disabled = true;
-
-            const newName = document.getElementById('edit-name').value;
-            const newStreet = document.getElementById('edit-address').value;
-            const newCity = document.getElementById('edit-city').value;
-            
-            if(!newName || !newStreet || !newCity) {
-                showToast('Please fill all profile fields.', 'error');
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-                return;
-            }
-
-            try {
-                const user = auth.currentUser;
-                if (user.displayName !== newName) {
-                    await updateProfile(user, { displayName: newName });
-                }
-                
-                await setDoc(doc(db, 'artifacts', appId, 'users', user.uid), {
-                    name: newName,
-                    address: { street: newStreet, city: newCity, state: 'Tripura' }
-                }, { merge: true });
-
-                showToast('Profile updated successfully!');
-                closeEditModal();
-                await toggleUI(true, user); 
-            } catch (error) {
-                showToast('Failed to update profile.', 'error');
-                console.error(error);
-            } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-            }
-        }
-
-        function openDeleteModal() {
-            document.getElementById('delete-confirm-modal').classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('delete-confirm-modal').classList.add('hidden');
-        }
-
-        async function executeAccountDeletion() {
-            const user = auth.currentUser;
-            if (!user) return;
-            
-            const btn = document.getElementById('confirm-delete-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
-            btn.disabled = true;
-            
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid));
-                await deleteUser(user);
-                
-                showToast('Account permanently deleted from Firebase.');
-                closeDeleteModal();
-            } catch (error) {
-                console.error("Delete account error:", error);
-                closeDeleteModal();
-                if (error.code === 'auth/requires-recent-login') {
-                    showToast('Security check: Please sign out and sign back in to prove your identity before deleting.', 'error');
-                } else {
-                    showToast('Failed to delete account. Please try again later.', 'error');
-                }
-                btn.innerHTML = originalText;
-                btn.disabled = false;
             }
         }
 
         async function handleAuthSubmit(e, mode) {
             e.preventDefault();
             
-            const phoneInput = document.getElementById(mode + '-phone').value;
-            const password = document.getElementById(mode + '-password').value;
-            
-            if (!phoneInput || phoneInput.length !== 10 || isNaN(phoneInput)) {
-                return showToast('Please enter a valid 10-digit mobile number.', 'error');
-            }
-            if (!password || password.length < 6) {
-                return showToast('Password must be at least 6 characters long.', 'error');
+            // Basic manual validation since browser validation is hidden by novalidate
+            const phoneInput = document.getElementById(`${mode}-phone`).value;
+            if (phoneInput.length !== 10) {
+                showToast('Please enter a valid 10-digit phone number.', 'error');
+                return;
             }
 
-            if (mode === 'signup') {
-                const name = document.getElementById('signup-name').value;
-                const address = document.getElementById('signup-address').value;
-                const city = document.getElementById('signup-city').value;
-                const confirmPassword = document.getElementById('signup-confirm-password').value;
-                
-                if (!name || !address || !city) {
-                    return showToast('Please fill in all your personal and address details.', 'error');
-                }
-                if (password !== confirmPassword) {
-                    return showToast('Passwords do not match!', 'error');
-                }
+            const password = document.getElementById(`${mode}-password`).value;
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters.', 'error');
+                return;
             }
 
             const pseudoEmail = `+91${phoneInput}@shirnahar.app`;
@@ -619,6 +527,13 @@
                     const name = document.getElementById('signup-name').value;
                     const address = document.getElementById('signup-address').value;
                     const city = document.getElementById('signup-city').value;
+                    
+                    if (!name || !address || !city) {
+                        showToast('Please fill in all details.', 'error');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        return;
+                    }
 
                     const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
                     const user = userCredential.user;
@@ -631,22 +546,20 @@
                         phone: `+91${phoneInput}`,
                         address: { street: address, city: city, state: 'Tripura' },
                         createdAt: new Date().toISOString()
-                    }, { merge: true });
+                    });
                     
-                    await toggleUI(true, auth.currentUser);
                     showToast('Account created successfully!');
                 } else {
                     await signInWithEmailAndPassword(auth, pseudoEmail, password);
-                    await toggleUI(true, auth.currentUser);
-                    showToast('Logged in successfully!');
+                    // toggleUI logic runs automatically via onAuthStateChanged below
                 }
                 e.target.reset();
             } catch (error) {
                 console.error("Auth Error:", error);
                 if (error.code === 'auth/email-already-in-use') {
-                    showToast('Phone number is already registered.', 'error');
-                } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                    showToast('Account not found', 'error');
+                    showToast('This phone number is already registered.', 'error');
+                } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    showToast('Account not found or incorrect password.', 'error');
                 } else {
                     showToast('Authentication failed. Please try again.', 'error');
                 }
@@ -662,6 +575,103 @@
                 showToast('Signed out successfully');
             } catch (error) {
                 showToast('Error signing out', 'error');
+            }
+        }
+
+        function openEditModal() {
+            if (currentUserData) {
+                document.getElementById('edit-name').value = currentUserData.name || '';
+                if (currentUserData.address) {
+                    document.getElementById('edit-address').value = currentUserData.address.street || '';
+                    document.getElementById('edit-city').value = currentUserData.address.city || '';
+                }
+            }
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+        }
+
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const btn = document.getElementById('edit-submit-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+            btn.disabled = true;
+
+            const newName = document.getElementById('edit-name').value;
+            const newAddress = document.getElementById('edit-address').value;
+            const newCity = document.getElementById('edit-city').value;
+
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'users', user.uid);
+                await setDoc(userRef, {
+                    name: newName,
+                    address: {
+                        street: newAddress,
+                        city: newCity,
+                        state: 'Tripura'
+                    }
+                }, { merge: true });
+
+                await updateProfile(user, { displayName: newName });
+                
+                showToast('Profile updated successfully!');
+                closeEditModal();
+                
+                // Refresh UI immediately
+                toggleUI(true, user);
+            } catch (error) {
+                showToast('Failed to update profile.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function openDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        }
+
+        async function executeAccountDeletion() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const btn = document.getElementById('confirm-delete-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+            
+            try {
+                // Delete user document from Firestore
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid));
+                
+                // Delete user from Auth
+                await deleteUser(user);
+                
+                showToast('Account permanently deleted.');
+                closeDeleteModal();
+                // We DO NOT reload the page here. 
+                // Firebase onAuthStateChanged will detect the deletion and slide the UI back to login naturally.
+                
+            } catch (error) {
+                console.error("Delete account error:", error);
+                closeDeleteModal();
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast('Security check: Please sign out and sign back in to verify your identity before deleting.', 'error');
+                } else {
+                    showToast('Failed to delete account. Please try again later.', 'error');
+                }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
