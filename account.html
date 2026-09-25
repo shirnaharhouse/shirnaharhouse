@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Viewport tag explicitly prevents zooming on mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Account | Shirnahar House</title>
     
@@ -27,14 +28,6 @@
                             light: '#fdf6e3', 
                             DEFAULT: '#b45309', 
                             dark: '#78350f', 
-                        },
-                        // Refined colors for a more premium feel instead of generic Amazon colors
-                        action: {
-                            primary: '#b45309', // Brand color
-                            primaryHover: '#92400e',
-                            secondary: '#f9fafb',
-                            secondaryHover: '#f3f4f6',
-                            border: '#e5e7eb'
                         }
                     },
                     boxShadow: {
@@ -45,32 +38,22 @@
         }
     </script>
     <style>
-        /* Mobile nav safe area padding */
-        .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom);
-        }
+        /* Mobile Specific Overrides for Native App Feel */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .bg-premium-gradient { background: linear-gradient(135deg, #ffffff 0%, #fdf6e3 100%); }
         
-        /* Subtle animated background gradient */
-        .bg-premium-gradient {
-            background: linear-gradient(135deg, #ffffff 0%, #fdf6e3 100%);
-        }
+        /* Disable double-tap zoom on links and buttons */
+        a, button, input { touch-action: manipulation; }
         
-        /* Refined icon styling */
         .feature-icon-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(180, 83, 9, 0.1); /* Subtle brand tint border */
-            transition: all 0.3s ease;
+            width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            background-color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(180, 83, 9, 0.1); transition: all 0.3s ease;
         }
     </style>
 </head>
-<body class="bg-premium-gradient font-sans text-gray-900 antialiased min-h-screen flex flex-col pb-16 md:pb-0 selection:bg-brand-light selection:text-brand-dark">
+<!-- overscroll-none prevents the elastic "bounce" effect on mobile screens -->
+<body class="bg-premium-gradient font-sans text-gray-900 antialiased min-h-screen flex flex-col pb-16 md:pb-0 selection:bg-brand-light selection:text-brand-dark overscroll-none overflow-x-hidden">
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
@@ -84,70 +67,54 @@
         </div>
     </header>
 
-    <!-- Main Content Container -->
     <main class="flex-1 w-full max-w-md mx-auto flex flex-col pt-16">
         
-        <!-- Compact Elegant Header (Removed image to fix broken alt text and empty space) -->
+        <!-- Header Section -->
         <div class="w-[calc(100%-2rem)] mx-auto py-7 mt-2 bg-gradient-to-br from-brand-dark to-brand rounded-2xl shadow-lg mb-6 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
-            <!-- Subtle pattern overlay -->
             <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E');"></div>
-            
-            <h1 class="text-3xl md:text-4xl font-serif font-bold text-white tracking-wide drop-shadow-md relative z-10">
-                Shirnahar House
-            </h1>
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-white tracking-wide drop-shadow-md relative z-10">Shirnahar House</h1>
             <p class="text-brand-light text-[10px] font-medium tracking-widest uppercase mt-1.5 opacity-90 relative z-10">Authentic Elegance</p>
         </div>
 
         <div class="px-6 md:px-8 flex-1 flex flex-col md:bg-white md:shadow-soft md:rounded-3xl md:mx-4 md:mb-12 md:pb-8 relative overflow-hidden">
             
-            <!-- Loading State -->
+            <!-- Loading Overlay -->
             <div id="account-loading-view" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm transition-opacity duration-300">
                 <i class="fas fa-circle-notch fa-spin text-4xl text-brand mb-4"></i>
                 <span class="text-sm font-medium text-gray-500 tracking-wide animate-pulse mt-2">Securely connecting...</span>
             </div>
 
-            <!-- Welcome View (Hidden by default to prevent flashing) -->
+            <!-- Welcome Section -->
             <div id="welcome-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 transform translate-x-0 opacity-100">
-                <!-- Greeting -->
                 <div class="text-center mb-6 mt-2">
                     <h2 class="text-2xl font-serif text-gray-900 mb-1">Welcome Back</h2>
                     <p class="text-gray-500 text-sm">Sign in to access your wishlist, track orders, and discover exclusive offers.</p>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="space-y-4 mb-10 w-full">
-                    <button onclick="showSection('register-section')" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand flex justify-center items-center group">
+                    <button onclick="showSection('register-section')" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center group">
                         <span>Create an Account</span>
                         <i class="fas fa-arrow-right ml-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 absolute right-6"></i>
                     </button>
-                    
-                    <button onclick="showSection('login-section')" class="w-full bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 py-3 rounded-xl font-medium text-[15px] transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 flex justify-center items-center">
+                    <button onclick="showSection('login-section')" class="w-full bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 py-3 rounded-xl font-medium text-[15px] transition-all duration-300 flex justify-center items-center">
                         Sign In
                     </button>
                 </div>
 
-                <!-- Divider -->
                 <div class="relative flex py-2 items-center mb-8">
                     <div class="flex-grow border-t border-gray-200"></div>
                     <span class="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium uppercase tracking-widest">Why join us?</span>
                     <div class="flex-grow border-t border-gray-200"></div>
                 </div>
 
-                <!-- Value Propositions List -->
                 <div class="space-y-6">
-                    
-                    <!-- Item 1: Cashback -->
                     <div class="flex items-start group">
-                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0">
-                            <i class="fas fa-wallet text-lg"></i>
-                        </div>
+                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0"><i class="fas fa-wallet text-lg"></i></div>
                         <div class="pt-1">
                             <h3 class="text-[15px] font-semibold text-gray-900 mb-0.5 group-hover:text-brand transition-colors">First Order Reward</h3>
                             <p class="text-[13px] text-gray-500 leading-snug">Get up to ₹100 cashback instantly credited to your wallet on your first purchase.</p>
                         </div>
                     </div>
-
-                    <!-- Item 2: Free Delivery -->
                     <div class="flex items-start group">
                         <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0 relative">
                             <i class="fas fa-truck-fast text-lg"></i>
@@ -158,33 +125,24 @@
                             <p class="text-[13px] text-gray-500 leading-snug">Enjoy free delivery on your first order across our top premium categories.</p>
                         </div>
                     </div>
-
-                    <!-- Item 3: Easy Returns -->
                     <div class="flex items-start group">
-                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0">
-                            <i class="fas fa-box-open text-lg"></i>
-                        </div>
+                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0"><i class="fas fa-box-open text-lg"></i></div>
                         <div class="pt-1">
                             <h3 class="text-[15px] font-semibold text-gray-900 mb-0.5 group-hover:text-brand transition-colors">Hassle-Free Returns</h3>
                             <p class="text-[13px] text-gray-500 leading-snug">Not perfectly satisfied? We offer an easy, no-questions-asked return process.</p>
                         </div>
                     </div>
-
-                    <!-- Item 4: Pay on Delivery -->
                     <div class="flex items-start group">
-                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0">
-                            <i class="far fa-handshake text-lg"></i>
-                        </div>
+                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0"><i class="far fa-handshake text-lg"></i></div>
                         <div class="pt-1">
                             <h3 class="text-[15px] font-semibold text-gray-900 mb-0.5 group-hover:text-brand transition-colors">Pay on Delivery</h3>
                             <p class="text-[13px] text-gray-500 leading-snug">Shop with confidence. Pay in cash or UPI only when the package reaches your door.</p>
                         </div>
                     </div>
-                    
                 </div>
             </div>
 
-            <!-- Register View (Hidden by default) -->
+            <!-- Register Section -->
             <div id="register-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
                 <div class="flex items-center mb-6 mt-2">
                     <button onclick="showSection('welcome-section')" class="text-gray-400 hover:text-brand transition w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 shadow-sm border border-gray-100"><i class="fas fa-arrow-left"></i></button>
@@ -221,14 +179,13 @@
                         <input type="password" id="reg-pass-confirm" required placeholder="Confirm your password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
                         <p id="pass-error" class="text-red-500 text-xs mt-1.5 ml-1 hidden font-medium">Passwords do not match.</p>
                     </div>
-                    
                     <button type="submit" class="w-full mt-6 bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5">
                         Create Account
                     </button>
                 </form>
             </div>
 
-            <!-- Login View (Hidden by default) -->
+            <!-- Login Section -->
             <div id="login-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
                 <div class="flex items-center mb-8 mt-2">
                     <button onclick="showSection('welcome-section')" class="text-gray-400 hover:text-brand transition w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 shadow-sm border border-gray-100"><i class="fas fa-arrow-left"></i></button>
@@ -239,7 +196,7 @@
                         <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Phone No.</label>
                         <div class="flex shadow-sm rounded-xl">
                             <span class="inline-flex items-center px-4 py-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm font-medium">+91</span>
-                            <input type="tel" pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" required placeholder="10-digit number" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
+                            <input type="tel" id="login-phone" pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" required placeholder="10-digit number" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
                         </div>
                     </div>
                     <div>
@@ -247,63 +204,47 @@
                             <span>Password</span>
                             <a href="#" class="text-brand hover:underline text-[10px] normal-case">Forgot password?</a>
                         </label>
-                        <input type="password" required placeholder="Enter your password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
+                        <input type="password" id="login-pass" required placeholder="Enter your password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
                     </div>
-                    
                     <button type="submit" class="w-full mt-8 bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5">
                         Sign In
                     </button>
                 </form>
             </div>
             
-            <!-- Profile View (Hidden by default - Only shows if Logged In) -->
+            <!-- Profile Section -->
             <div id="profile-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
-                
-                <!-- Header with Name and Avatar -->
                 <div class="flex items-center space-x-4 mb-6 mt-2 bg-white p-4 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-brand/10 relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-bl-full pointer-events-none"></div>
-                    <div class="w-16 h-16 bg-gradient-to-br from-brand-light to-brand text-brand-dark rounded-full flex items-center justify-center text-2xl font-serif font-bold shadow-inner border border-brand/20 relative z-10" id="profile-initials">
-                        --
-                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-brand-light to-brand text-brand-dark rounded-full flex items-center justify-center text-2xl font-serif font-bold shadow-inner border border-brand/20 relative z-10" id="profile-initials">--</div>
                     <div class="relative z-10 flex-1">
                         <h2 class="text-xl font-serif text-gray-900 font-bold mb-0.5 truncate" id="profile-name-display">Welcome User</h2>
                         <p class="text-gray-500 text-sm flex items-center"><i class="fas fa-phone-alt text-brand/70 mr-1.5 text-[10px]"></i> <span id="profile-phone-display">+91 ----------</span></p>
                     </div>
                 </div>
 
-                <!-- Quick Action Grid -->
                 <div class="grid grid-cols-2 gap-3 mb-6">
                     <a href="trackorder.html" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group">
-                        <div class="w-10 h-10 rounded-full bg-orange-50 text-brand flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <i class="fas fa-box"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-full bg-orange-50 text-brand flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="fas fa-box"></i></div>
                         <span class="text-[13px] font-semibold text-gray-800">Your Orders</span>
                     </a>
                     <a href="wishlist.html" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group">
-                        <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <i class="far fa-heart"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="far fa-heart"></i></div>
                         <span class="text-[13px] font-semibold text-gray-800">Wishlist</span>
                     </a>
                     <button class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group relative">
                         <span class="absolute top-2 right-2 bg-green-100 text-green-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full">₹100</span>
-                        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <i class="fas fa-wallet"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="fas fa-wallet"></i></div>
                         <span class="text-[13px] font-semibold text-gray-800">Wallet</span>
                     </button>
                     <button class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group">
-                        <div class="w-10 h-10 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <i class="fas fa-headset"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="fas fa-headset"></i></div>
                         <span class="text-[13px] font-semibold text-gray-800">Support</span>
                     </button>
                 </div>
 
-                <!-- Account Settings List -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
                     <h3 class="px-5 py-4 text-[11px] font-bold text-gray-500 border-b border-gray-100 bg-gray-50 uppercase tracking-wider">Account Settings</h3>
-                    
                     <div class="divide-y divide-gray-100">
                         <button onclick="openEditProfile()" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
                             <div class="flex items-center">
@@ -312,7 +253,6 @@
                             </div>
                             <i class="fas fa-chevron-right text-xs text-gray-300 group-hover:text-brand transition-colors"></i>
                         </button>
-                        
                         <button onclick="openEditProfile()" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
                             <div class="flex items-center text-left w-full overflow-hidden">
                                 <i class="fas fa-map-marker-alt w-6 text-gray-400 group-hover:text-brand transition-colors flex-shrink-0"></i>
@@ -329,13 +269,12 @@
                 <a href="index.html" class="mt-auto mb-3 w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center">
                     <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
                 </a>
-
                 <button onclick="handleLogout()" class="w-full bg-white text-red-500 border border-red-100 shadow-sm py-3.5 rounded-xl font-medium text-[15px] transition-all duration-300 flex justify-center items-center hover:bg-red-50">
                     <i class="fas fa-sign-out-alt mr-2"></i> Sign Out
                 </button>
             </div>
 
-            <!-- Edit Profile View (Hidden by default) -->
+            <!-- Edit Profile Section -->
             <div id="edit-profile-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
                 <div class="flex items-center mb-6 mt-2">
                     <button onclick="showSection('profile-section')" class="text-gray-400 hover:text-brand transition w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 shadow-sm border border-gray-100"><i class="fas fa-arrow-left"></i></button>
@@ -363,7 +302,6 @@
                         <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Saved Address</label>
                         <textarea id="edit-address" required rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm resize-none"></textarea>
                     </div>
-                    
                     <button type="submit" class="w-full mt-6 bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5">
                         Save Changes
                     </button>
@@ -373,49 +311,36 @@
         </div>
     </main>
 
-    <!-- Mobile Bottom Navigation (Hidden on desktop) -->
+    <!-- Bottom Navigation -->
     <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
-        
-        <!-- Home -->
         <a href="index.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
             <i class="fas fa-home text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Home</span>
         </a>
-        
-        <!-- You (Active View) -->
         <a href="account.html" class="flex flex-col items-center w-16 text-brand pb-2 relative">
             <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-brand rounded-b-md"></div>
             <i class="fas fa-user text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Account</span>
         </a>
-        
-        <!-- Wallet -->
         <a href="#" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
             <i class="fas fa-wallet text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Wallet</span>
         </a>
-        
-        <!-- Cart -->
         <a href="cart.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative">
-            <div class="relative">
-                <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
-                <span class="absolute -top-1 -right-2 bg-brand text-white text-[9px] font-bold rounded-full h-[15px] w-[15px] flex items-center justify-center shadow-sm border border-white">3</span>
-            </div>
+            <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Cart</span>
         </a>
-        
-        <!-- Menu -->
         <a href="#" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
             <i class="fas fa-bars-staggered text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Menu</span>
         </a>
     </nav>
 
-    <!-- Interactive Scripts for Account Flow -->
+    <!-- Scripts with strict Javascript content (No HTML comments allowed) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'shirnahar-house';
         const firebaseConfig = {
@@ -432,7 +357,6 @@
         const db = getFirestore(app);
         let userId = null;
 
-        // Expose to window for inline HTML onclick handlers
         window.showToast = showToast;
         window.showSection = showSection;
         window.handleRegister = handleRegister;
@@ -442,47 +366,31 @@
         window.openEditProfile = openEditProfile;
         window.handleEditProfile = handleEditProfile;
 
-        // Custom Toast Notification system 
         function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
             const container = document.getElementById('toast-container');
             if (!container) return;
-            
             const toast = document.createElement('div');
-            
-            // Sleek, minimal in-website pill design instead of system-like popups
             const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
             const iconColor = type === 'success' ? 'text-green-400' : (type === 'info' ? 'text-brand-light' : 'text-white');
 
             toast.className = `flex items-center px-5 py-3 space-x-3 rounded-full shadow-2xl ${bgColor} text-white transform transition-all duration-400 translate-y-12 opacity-0 pointer-events-auto`;
-            
-            toast.innerHTML = `
-                <i class="${icon} ${iconColor} text-lg"></i>
-                <span class="text-sm font-medium tracking-wide">${message}</span>
-            `;
+            toast.innerHTML = `<i class="${icon} ${iconColor} text-lg"></i><span class="text-sm font-medium tracking-wide">${message}</span>`;
             
             container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-12', 'opacity-0'));
             
-            // Animate in
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-12', 'opacity-0');
-            });
-            
-            // Auto dismiss after 2.5 seconds
             setTimeout(() => {
                 toast.classList.add('translate-y-12', 'opacity-0');
                 setTimeout(() => toast.remove(), 400);
             }, 2500);
         }
 
-        // View Switching Logic (SPA styling)
         function showSection(sectionId) {
             const sections = ['welcome-section', 'register-section', 'login-section', 'profile-section', 'edit-profile-section'];
-            
             sections.forEach(id => {
                 const el = document.getElementById(id);
                 if (id === sectionId) {
                     el.classList.remove('hidden');
-                    // Force a browser reflow so the animation works every time
                     void el.offsetWidth;
                     el.classList.remove('opacity-0', 'translate-y-4');
                 } else {
@@ -491,7 +399,6 @@
             });
         }
 
-        // Form Validation & Handling
         async function handleRegister(e) {
             e.preventDefault();
             if(!userId) return;
@@ -501,21 +408,18 @@
             const errorLabel = document.getElementById('pass-error');
             const confirmInput = document.getElementById('reg-pass-confirm');
             
-            // Collect Form Data
             const firstName = document.getElementById('reg-firstname').value;
             const lastName = document.getElementById('reg-lastname').value;
             const address = document.getElementById('reg-address').value;
             const phone = document.getElementById('reg-phone').value;
 
             if (pass !== confirm) {
-                // Show matching error
                 errorLabel.classList.remove('hidden');
                 confirmInput.classList.remove('border-gray-200', 'focus:ring-brand', 'focus:border-brand');
                 confirmInput.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
                 return;
             }
 
-            // Remove errors if fixed
             errorLabel.classList.add('hidden');
             confirmInput.classList.add('border-gray-200', 'focus:ring-brand', 'focus:border-brand');
             confirmInput.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
@@ -523,12 +427,9 @@
             showToast('Saving account securely to cloud...', 'info', 'fas fa-spinner fa-spin');
             
             try {
-                // Save user data securely to Firestore Database
                 const userData = { firstName, lastName, address, phone };
                 await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData);
-                
-                localStorage.setItem('shirnahar_logged_in', 'true'); // Keep UI flag
-                
+                localStorage.setItem('shirnahar_logged_in', 'true');
                 showToast('Account created successfully! Welcome to Shirnahar House.', 'success', 'fas fa-user-check');
                 e.target.reset(); 
                 
@@ -542,40 +443,58 @@
             }
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             
-            // Set browser memory flag to remember the user is signed in
-            localStorage.setItem('shirnahar_logged_in', 'true');
-            
-            showToast('Signed in successfully! Loading your profile...', 'success', 'fas fa-unlock-alt');
-            
-            // Instead of going home, show them their secure profile
-            setTimeout(() => {
-                loadProfile();
-                showSection('profile-section');
-            }, 1500);
+            const phoneInput = document.getElementById('login-phone').value;
+            const passInput = document.getElementById('login-pass').value;
+
+            showToast('Authenticating...', 'info', 'fas fa-spinner fa-spin');
+
+            try {
+                // Admin Authenticator: Checks against Firebase 'admins' collection
+                const adminsRef = collection(db, 'artifacts', appId, 'admins');
+                const q = query(adminsRef, where("phone", "==", phoneInput), where("password", "==", passInput));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    localStorage.setItem('shirnahar_admin_logged_in', 'true');
+                    showToast('Admin access verified! Redirecting to Dashboard...', 'success', 'fas fa-shield-alt');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                    return;
+                }
+
+                // Regular User Fallback
+                localStorage.setItem('shirnahar_logged_in', 'true');
+                showToast('Signed in successfully! Loading your profile...', 'success', 'fas fa-unlock-alt');
+                
+                setTimeout(() => {
+                    loadProfile();
+                    showSection('profile-section');
+                }, 1500);
+
+            } catch(error) {
+                console.error("Login Error: ", error);
+                showToast('Authentication check failed.', 'error', 'fas fa-exclamation-triangle');
+            }
         }
         
         function handleLogout() {
-            // Remove the login flag
             localStorage.removeItem('shirnahar_logged_in');
+            localStorage.removeItem('shirnahar_admin_logged_in');
             showToast('You have been securely signed out.', 'info', 'fas fa-sign-out-alt');
-            
-            setTimeout(() => {
-                showSection('welcome-section');
-            }, 1000);
+            setTimeout(() => { showSection('welcome-section'); }, 1000);
         }
         
         async function loadProfile(forceLocal = false) {
             try {
                 let user = null;
-                
                 if (forceLocal || !userId) {
-                    // Instantly pull from local memory if Firebase is too slow
                     user = JSON.parse(localStorage.getItem('shirnahar_user_data'));
                 } else {
-                    // Fetch strictly from user's secure private Firestore collection
                     const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
                     if(docSnap.exists()) user = docSnap.data();
                 }
@@ -597,9 +516,7 @@
         
         async function openEditProfile() {
             if(!userId) return;
-            
             try {
-                // Fetch fresh data from Firestore before editing
                 const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
                 if (docSnap.exists()) {
                     const user = docSnap.data();
@@ -628,11 +545,8 @@
                     address: document.getElementById('edit-address').value
                 };
                 
-                // Update Firestore Database (merge: true ensures we don't delete other data if it exists)
                 await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
-                
                 showToast('Profile updated successfully!', 'success', 'fas fa-check-circle');
-                
                 loadProfile();
                 showSection('profile-section');
             } catch(e) {
@@ -640,16 +554,22 @@
             }
         }
         
-        // Smart Check: Run securely when the page loads
         document.addEventListener('DOMContentLoaded', async () => {
             const loadingView = document.getElementById('account-loading-view');
             
-            // FAILSAFE: If Firebase takes longer than 1.2s, instantly skip the loader!
+            // SECURITY REDIRECT: If already an Admin, go straight to dashboard so they aren't stuck here
+            let isAdmin = false;
+            try { isAdmin = localStorage.getItem('shirnahar_admin_logged_in') === 'true'; } catch(e){}
+            if (isAdmin) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
             const safetyTimer = setTimeout(() => {
                 if (loadingView && !loadingView.classList.contains('hidden')) {
                     loadingView.classList.add('hidden');
                     if (localStorage.getItem('shirnahar_logged_in') === 'true') {
-                        loadProfile(true); // Load instantly from local memory
+                        loadProfile(true); 
                         showSection('profile-section');
                     } else {
                         showSection('welcome-section');
@@ -657,32 +577,28 @@
                 }
             }, 1200);
 
-            // First, authenticate with Firebase Cloud securely
             try {
                 await signInAnonymously(auth);
                 userId = auth.currentUser?.uid;
                 
-                clearTimeout(safetyTimer); // Firebase was fast! Cancel the safety timer.
+                clearTimeout(safetyTimer);
                 
-                // If the UI remembers they logged in, jump straight to their newly fetched profile
                 if (localStorage.getItem('shirnahar_logged_in') === 'true') {
                     await loadProfile();
-                    
                     if (loadingView) loadingView.classList.add('hidden');
                     showSection('profile-section');
                 } else {
-                    // Not logged in, show the welcome screen
                     if (loadingView) loadingView.classList.add('hidden');
                     showSection('welcome-section');
                 }
             } catch (err) {
-                console.error("Secure Authentication Failed:", err);
-                clearTimeout(safetyTimer); // Cancel timer on error
+                console.error("Authentication Error:", err);
+                clearTimeout(safetyTimer);
                 
                 if (loadingView) loadingView.classList.add('hidden');
                 
                 if (localStorage.getItem('shirnahar_logged_in') === 'true') {
-                    loadProfile(true); // Load instantly from local memory
+                    loadProfile(true);
                     showSection('profile-section');
                 } else {
                     showSection('welcome-section');
