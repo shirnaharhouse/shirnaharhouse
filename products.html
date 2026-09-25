@@ -372,7 +372,6 @@
         let userId = null;
         let useFallback = false;
         let globalCatalog = []; 
-        let viewHistory = [];
         let currentOpenProduct = null; 
 
         window.showToast = showToast;
@@ -485,7 +484,7 @@
                         <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug mb-1">${product.title}</h3>
                         <div class="mt-auto pt-2 flex flex-col gap-2">
                             <span class="text-sm sm:text-lg font-bold text-gray-900">₹${parseInt(product.price).toLocaleString('en-IN')}</span>
-                            <button class="w-full py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${btnClass}" onclick="event.stopPropagation(); handleAddToCart('${product.title}', ${product.price}, '${product.image}')">${btnText}</button>
+                            <button class="w-full py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${btnClass}" onclick="event.stopPropagation(); handleAddToCart('${product.title}', ${product.price}, '${product.image}', ${product.stock !== undefined ? product.stock : 5})">${btnText}</button>
                         </div>
                     </div>
                 </div>`;
@@ -524,12 +523,20 @@
             showPage(1);
         }
 
-        async function handleAddToCart(title, price, img) {
+        async function handleAddToCart(title, price, img, maxStock = 5) {
             try {
                 let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
                 let existing = localCart.find(i => i.name === title);
-                if(existing) existing.quantity += 1;
-                else localCart.push({ id: Date.now().toString(), name: title, price: price, image: img, quantity: 1 });
+                if(existing) {
+                    if (existing.quantity >= maxStock) {
+                        showToast(`Only ${maxStock} items available in stock`, 'error');
+                        return;
+                    }
+                    existing.quantity += 1;
+                }
+                else {
+                    localCart.push({ id: Date.now().toString(), name: title, price: price, image: img, quantity: 1, stock: maxStock });
+                }
                 localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
                 updateFallbackBadge(); 
                 showToast('Added to bag successfully');
@@ -554,8 +561,17 @@
             const product = globalCatalog.find(p => p.id === productId);
             if (!product) return;
 
-            // Push catalog view to history stack
-            viewHistory.push({ type: 'catalog', scroll: window.scrollY });
+            // Push state to browser history for native back-button support
+            history.replaceState({ type: 'catalog', scroll: window.scrollY }, '', '');
+            history.pushState({ type: 'product', id: productId, scroll: 0 }, '', '');
+            
+            // Trigger UI Transition
+            document.getElementById('catalog-view').classList.add('hidden');
+            const pView = document.getElementById('product-view');
+            pView.classList.remove('hidden');
+            requestAnimationFrame(() => pView.classList.remove('opacity-0'));
+            pView.scrollTop = 0;
+            
             renderProductDetails(product);
         }
 
@@ -563,14 +579,16 @@
             const product = globalCatalog.find(p => p.id === productId);
             if (!product) return;
 
-            // Push current product view to history stack before opening recommendation
+            // Save current product view scroll position before navigating to recommendation
             if (currentOpenProduct) {
-                viewHistory.push({ 
-                    type: 'product', 
-                    id: currentOpenProduct.id, 
-                    scroll: document.getElementById('product-view').scrollTop || 0
-                });
+                const currentScroll = document.getElementById('product-view').scrollTop || 0;
+                history.replaceState({ type: 'product', id: currentOpenProduct.id, scroll: currentScroll }, '', '');
             }
+            
+            // Push new product state
+            history.pushState({ type: 'product', id: productId, scroll: 0 }, '', '');
+            
+            document.getElementById('product-view').scrollTop = 0;
             renderProductDetails(product);
         }
 
@@ -580,7 +598,6 @@
             document.getElementById('detail-title').innerText = product.title;
             
             const price = parseInt(product.price);
-            // Future-proofing for productcontrol: use product.discount or calculate MRP
             const discountPercent = product.discount || 33; // Default 33% if not set
             const originalPrice = product.mrp || Math.round(price / (1 - (discountPercent > 0 ? discountPercent : 33) / 100));
             
@@ -596,12 +613,10 @@
                 document.getElementById('detail-mrp-container').classList.add('hidden');
             }
 
-            // Future-proofing stock control from productcontrol.html
             const stockStatusEl = document.getElementById('detail-stock-status');
             const addToCartBtn = document.getElementById('btn-add-to-cart-overlay');
             const buyNowBtn = document.getElementById('btn-buy-now-overlay');
             
-            // Set dynamic stock with fallback for older items without stock data
             const availableStock = product.stock !== undefined ? product.stock : Math.floor(Math.random() * 8) + 3;
             
             if (product.status === 'outofstock' || availableStock === 0) {
@@ -612,7 +627,6 @@
                 addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 buyNowBtn.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
-                // Show the actual number of pieces left in stock
                 stockStatusEl.innerText = `Only ${availableStock} left in stock - order soon`;
                 stockStatusEl.className = 'text-lg font-bold text-green-700 mt-4 mb-1';
                 addToCartBtn.disabled = false;
@@ -623,14 +637,13 @@
 
             addToCartBtn.onclick = () => {
                 if(product.status !== 'outofstock' && availableStock !== 0) {
-                    handleAddToCart(product.title, product.price, product.image);
+                    handleAddToCart(product.title, product.price, product.image, availableStock);
                 }
             };
             
             const carousel = document.getElementById('detail-carousel');
             const dotsContainer = document.getElementById('carousel-dots');
             
-            // Enforce maximum of 4 images dynamically to prepare for productcontrol.html
             const images = (product.images && product.images.length > 0) ? product.images.slice(0, 4) : [product.image];
             
             carousel.innerHTML = images.map(img => `<img src="${img}" class="w-full h-full object-cover flex-shrink-0 snap-center">`).join('');
@@ -650,26 +663,36 @@
                 dotsContainer.innerHTML = '';
                 carousel.onscroll = null;
             }
-
+            
+            // Render reviews and correctly close the function!
             renderReviews(product);
+            renderRecommendations(product);
+        }
 
-            const recs = globalCatalog.filter(p => p.id !== product.id).sort(() => 0.5 - Math.random()).slice(0,6);
-            document.getElementById('recommendations-grid').innerHTML = recs.map(p => `
-                <div class="w-32 flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer shadow-sm" onclick="openRecommendation('${p.id}')">
-                    <img src="${p.image}" class="w-full h-40 object-cover">
-                    <div class="p-2">
-                        <p class="text-[10px] text-blue-600 hover:underline line-clamp-2 leading-tight mb-1">${p.title}</p>
-                        <p class="text-sm font-bold text-gray-900">₹${parseInt(p.price).toLocaleString('en-IN')}</p>
+        function renderRecommendations(currentProduct) {
+            const grid = document.getElementById('recommendations-grid');
+            if (!grid) return;
+            
+            // Find products in the same category, excluding the current one
+            let recommended = globalCatalog.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id);
+            
+            // If we don't have enough similar items, fill it up with other items to ensure the UI looks full
+            if(recommended.length < 4) {
+                const others = globalCatalog.filter(p => p.id !== currentProduct.id);
+                recommended = [...new Set([...recommended, ...others])];
+            }
+            
+            recommended = recommended.slice(0, 6); // Show up to 6 recommended items
+
+            grid.innerHTML = recommended.map(p => `
+                <div class="w-32 sm:w-40 flex-shrink-0 cursor-pointer group snap-start" onclick="openRecommendation('${p.id}')">
+                    <div class="h-44 sm:h-56 rounded-xl overflow-hidden mb-2 bg-gray-50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] border border-gray-100">
+                        <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="${p.title}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
                     </div>
+                    <h4 class="text-[11px] sm:text-xs font-medium text-gray-800 line-clamp-2 leading-snug mb-1">${p.title}</h4>
+                    <p class="text-[13px] font-bold text-gray-900">₹${parseInt(p.price).toLocaleString('en-IN')}</p>
                 </div>
             `).join('');
-
-            document.getElementById('catalog-view').classList.add('hidden');
-            const pv = document.getElementById('product-view'); 
-            pv.classList.remove('hidden'); 
-            pv.scrollTop = 0;
-            carousel.scrollLeft = 0;
-            setTimeout(() => pv.classList.remove('opacity-0'), 50);
         }
 
         function renderReviews(product) {
@@ -751,7 +774,8 @@
 
         function handleBuyNow() {
             if (currentOpenProduct && currentOpenProduct.status !== 'outofstock' && currentOpenProduct.stock !== 0) {
-                handleAddToCart(currentOpenProduct.title, currentOpenProduct.price, currentOpenProduct.image);
+                const availableStock = currentOpenProduct.stock !== undefined ? currentOpenProduct.stock : 5;
+                handleAddToCart(currentOpenProduct.title, currentOpenProduct.price, currentOpenProduct.image, availableStock);
                 setTimeout(() => {
                     window.location.href = 'cart.html';
                 }, 400);
@@ -759,30 +783,47 @@
         }
 
         function handleBackNavigation() {
-            if (viewHistory.length === 0) return;
-            const last = viewHistory.pop();
+            // Trigger the native browser back action, which fires 'popstate'
+            history.back();
+        }
+
+        // Listen for Hardware Back Button or Swipe Gestures
+        window.addEventListener('popstate', (e) => {
+            const state = e.state;
+            const pView = document.getElementById('product-view');
+            const catalogView = document.getElementById('catalog-view');
             
-            if (last.type === 'catalog') {
-                document.getElementById('product-view').classList.add('opacity-0');
-                setTimeout(() => { 
-                    document.getElementById('product-view').classList.add('hidden'); 
-                    document.getElementById('catalog-view').classList.remove('hidden'); 
-                    window.scrollTo(0, last.scroll); 
-                }, 300);
-            } else if (last.type === 'product') {
-                // Restore the previous product from the history stack
-                const prevProduct = globalCatalog.find(p => p.id === last.id);
+            if (state && state.type === 'product') {
+                // We popped back TO a previous product (e.g. from a recommendation)
+                const prevProduct = globalCatalog.find(p => p.id === state.id);
                 if (prevProduct) {
+                    catalogView.classList.add('hidden');
+                    pView.classList.remove('hidden');
+                    requestAnimationFrame(() => pView.classList.remove('opacity-0'));
+                    
                     renderProductDetails(prevProduct);
                     setTimeout(() => {
-                        document.getElementById('product-view').scrollTop = last.scroll;
+                        pView.scrollTop = state.scroll || 0;
                     }, 50);
                 }
+            } else {
+                // We popped back to the main catalog
+                pView.classList.add('opacity-0');
+                setTimeout(() => { 
+                    pView.classList.add('hidden'); 
+                    catalogView.classList.remove('hidden'); 
+                    if (state && state.scroll !== undefined) {
+                        window.scrollTo(0, state.scroll); 
+                    }
+                }, 300);
             }
-        }
+        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             updateFallbackBadge();
+            
+            // Initialize base history state on load
+            history.replaceState({ type: 'catalog', scroll: window.scrollY }, '', '');
             
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
