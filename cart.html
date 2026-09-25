@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secure Checkout | Shirnahar House</title>
-
+    <title>Your Cart | Shirnahar House</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <script>
         tailwind.config = {
             theme: {
@@ -21,836 +19,282 @@
                     },
                     colors: {
                         brand: {
-                            light: '#fdf6e3',
-                            DEFAULT: '#b45309',
-                            dark: '#78350f',
+                            light: '#fdf6e3', 
+                            DEFAULT: '#b45309', 
+                            dark: '#78350f', 
                         }
                     }
                 }
             }
         }
     </script>
-
+    
     <style>
         html { scroll-behavior: smooth; }
+        .hide-scroll-bar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scroll-bar::-webkit-scrollbar { display: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        a, button, input { touch-action: manipulation; }
         
-        .cart-item-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        /* Custom radio button styles for payment */
-        .payment-radio:checked + div {
-            border-color: #b45309;
-            background-color: #fdf6e3;
-        }
-        .payment-radio:checked + div .radio-inner {
-            background-color: #b45309;
-            transform: scale(1);
-        }
-        
-        /* Step transition animations */
-        .step-section {
-            transition: opacity 0.4s ease, transform 0.4s ease;
+        .pattern-bg {
+            background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
         }
     </style>
 </head>
-<body class="bg-[#fcfaf6] font-sans text-gray-900 antialiased min-h-screen flex flex-col pb-28 md:pb-12">
+<body class="bg-[#f8fafc] font-sans text-gray-800 antialiased selection:bg-brand-light selection:text-brand-dark overflow-x-hidden pb-20 md:pb-0 min-h-screen flex flex-col">
 
-    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
-
-    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 shadow-sm">
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b border-gray-100 flex-shrink-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <div class="flex items-center">
-                    <button onclick="handleBackNavigation()" class="flex items-center text-sm font-medium text-gray-600 hover:text-brand transition-colors group">
-                        <div class="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-brand-light flex items-center justify-center border border-gray-200 group-hover:border-brand/30 transition-all mr-2">
-                            <i class="fas fa-arrow-left text-gray-600 group-hover:text-brand group-hover:-translate-x-0.5 transition-transform text-sm"></i>
-                        </div>
-                        <span id="header-back-text" class="hidden sm:inline-block">Continue Shopping</span>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <a href="index.html" class="font-serif text-2xl sm:text-3xl font-bold text-brand-dark tracking-tight hover:opacity-90 transition">
-                        Shirnahar House
+            <div class="flex justify-between items-center h-[72px]">
+                <div class="flex items-center md:hidden w-10">
+                    <a href="products.html" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:text-brand transition focus:outline-none">
+                        <i class="fas fa-arrow-left text-lg"></i>
                     </a>
                 </div>
-                <div class="flex items-center space-x-3 text-gray-500">
-                    <div class="flex items-center bg-green-50 text-green-800 text-xs px-3 py-1.5 rounded-full border border-green-200">
-                        <i class="fas fa-lock mr-1.5 text-green-600"></i>
-                        <span class="font-medium hidden sm:inline">Secure Checkout</span>
-                    </div>
+
+                <div class="flex-shrink-0 flex items-center justify-center md:justify-start flex-1 md:flex-none">
+                    <a href="index.html" class="font-serif text-2xl md:text-3xl font-bold text-gray-900 tracking-tight hover:text-brand transition-colors">
+                        Shirnahar<span class="text-brand">House</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-2 md:space-x-6 w-10 md:w-auto justify-end">
+                    <a href="trackorder.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition"><i class="fas fa-truck text-lg"></i></a>
+                    <a href="account.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition"><i class="far fa-user text-lg"></i></a>
+                    <a href="wishlist.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-red-500 transition"><i class="far fa-heart text-lg"></i></a>
+                    <a href="cart.html" class="w-10 h-10 flex items-center justify-center rounded-full text-brand transition relative group">
+                        <i class="fas fa-shopping-bag text-lg"></i>
+                        <span id="cart-badge" class="absolute top-0 right-0 -mt-0.5 -mr-0.5 bg-brand text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-md border border-white transform group-hover:scale-110 transition-transform duration-300" style="display: none;">0</span>
+                    </a>
                 </div>
             </div>
         </div>
     </header>
 
-    <div id="stepper-nav" class="hidden bg-white border-b border-gray-100 py-4 sticky top-20 z-30 shadow-sm">
-        <div class="max-w-3xl mx-auto px-4 flex items-center justify-between text-xs sm:text-sm font-medium relative">
-            <div class="absolute left-8 right-8 top-1/2 h-0.5 bg-gray-200 -z-10 -translate-y-1/2"></div>
-            <div id="stepper-progress-line" class="absolute left-8 top-1/2 h-0.5 bg-brand -z-10 -translate-y-1/2 transition-all duration-500 w-0"></div>
-
-            <div id="step-1-indicator" class="flex flex-col items-center cursor-pointer text-brand transition-colors" onclick="goToStep(1)">
-                <span class="w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-xs shadow-sm mb-1.5 ring-4 ring-white transition-all duration-300">1</span>
-                <span class="font-bold">Bag</span>
-            </div>
+    <main class="flex-grow w-full relative pattern-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             
-            <div id="step-2-indicator" class="flex flex-col items-center text-gray-400 transition-colors">
-                <span class="w-7 h-7 rounded-full bg-gray-100 text-gray-400 border border-gray-300 flex items-center justify-center text-xs mb-1.5 ring-4 ring-white transition-all duration-300">2</span>
-                <span class="font-medium hidden sm:block">Address & Delivery</span>
-                <span class="font-medium sm:hidden">Delivery</span>
+            <div class="mb-8 text-center md:text-left">
+                <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-900">Shopping Bag</h1>
+                <p class="text-sm text-gray-500 mt-2"><span id="cart-item-count">0</span> items in your bag</p>
             </div>
-            
-            <div id="step-3-indicator" class="flex flex-col items-center text-gray-400 transition-colors">
-                <span class="w-7 h-7 rounded-full bg-gray-100 text-gray-400 border border-gray-300 flex items-center justify-center text-xs mb-1.5 ring-4 ring-white transition-all duration-300">3</span>
-                <span class="font-medium">Payment</span>
+
+            <!-- Empty State -->
+            <div id="empty-cart-state" class="hidden flex flex-col items-center justify-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100 text-center px-4">
+                <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-shopping-bag text-4xl text-gray-300"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">Your bag is empty</h2>
+                <p class="text-sm text-gray-500 mb-8 max-w-sm">Looks like you haven't added anything to your cart yet. Discover our latest collections.</p>
+                <a href="products.html" class="bg-brand hover:bg-brand-dark text-white px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-widest transition-all shadow-md">Explore Collection</a>
             </div>
-        </div>
-    </div>
 
-    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 pb-12">
-        
-        <!-- Loading State (Shown initially before checking cart) -->
-        <div id="cart-loading-view" class="flex flex-col items-center justify-center py-32 w-full transition-opacity duration-300">
-            <i class="fas fa-spinner fa-spin text-4xl text-brand mb-4"></i>
-            <span class="text-sm font-medium text-gray-500 animate-pulse tracking-wide">Loading your bag...</span>
-        </div>
-
-        <div id="cart-main-layout" class="hidden grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-            
-            <!-- Left Side: Dynamic Flow Sections -->
-            <div class="lg:col-span-7 xl:col-span-8 relative min-h-[500px]">
+            <!-- Cart Content -->
+            <div id="cart-content" class="flex flex-col lg:flex-row gap-8 hidden">
                 
-                <div id="section-bag" class="step-section absolute top-0 left-0 w-full flex flex-col space-y-6 opacity-100 z-10 translate-x-0">
-                    <div class="flex items-center justify-between pb-2 border-b border-gray-200 mt-2">
-                        <div class="flex items-baseline space-x-2">
-                            <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">Your Bag</h1>
-                            <span id="bag-count-header" class="text-sm text-gray-500 font-medium"></span>
-                        </div>
-                        <button onclick="clearEntireCart()" class="text-xs text-gray-400 hover:text-red-600 font-medium transition flex items-center">
-                            <i class="far fa-trash-can mr-1.5"></i> Empty Bag
-                        </button>
-                    </div>
-                    <div id="cart-items-list" class="space-y-4">
-                        <!-- Items injected dynamically via JS -->
-                    </div>
+                <!-- Items List -->
+                <div class="flex-1 space-y-4" id="cart-items-container">
+                    <!-- Items dynamically injected here via JS -->
                 </div>
 
-                <div id="section-address" class="step-section absolute top-0 left-0 w-full flex flex-col space-y-6 opacity-0 translate-x-10 pointer-events-none z-0 hidden">
-                    <div class="pb-2 border-b border-gray-200 mt-2">
-                        <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">Delivery Address</h1>
-                    </div>
-
-                    <!-- Saved Address Card (Dynamically shown if account exists) -->
-                    <div id="saved-address-card" class="bg-white rounded-2xl p-5 border-2 border-brand/30 shadow-sm hidden relative overflow-hidden transition-all duration-300">
-                        <div class="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg tracking-wider">SAVED FROM ACCOUNT</div>
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-start space-x-4">
-                                <div class="w-10 h-10 rounded-full bg-brand-light flex items-center justify-center text-brand mt-1 flex-shrink-0">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-gray-900 text-base" id="display-name">Name</h3>
-                                    <p class="text-sm text-gray-600 mt-1 leading-relaxed" id="display-address">Address</p>
-                                    <p class="text-sm text-gray-800 mt-2 font-medium flex items-center"><i class="fas fa-phone-alt text-brand mr-2 text-[10px]"></i> <span id="display-phone">Phone</span></p>
-                                </div>
+                <!-- Order Summary -->
+                <div class="w-full lg:w-96 flex-shrink-0">
+                    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-100 sticky top-24">
+                        <h2 class="text-lg font-bold text-gray-900 mb-6">Order Summary</h2>
+                        
+                        <div class="space-y-4 text-sm text-gray-600 border-b border-gray-100 pb-6 mb-6">
+                            <div class="flex justify-between">
+                                <span>Subtotal</span>
+                                <span class="font-medium text-gray-900" id="summary-subtotal">₹0</span>
                             </div>
-                            <button type="button" onclick="toggleAddressForm()" class="text-brand text-xs font-bold uppercase hover:underline py-1 px-2 hover:bg-brand-light rounded transition">Edit</button>
-                        </div>
-                    </div>
-
-                    <!-- Address Form (Hidden if saved data exists) -->
-                    <div id="address-form-container" class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm transition-all duration-300">
-                        <form id="checkout-address-form" class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">First Name</label>
-                                    <input type="text" id="chk-fname" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none bg-gray-50 focus:bg-white text-sm transition">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Last Name</label>
-                                    <input type="text" id="chk-lname" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none bg-gray-50 focus:bg-white text-sm transition">
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Phone Number</label>
-                                <div class="flex shadow-sm rounded-xl">
-                                    <span class="inline-flex items-center px-4 py-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm font-medium">+91</span>
-                                    <input type="tel" id="chk-phone" pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required placeholder="10-digit mobile number" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none bg-gray-50 focus:bg-white text-sm transition">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Complete Delivery Address</label>
-                                <textarea id="chk-address" required rows="3" placeholder="House No, Building, Street, City, State, Pincode" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none bg-gray-50 focus:bg-white text-sm transition resize-none"></textarea>
-                            </div>
-                            
-                            <!-- Save & Cancel Buttons for Address Edit -->
-                            <div class="pt-2 mt-2 flex justify-end gap-3 border-t border-gray-100">
-                                <button type="button" onclick="cancelAddressEdit()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 font-medium transition">Cancel</button>
-                                <button type="button" onclick="saveAddressChanges()" class="bg-brand hover:bg-brand-dark text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md shadow-brand/20 transition">Save Address</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Free Delivery Highlight -->
-                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start space-x-3">
-                        <i class="fas fa-truck-fast text-green-600 mt-0.5"></i>
-                        <div>
-                            <h4 class="text-sm font-bold text-green-800">Free Express Delivery Applied</h4>
-                            <p class="text-xs text-green-700 mt-1">Expected delivery in 3-5 business days from order confirmation.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="section-payment" class="step-section absolute top-0 left-0 w-full flex flex-col space-y-6 opacity-0 translate-x-10 pointer-events-none z-0 hidden">
-                    <div class="pb-2 border-b border-gray-200 mt-2">
-                        <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">Payment Method</h1>
-                    </div>
-
-                    <div class="space-y-4">
-                        <!-- UPI -->
-                        <label class="block relative cursor-pointer group">
-                            <input type="radio" name="payment_method" value="upi" class="payment-radio sr-only" checked>
-                            <div class="bg-white rounded-2xl p-5 border-2 border-gray-100 shadow-sm flex items-center transition-all group-hover:border-brand/30">
-                                <div class="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 flex items-center justify-center flex-shrink-0">
-                                    <div class="radio-inner w-2.5 h-2.5 rounded-full bg-transparent transform scale-0 transition-transform duration-200"></div>
-                                </div>
-                                <div class="flex-1">
-                                    <span class="block font-bold text-gray-900">UPI (GPay, PhonePe, Paytm)</span>
-                                    <span class="block text-xs text-gray-500 mt-0.5">Instant secure payment via UPI apps</span>
-                                </div>
-                                <i class="fab fa-google-pay text-3xl text-gray-400"></i>
-                            </div>
-                        </label>
-
-                        <!-- COD -->
-                        <label class="block relative cursor-pointer group">
-                            <input type="radio" name="payment_method" value="cod" class="payment-radio sr-only">
-                            <div class="bg-white rounded-2xl p-5 border-2 border-gray-100 shadow-sm flex items-center transition-all group-hover:border-brand/30">
-                                <div class="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 flex items-center justify-center flex-shrink-0">
-                                    <div class="radio-inner w-2.5 h-2.5 rounded-full bg-transparent transform scale-0 transition-transform duration-200"></div>
-                                </div>
-                                <div class="flex-1">
-                                    <span class="block font-bold text-gray-900">Cash on Delivery</span>
-                                    <span class="block text-xs text-gray-500 mt-0.5">Pay in cash or UPI when order arrives</span>
-                                </div>
-                                <i class="fas fa-hand-holding-dollar text-2xl text-gray-400"></i>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-5 xl:col-span-4 relative z-20">
-                <div class="sticky top-40 space-y-6">
-                    
-                    <!-- Coupon Panel -->
-                    <div id="coupon-section" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 transition-all duration-300">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-sm font-semibold text-gray-900 flex items-center">
-                                <i class="fas fa-ticket text-brand mr-2"></i> Promo Code
-                            </span>
-                        </div>
-                        <div class="flex gap-2 mb-3">
-                            <input type="text" id="coupon-input" placeholder="ENTER CODE" class="flex-1 uppercase px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium tracking-wider focus:outline-none focus:border-brand focus:bg-white transition placeholder:normal-case placeholder:tracking-normal">
-                            <button onclick="applyCoupon()" id="coupon-btn" class="bg-gray-900 hover:bg-brand text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm">
-                                Apply
-                            </button>
-                        </div>
-                        <div id="applied-coupon-pill" class="hidden items-center justify-between bg-green-50 border border-green-200 px-3.5 py-2 rounded-xl text-xs text-green-800 font-medium mb-3">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle mr-2 text-green-600"></i>
-                                <span>Code <b id="applied-coupon-name">---</b> applied (<span id="applied-coupon-amount">-₹0</span>)</span>
-                            </div>
-                            <button onclick="removeCoupon()" class="text-gray-400 hover:text-red-500 text-sm font-bold ml-2">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Price Summary -->
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                        <h2 class="font-serif text-lg font-bold text-gray-900 mb-5 pb-3 border-b border-gray-100">Order Summary</h2>
-
-                        <div class="space-y-3.5 text-sm mb-6 border-b border-gray-100 pb-5">
-                            <div class="flex justify-between text-gray-600">
-                                <span>Bag Total MRP (<span id="summary-total-qty">0</span> items)</span>
-                                <span class="font-medium text-gray-900" id="summary-mrp">₹0</span>
-                            </div>
-                            <div class="flex justify-between text-gray-600">
-                                <span>Discount on MRP</span>
-                                <span class="font-medium text-green-600" id="summary-mrp-discount">-₹0</span>
-                            </div>
-                            <div class="flex justify-between text-gray-600">
-                                <span>Coupon Savings</span>
-                                <span class="font-medium text-brand" id="summary-coupon-discount">-₹0</span>
-                            </div>
-                            <div class="flex justify-between text-gray-600 items-center">
+                            <div class="flex justify-between">
                                 <span>Estimated Shipping</span>
-                                <span class="font-semibold text-green-600 flex items-center">
-                                    <span class="text-gray-400 line-through mr-1.5 text-xs font-normal">₹150</span> FREE
-                                </span>
+                                <span class="text-green-600 font-medium">Free</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxes</span>
+                                <span class="font-medium text-gray-900">Inclusive</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-end mb-8">
+                            <span class="text-base font-bold text-gray-900">Total</span>
+                            <div class="text-right">
+                                <span class="text-2xl font-bold text-brand block" id="summary-total">₹0</span>
+                                <span class="text-[10px] text-gray-500">Secure checkout powered by Stripe</span>
                             </div>
                         </div>
 
-                        <div class="flex justify-between items-end mb-6">
-                            <div>
-                                <span class="text-xs uppercase tracking-wider text-gray-500 block font-semibold">Total Payable</span>
-                            </div>
-                            <span class="font-serif text-3xl font-bold text-brand-dark" id="summary-final-total">₹0</span>
-                        </div>
-
-                        <!-- Proceed Action Button -->
-                        <button id="desktop-main-action-btn" onclick="advanceStep()" class="w-full bg-brand hover:bg-brand-dark text-white py-4 px-6 rounded-xl font-bold text-base transition-all duration-300 shadow-lg shadow-brand/25 transform hover:-translate-y-0.5 flex items-center justify-center group">
-                            <span id="desktop-btn-text">Next</span>
-                            <i class="fas fa-arrow-right ml-2.5 group-hover:translate-x-1.5 transition-transform" id="desktop-btn-icon"></i>
+                        <button onclick="proceedToCheckout()" class="w-full bg-[#ffa41c] hover:bg-[#fa8900] text-gray-900 rounded-xl py-4 text-sm font-bold uppercase tracking-wider transition-colors shadow-sm mb-3">
+                            Proceed to Checkout
                         </button>
+                        <a href="products.html" class="block text-center text-sm text-gray-500 hover:text-brand transition-colors">
+                            Continue Shopping
+                        </a>
                     </div>
-
                 </div>
             </div>
-        </div>
 
-        <div id="cart-empty-view" class="hidden flex-col items-center justify-center py-16 px-4 text-center max-w-lg mx-auto">
-            <div class="w-32 h-32 rounded-full bg-brand-light/70 text-brand flex items-center justify-center text-5xl mb-6 shadow-inner border border-brand/10">
-                <i class="fas fa-shopping-bag"></i>
-            </div>
-            <h2 class="font-serif text-3xl font-bold text-gray-900 mb-2.5">Your Bag is Empty</h2>
-            <p class="text-gray-500 text-sm mb-8">It looks like you haven't added any of our handpicked items to your bag yet.</p>
-            <a href="index.html#sarees" class="bg-brand hover:bg-brand-dark text-white px-8 py-3.5 rounded-full font-semibold shadow-md">
-                Explore Collection
-            </a>
         </div>
     </main>
 
-    <div id="mobile-checkout-strip" class="hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3.5 z-40 md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        <div class="flex items-center justify-between gap-4 max-w-md mx-auto">
-            <div>
-                <span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block">Total Payable</span>
-                <span class="text-xl font-bold text-brand-dark" id="mobile-strip-total">₹0</span>
-            </div>
-            <button id="mobile-main-action-btn" onclick="advanceStep()" class="flex-1 bg-brand hover:bg-brand-dark text-white py-3 px-5 rounded-xl font-bold text-sm shadow-md shadow-brand/20 flex items-center justify-center group">
-                <span id="mobile-btn-text">Next</span>
-                <i class="fas fa-arrow-right ml-2 text-xs transition-transform group-hover:translate-x-1" id="mobile-btn-icon"></i>
-            </button>
-        </div>
-    </div>
+    <!-- Mobile Bottom Navigation -->
+    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        <a href="index.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-home text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Home</span>
+        </a>
+        <a href="products.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-layer-group text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Catalog</span>
+        </a>
+        <a href="account.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-user text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Account</span>
+        </a>
+        <a href="cart.html" class="flex flex-col items-center w-16 text-brand pb-2 relative group">
+            <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-brand rounded-b-md"></div>
+            <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Cart</span>
+        </a>
+    </nav>
 
     <script type="module">
-        // CORRECTED BROWSER IMPORTS (Do not use "firebase/app")
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = 'shirnahar-house';
-        // YOUR EXACT KEYS
         const firebaseConfig = {
             apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
             authDomain: "shirnahar-house.firebaseapp.com",
             projectId: "shirnahar-house",
             storageBucket: "shirnahar-house.firebasestorage.app",
             messagingSenderId: "289287900697",
-            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
-            measurementId: "G-L4MK6TB4EX"
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        let userId = null;
-        let useFallback = false;
 
-        // Map functions to window so HTML onClick works smoothly
-        window.showToast = showToast;
-        window.clearEntireCart = clearEntireCart;
-        window.removeCartItem = removeCartItem;
+        // Global functions mapped for inline HTML events
         window.updateQty = updateQty;
-        window.goToStep = goToStep;
-        window.handleBackNavigation = handleBackNavigation;
-        window.advanceStep = advanceStep;
-        window.toggleAddressForm = toggleAddressForm;
-        window.saveAddressChanges = saveAddressChanges;
-        window.cancelAddressEdit = cancelAddressEdit;
-        window.applyCoupon = applyCoupon;
-        window.removeCoupon = removeCoupon;
-        window.viewProduct = viewProduct;
+        window.removeItem = removeItem;
+        window.proceedToCheckout = proceedToCheckout;
 
-        // --- Setup Data & Utilities ---
-        let currentStep = 1; 
-        let appliedCoupon = null;
-        let cartItems = []; 
-
-        function formatINR(num) { return '₹' + Math.round(num).toLocaleString('en-IN'); }
-
-        function viewProduct(name, price, image) {
-            showToast('Loading product details...', 'info', 'fas fa-spinner fa-spin');
-            // Save the product details to local memory so the front page knows what to open
-            localStorage.setItem('shirnahar_view_product', JSON.stringify({name, price, image}));
-            // Smoothly redirect to front page
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 400);
-        }
-
-        function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-
-            const toast = document.createElement('div');
-            
-            // Sleek, minimal in-website pill design instead of system-like popups
-            const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
-            const iconColor = type === 'success' ? 'text-green-400' : (type === 'info' ? 'text-brand-light' : 'text-white');
-
-            toast.className = `flex items-center px-5 py-3 space-x-3 rounded-full shadow-2xl ${bgColor} text-white transform transition-all duration-400 translate-y-12 opacity-0 pointer-events-auto`;
-            
-            toast.innerHTML = `
-                <i class="${icon} ${iconColor} text-lg"></i>
-                <span class="text-sm font-medium tracking-wide">${message}</span>
-            `;
-            container.appendChild(toast);
-            
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-12', 'opacity-0');
-            });
-            setTimeout(() => {
-                toast.classList.add('translate-y-12', 'opacity-0');
-                setTimeout(() => toast.remove(), 400);
-            }, 2500);
-        }
-
-        // --- Core UI Functions ---
-        function renderCart() {
-            const list = document.getElementById('cart-items-list');
-            const emptyView = document.getElementById('cart-empty-view');
-            const mainLayout = document.getElementById('cart-main-layout');
-            const loadingView = document.getElementById('cart-loading-view');
-            const stepperNav = document.getElementById('stepper-nav');
-            const mobileStrip = document.getElementById('mobile-checkout-strip');
-            
-            // Hide the loading spinner once data is checked
-            if (loadingView) loadingView.classList.add('hidden');
-            
-            list.innerHTML = '';
-            
-            if (cartItems.length === 0) {
-                mainLayout.classList.remove('grid');
-                mainLayout.classList.add('hidden');
-                emptyView.classList.remove('hidden');
-                emptyView.classList.add('flex');
-                if (mobileStrip) mobileStrip.classList.add('hidden');
-                if (stepperNav) stepperNav.classList.add('hidden');
-                return;
+        function updateCartBadge(count) {
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                badge.style.display = count > 0 ? 'flex' : 'none';
+                badge.textContent = count > 99 ? '99+' : count;
             }
-            
-            mainLayout.classList.add('grid');
-            mainLayout.classList.remove('hidden');
-            emptyView.classList.add('hidden');
-            emptyView.classList.remove('flex');
-            if (mobileStrip) mobileStrip.classList.remove('hidden');
-            if (stepperNav) stepperNav.classList.remove('hidden');
+            document.getElementById('cart-item-count').innerText = count;
+        }
 
-            let html = '';
-            cartItems.forEach((item, i) => {
-                const safeName = item.name.replace(/'/g, "\\'");
-                html += `
-                    <div class="cart-item-transition bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-sm flex gap-4">
-                        <div onclick="viewProduct('${safeName}', ${item.price}, '${item.image}')" class="w-24 h-32 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 relative cursor-pointer group">
-                            <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+        function loadCart() {
+            try {
+                const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                const container = document.getElementById('cart-items-container');
+                const contentWrapper = document.getElementById('cart-content');
+                const emptyState = document.getElementById('empty-cart-state');
+
+                let totalItems = 0;
+                let subtotal = 0;
+
+                if (localCart.length === 0) {
+                    contentWrapper.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                    updateCartBadge(0);
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                contentWrapper.classList.remove('hidden');
+                
+                let html = '';
+                
+                localCart.forEach((item, index) => {
+                    totalItems += item.quantity;
+                    subtotal += (item.price * item.quantity);
+
+                    html += `
+                    <div class="bg-white p-4 rounded-2xl shadow-[0_2px_15px_-5px_rgba(0,0,0,0.05)] border border-gray-100 flex gap-4 transition-all duration-300 hover:shadow-md">
+                        <div class="w-24 h-32 sm:w-28 sm:h-36 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
                         </div>
-                        <div class="flex-1 flex flex-col justify-between">
-                            <div class="flex justify-between items-start">
-                                <div onclick="viewProduct('${safeName}', ${item.price}, '${item.image}')" class="cursor-pointer group">
-                                    <h3 class="font-serif font-bold text-gray-900 line-clamp-1 group-hover:text-brand transition-colors">${item.name}</h3>
-                                    <p class="text-xs text-gray-500 mt-1 group-hover:text-gray-700 transition-colors">Size: ${item.size || 'Free Size'}</p>
+                        <div class="flex-1 flex flex-col justify-between py-1">
+                            <div>
+                                <div class="flex justify-between items-start gap-2">
+                                    <h3 class="text-[13px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug">${item.name}</h3>
+                                    <button onclick="removeItem(${index})" class="text-gray-400 hover:text-red-500 transition-colors p-1"><i class="far fa-trash-alt"></i></button>
                                 </div>
-                                <button onclick="removeCartItem(${i})" class="text-gray-400 hover:text-red-500 p-1"><i class="far fa-trash-can"></i></button>
+                                <p class="text-sm sm:text-lg font-bold text-brand mt-1 sm:mt-2">₹${parseInt(item.price).toLocaleString('en-IN')}</p>
                             </div>
-                            <div class="flex items-end justify-between mt-3 pt-3 border-t border-gray-100">
-                                <span class="font-serif text-lg font-bold text-brand-dark">${formatINR(item.price * item.quantity)}</span>
-                                <div class="inline-flex items-center border border-gray-300 rounded-xl bg-gray-50">
-                                    <button onclick="updateQty(${i}, -1)" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fas fa-minus text-[10px]"></i></button>
-                                    <span class="w-8 text-center text-xs font-bold">${item.quantity}</span>
-                                    <button onclick="updateQty(${i}, 1)" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fas fa-plus text-[10px]"></i></button>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center border border-gray-200 rounded-lg bg-gray-50/50">
+                                    <button onclick="updateQty(${index}, -1)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 hover:text-brand transition-colors"><i class="fas fa-minus text-xs"></i></button>
+                                    <span class="w-6 sm:w-8 text-center text-xs sm:text-sm font-bold text-gray-900">${item.quantity}</span>
+                                    <button onclick="updateQty(${index}, 1)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 hover:text-brand transition-colors"><i class="fas fa-plus text-xs"></i></button>
                                 </div>
+                                <span class="text-xs text-gray-500 font-medium hidden sm:block">Sub: ₹${(item.price * item.quantity).toLocaleString('en-IN')}</span>
                             </div>
                         </div>
                     </div>`;
-            });
-            list.innerHTML = html;
-            updateOrderSummary();
-        }
+                });
 
-        async function updateQty(index, delta) {
-            const item = cartItems[index];
-            const newQty = item.quantity + delta;
-            
-            if(useFallback || !userId) {
-                if (newQty <= 0) cartItems.splice(index, 1);
-                else cartItems[index].quantity = newQty;
-                localStorage.setItem('shirnahar_local_cart', JSON.stringify(cartItems));
-                renderCart();
-                return;
+                container.innerHTML = html;
+                document.getElementById('summary-subtotal').innerText = '₹' + subtotal.toLocaleString('en-IN');
+                document.getElementById('summary-total').innerText = '₹' + subtotal.toLocaleString('en-IN');
+                
+                updateCartBadge(totalItems);
+
+            } catch (e) {
+                console.error("Cart loading error", e);
             }
-
-            try {
-                if (newQty <= 0) await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id));
-                else await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id), { quantity: newQty }, { merge: true });
-            } catch(e) { showToast('Failed to update quantity.', 'error'); }
         }
 
-        async function removeCartItem(index) {
-            const item = cartItems[index];
-            
-            if(useFallback || !userId) {
-                cartItems.splice(index, 1);
-                localStorage.setItem('shirnahar_local_cart', JSON.stringify(cartItems));
-                renderCart();
-                if(cartItems.length === 0 && currentStep > 1) goToStep(1);
-                return;
-            }
-
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id));
-                if(cartItems.length <= 1 && currentStep > 1) goToStep(1); 
-            } catch(e) { showToast('Failed to remove item.', 'error'); }
-        }
-
-        async function clearEntireCart() {
-            if(useFallback || !userId) {
-                cartItems = [];
-                localStorage.setItem('shirnahar_local_cart', JSON.stringify(cartItems));
-                renderCart();
-                if(currentStep > 1) goToStep(1);
-                return;
-            }
-
-            try {
-                await Promise.all(cartItems.map(item => deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'cart', item.id))));
-                if(currentStep > 1) goToStep(1);
-            } catch(e) { showToast('Failed to clear cart.', 'error'); }
-        }
-
-        function updateOrderSummary() {
-            let totalMRP = 0, currentSubtotal = 0, totalQty = 0;
-            cartItems.forEach(item => {
-                totalMRP += item.mrp * item.quantity;
-                currentSubtotal += item.price * item.quantity;
-                totalQty += item.quantity;
-            });
-
-            let couponSavings = 0;
-            if (appliedCoupon && currentSubtotal > 0) {
-                couponSavings = appliedCoupon.type === 'flat' ? Math.min(appliedCoupon.val, currentSubtotal) : Math.round((currentSubtotal * appliedCoupon.val) / 100);
-            }
-
-            const finalTotal = Math.max(0, currentSubtotal - couponSavings);
-
-            document.getElementById('bag-count-header').innerText = `(${totalQty} items)`;
-            document.getElementById('summary-total-qty').innerText = totalQty;
-            document.getElementById('summary-mrp').innerText = formatINR(totalMRP);
-            document.getElementById('summary-mrp-discount').innerText = `-${formatINR(totalMRP - currentSubtotal)}`;
-            document.getElementById('summary-coupon-discount').innerText = `-${formatINR(couponSavings)}`;
-            document.getElementById('summary-final-total').innerText = formatINR(finalTotal);
-            document.getElementById('mobile-strip-total').innerText = formatINR(finalTotal);
-        }
-
-        function renderStepUI() {
-            const steps = [document.getElementById('section-bag'), document.getElementById('section-address'), document.getElementById('section-payment')];
-            steps.forEach((el, index) => {
-                if(index + 1 === currentStep) {
-                    el.classList.remove('hidden');
-                    setTimeout(() => {
-                        el.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'z-0');
-                        el.classList.add('opacity-100', 'translate-x-0', 'z-10', 'relative');
-                        el.classList.remove('absolute');
-                    }, 50);
-                } else {
-                    el.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'z-0', 'absolute');
-                    el.classList.remove('opacity-100', 'translate-x-0', 'z-10', 'relative');
-                    setTimeout(() => el.classList.add('hidden'), 400);
+        function updateQty(index, change) {
+            let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+            if (localCart[index]) {
+                localCart[index].quantity += change;
+                if (localCart[index].quantity <= 0) {
+                    localCart.splice(index, 1);
                 }
-            });
-
-            const s1 = document.getElementById('step-1-indicator');
-            const s2 = document.getElementById('step-2-indicator');
-            const s3 = document.getElementById('step-3-indicator');
-            const line = document.getElementById('stepper-progress-line');
-
-            const deskBtnText = document.getElementById('desktop-btn-text');
-            const deskBtnIcon = document.getElementById('desktop-btn-icon');
-            const mobBtnText = document.getElementById('mobile-btn-text');
-            const mobBtnIcon = document.getElementById('mobile-btn-icon');
-            const backText = document.getElementById('header-back-text');
-
-            if (currentStep === 1) {
-                line.style.width = '0%';
-                s1.classList.add('text-brand'); s1.classList.remove('text-gray-400');
-                s1.querySelector('span').classList.add('bg-brand', 'text-white');
-                s2.classList.remove('text-brand'); s2.classList.add('text-gray-400');
-                s2.querySelector('span').classList.remove('bg-brand', 'text-white'); s2.querySelector('span').innerHTML = '2';
-                s3.classList.remove('text-brand'); s3.classList.add('text-gray-400');
-                s3.querySelector('span').classList.remove('bg-brand', 'text-white');
-                deskBtnText.innerText = 'Next'; deskBtnIcon.className = "fas fa-arrow-right ml-2.5";
-                mobBtnText.innerText = 'Next'; mobBtnIcon.className = "fas fa-arrow-right ml-2";
-                backText.innerText = "Continue Shopping";
-            } 
-            else if (currentStep === 2) {
-                line.style.width = '50%';
-                s1.querySelector('span').innerHTML = '<i class="fas fa-check"></i>';
-                s2.classList.add('text-brand', 'cursor-pointer'); s2.classList.remove('text-gray-400');
-                s2.querySelector('span').classList.add('bg-brand', 'text-white');
-                s2.setAttribute('onclick', 'goToStep(2)');
-                s3.classList.remove('text-brand'); s3.classList.add('text-gray-400');
-                s3.querySelector('span').classList.remove('bg-brand', 'text-white'); s3.querySelector('span').innerHTML = '3';
-                deskBtnText.innerText = 'Next'; deskBtnIcon.className = "fas fa-arrow-right ml-2.5";
-                mobBtnText.innerText = 'Next'; mobBtnIcon.className = "fas fa-arrow-right ml-2";
-                backText.innerText = "Back to Bag";
-            } 
-            else if (currentStep === 3) {
-                line.style.width = '100%';
-                s2.querySelector('span').innerHTML = '<i class="fas fa-check"></i>';
-                s3.classList.add('text-brand'); s3.classList.remove('text-gray-400');
-                s3.querySelector('span').classList.add('bg-brand', 'text-white');
-                deskBtnText.innerText = 'Place Order'; deskBtnIcon.className = "fas fa-lock ml-2.5";
-                mobBtnText.innerText = 'Place Order'; mobBtnIcon.className = "fas fa-lock ml-2";
-                backText.innerText = "Back to Address";
-                document.getElementById('coupon-section').style.display = 'none';
-            }
-            
-            if(currentStep < 3) document.getElementById('coupon-section').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function advanceStep() {
-            if (currentStep === 1) {
-                if (cartItems.length === 0) return;
-                
-                const savedCard = document.getElementById('saved-address-card');
-                const formContainer = document.getElementById('address-form-container');
-
-                if(!useFallback && userId) {
-                    try {
-                        const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
-                        if(docSnap.exists() && docSnap.data().address) {
-                            const user = docSnap.data();
-                            document.getElementById('chk-fname').value = user.firstName || '';
-                            document.getElementById('chk-lname').value = user.lastName || '';
-                            document.getElementById('chk-phone').value = user.phone || '';
-                            document.getElementById('chk-address').value = user.address || '';
-                            
-                            document.getElementById('display-name').innerText = `${user.firstName || ''} ${user.lastName || ''}`;
-                            document.getElementById('display-address').innerText = user.address;
-                            document.getElementById('display-phone').innerText = `+91 ${user.phone || ''}`;
-                            
-                            savedCard.classList.remove('hidden');
-                            formContainer.classList.add('hidden');
-                        } else {
-                            savedCard.classList.add('hidden');
-                            formContainer.classList.remove('hidden');
-                        }
-                    } catch(e) { console.error(e); }
-                } else {
-                    const fallbackData = JSON.parse(localStorage.getItem('shirnahar_user_data') || '{}');
-                    if(fallbackData.address) {
-                        document.getElementById('chk-fname').value = fallbackData.firstName || '';
-                        document.getElementById('chk-lname').value = fallbackData.lastName || '';
-                        document.getElementById('chk-phone').value = fallbackData.phone || '';
-                        document.getElementById('chk-address').value = fallbackData.address || '';
-                        document.getElementById('display-name').innerText = `${fallbackData.firstName} ${fallbackData.lastName}`;
-                        document.getElementById('display-address').innerText = fallbackData.address;
-                        document.getElementById('display-phone').innerText = `+91 ${fallbackData.phone}`;
-                        savedCard.classList.remove('hidden');
-                        formContainer.classList.add('hidden');
-                    } else {
-                        savedCard.classList.add('hidden');
-                        formContainer.classList.remove('hidden');
-                    }
-                }
-                
-                currentStep = 2;
-                renderStepUI();
-            } 
-            else if (currentStep === 2) {
-                const formContainer = document.getElementById('address-form-container');
-                if(!formContainer.classList.contains('hidden')) {
-                    const form = document.getElementById('checkout-address-form');
-                    if(!form.checkValidity()) { form.reportValidity(); return; }
-                    
-                    const userData = {
-                        firstName: document.getElementById('chk-fname').value,
-                        lastName: document.getElementById('chk-lname').value,
-                        phone: document.getElementById('chk-phone').value,
-                        address: document.getElementById('chk-address').value
-                    };
-                    
-                    if(!useFallback && userId) {
-                        await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
-                    } else {
-                        localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
-                    }
-                    
-                    document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
-                    document.getElementById('display-address').innerText = userData.address;
-                    document.getElementById('display-phone').innerText = `+91 ${userData.phone}`;
-                    document.getElementById('saved-address-card').classList.remove('hidden');
-                    formContainer.classList.add('hidden');
-                }
-                
-                currentStep = 3;
-                renderStepUI();
-            } 
-            else if (currentStep === 3) {
-                showToast('Processing secure payment...', 'info', 'fas fa-spinner fa-spin');
-                
-                // GENERATE REAL ORDER DATA
-                const orderId = 'SH-' + (Math.floor(Math.random() * 90000) + 10000);
-                const orderDate = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-                
-                let currentSubtotal = 0;
-                cartItems.forEach(i => currentSubtotal += (i.price * i.quantity));
-                let couponSavings = 0;
-                if (appliedCoupon && currentSubtotal > 0) {
-                    couponSavings = appliedCoupon.type === 'flat' ? Math.min(appliedCoupon.val, currentSubtotal) : Math.round((currentSubtotal * appliedCoupon.val) / 100);
-                }
-                const finalTotal = Math.max(0, currentSubtotal - couponSavings);
-                
-                const payRadio = document.querySelector('input[name="payment_method"]:checked');
-                const payMethod = payRadio && payRadio.value === 'upi' ? 'UPI' : 'Cash on Delivery';
-
-                const newOrder = {
-                    id: orderId,
-                    date: orderDate,
-                    status: 'Pending',
-                    total: finalTotal,
-                    paymentMethod: payMethod,
-                    items: cartItems.map(i => ({ name: i.name, qty: i.quantity, price: i.price, image: i.image }))
-                };
-
-                setTimeout(async () => {
-                    try {
-                        // SAVE ORDER TO DATABASE OR FALLBACK MEMORY
-                        if (!useFallback && userId) {
-                            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'orders', orderId), newOrder);
-                        } else {
-                            let localOrders = JSON.parse(localStorage.getItem('shirnahar_local_orders')) || [];
-                            localOrders.push(newOrder);
-                            localStorage.setItem('shirnahar_local_orders', JSON.stringify(localOrders));
-                        }
-                    } catch(e) { console.error("Failed to save order", e); }
-
-                    showToast('Order Placed Successfully! Redirecting...', 'success', 'fas fa-box-open');
-                    clearEntireCart(); 
-                    
-                    // Redirect to Track Order page to see the new purchase!
-                    setTimeout(() => window.location.href = 'trackorder.html', 1500);
-                }, 1500);
+                localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
+                loadCart();
             }
         }
 
-        function goToStep(step) {
-            if (step > currentStep) return; 
-            currentStep = step;
-            renderStepUI();
+        function removeItem(index) {
+            let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+            localCart.splice(index, 1);
+            localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
+            loadCart();
         }
 
-        function handleBackNavigation() {
-            if (currentStep > 1) goToStep(currentStep - 1);
-            else window.location.href = 'index.html';
+        function proceedToCheckout() {
+            // Placeholder for checkout logic (e.g., redirecting to checkout page or opening modal)
+            const btn = document.querySelector('button[onclick="proceedToCheckout()"]');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75');
+
+            setTimeout(() => {
+                alert("This would typically open your secure checkout payment gateway!");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
+            }, 1000);
         }
 
-        function toggleAddressForm() {
-            document.getElementById('saved-address-card').classList.add('hidden');
-            document.getElementById('address-form-container').classList.remove('hidden');
-        }
-
-        async function saveAddressChanges() {
-            const form = document.getElementById('checkout-address-form');
-            if(!form.checkValidity()) { form.reportValidity(); return; }
-            
-            const userData = {
-                firstName: document.getElementById('chk-fname').value,
-                lastName: document.getElementById('chk-lname').value,
-                phone: document.getElementById('chk-phone').value,
-                address: document.getElementById('chk-address').value
-            };
-            
-            if(!useFallback && userId) {
-                showToast('Saving address...', 'info', 'fas fa-spinner fa-spin');
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
-            } else {
-                localStorage.setItem('shirnahar_user_data', JSON.stringify(userData));
-            }
-            
-            document.getElementById('display-name').innerText = `${userData.firstName} ${userData.lastName}`;
-            document.getElementById('display-address').innerText = userData.address;
-            document.getElementById('display-phone').innerText = `+91 ${userData.phone}`;
-            
-            document.getElementById('address-form-container').classList.add('hidden');
-            document.getElementById('saved-address-card').classList.remove('hidden');
-            showToast('Delivery address updated successfully.', 'success', 'fas fa-map-marker-alt');
-        }
-
-        function cancelAddressEdit() {
-            const name = document.getElementById('display-name').innerText;
-            if(name && name !== 'Name') {
-                document.getElementById('address-form-container').classList.add('hidden');
-                document.getElementById('saved-address-card').classList.remove('hidden');
-            } else {
-                showToast('Please save a delivery address to proceed.', 'info', 'fas fa-info-circle');
-            }
-        }
-
-        function applyCoupon() {
-            const code = document.getElementById('coupon-input').value.trim().toUpperCase();
-            if(code === 'FIRSTORDER') appliedCoupon = { code: 'FIRSTORDER', type: 'flat', val: 100 };
-            else if (code === 'SHIRNAHAR10') appliedCoupon = { code: 'SHIRNAHAR10', type: 'percent', val: 10 };
-            else { showToast('Invalid code.', 'error', 'fas fa-xmark'); return; }
-            
-            document.getElementById('applied-coupon-pill').classList.remove('hidden');
-            document.getElementById('applied-coupon-pill').classList.add('flex');
-            document.getElementById('applied-coupon-name').innerText = appliedCoupon.code;
-            document.getElementById('applied-coupon-amount').innerText = appliedCoupon.type === 'flat' ? '₹100' : '10%';
-            updateOrderSummary();
-            showToast('Coupon applied!', 'success', 'fas fa-check');
-        }
-
-        function removeCoupon() {
-            appliedCoupon = null;
-            document.getElementById('applied-coupon-pill').classList.add('hidden');
-            document.getElementById('applied-coupon-pill').classList.remove('flex');
-            document.getElementById('coupon-input').value = '';
-            updateOrderSummary();
-        }
-
-        // Boot and authenticate
         document.addEventListener('DOMContentLoaded', async () => {
+            loadCart(); // Initialize cart view immediately on load
+            
             try {
                 await signInAnonymously(auth);
-                userId = auth.currentUser?.uid;
-
-                if(userId) {
-                    onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'cart'), (snapshot) => {
-                        cartItems = [];
-                        snapshot.forEach(doc => { cartItems.push({ id: doc.id, ...doc.data() }); });
-                        renderCart();
-                        renderStepUI(); 
-                    }, (error) => {
-                        console.warn("Firestore blocked read, using fallback mode.", error);
-                        useFallback = true;
-                        cartItems = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                        renderCart();
-                        renderStepUI(); 
-                    });
-                }
             } catch(e) {
-                console.warn("Firebase Auth blocked locally, using fallback mode.", e);
-                useFallback = true;
-                cartItems = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                renderCart();
-                renderStepUI(); 
+                console.warn("Auth failed, loading offline fallback.");
             }
         });
     </script>
