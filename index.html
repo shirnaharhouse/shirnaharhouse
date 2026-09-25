@@ -2,15 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport tag explicitly prevents zooming on mobile devices to prevent accidental layout shifts -->
+    <!-- Viewport locked to prevent accidental double-tap zooming on mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shirnahar House | Premium Ethnic Wear & Jewelry</title>
+    <title>Shirnahar House | Authentic Elegance</title>
     
-    <!-- Tailwind CSS for rapid styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
@@ -23,18 +20,17 @@
                     },
                     colors: {
                         brand: {
-                            light: '#fdf6e3', // soft cream background
-                            DEFAULT: '#b45309', // amber-700, rich terracotta/gold
-                            dark: '#78350f', // amber-900, deep brown
+                            light: '#fdf6e3', 
+                            DEFAULT: '#b45309', 
+                            dark: '#78350f', 
                         },
-                        accent: '#0f766e', // teal-700, elegant contrast
-                        amazon: {
-                            yellow: '#FFD814',
-                            yellowHover: '#F7CA00',
-                            border: '#FCD200',
-                            star: '#FFA41C',
-                            link: '#007185'
+                        premium: {
+                            black: '#0f172a',
+                            gray: '#334155'
                         }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 40px -10px rgba(0,0,0,0.08)',
                     }
                 }
             }
@@ -42,1620 +38,366 @@
     </script>
     
     <style>
-        html {
-            scroll-behavior: smooth;
+        html { scroll-behavior: smooth; }
+        .hide-scroll-bar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scroll-bar::-webkit-scrollbar { display: none; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+        
+        a, button, input { touch-action: manipulation; }
+        
+        .hero-gradient {
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(0,0,0,0.5) 100%);
         }
-        .hide-scroll-bar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
-        .hide-scroll-bar::-webkit-scrollbar {
-            display: none;
+        .animate-marquee { 
+            display: inline-block;
+            white-space: nowrap;
+            animation: scroll 20s linear infinite; 
+        }
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .pattern-bg {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* Wardrobe/Hanging Animation CSS */
+        @keyframes gentle-swing {
+            0%, 100% { transform: rotate(-4deg); }
+            50% { transform: rotate(4deg); }
+        }
+        .hanging-wrapper {
+            transform-origin: top center;
+            animation: gentle-swing 4.5s ease-in-out infinite;
+            will-change: transform;
+        }
+        .hanging-item {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .hero-overlay {
-            background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
-        }
-
-        /* Mobile specific adjustments to ensure images fit nicely in 2-column view */
-        @media (max-width: 639px) {
-            .mobile-img-h {
-                height: 15rem !important; /* Locks thumbnail height on phones */
+        /* DESKTOP ONLY HOVER EFFECTS - Prevents sticky hovers on mobile touch screens */
+        @media (hover: hover) and (pointer: fine) {
+            /* Pause swing on rack hover */
+            .rack-container:hover .hanging-wrapper {
+                animation-play-state: paused;
+            }
+            
+            /* Dim un-hovered items */
+            .rack-container:hover .hanging-wrapper:not(:hover) .hanging-item {
+                filter: brightness(0.4) blur(2px) grayscale(50%);
+                transform: scale(0.95);
+            }
+            
+            /* Pop hovered item */
+            .hanging-wrapper:hover {
+                z-index: 100 !important;
+            }
+            .hanging-wrapper:hover .hanging-item {
+                transform: scale(1.15) translateY(-15px);
             }
         }
+        
+        /* Stagger the swings */
+        .delay-0 { animation-delay: 0s; }
+        .delay-1 { animation-delay: -1s; }
+        .delay-2 { animation-delay: -2.5s; }
+        .delay-3 { animation-delay: -1.5s; }
+        .delay-4 { animation-delay: -3s; }
+        .delay-5 { animation-delay: -0.5s; }
     </style>
+
+    <script>
+        // Router logic to handle "View Product" redirects from other pages
+        if(localStorage.getItem('shirnahar_view_product_id')) {
+            window.location.replace('products.html');
+        }
+    </script>
 </head>
-<body class="bg-white font-sans text-gray-800 antialiased">
+<body class="bg-[#f8fafc] font-sans text-gray-800 antialiased selection:bg-brand-light selection:text-brand-dark overflow-x-hidden overscroll-none pb-16 md:pb-0">
 
-    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
-    <!-- Mobile Menu Overlay -->
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity duration-300 opacity-0"></div>
-    <div id="mobile-menu" class="fixed top-0 left-0 w-64 h-full bg-white z-[70] shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col">
-        <div class="p-4 flex justify-between items-center border-b border-gray-100">
-            <span class="font-serif text-xl font-bold text-brand-dark">Menu</span>
-            <button id="close-menu-btn" class="text-gray-500 hover:text-red-500 text-2xl w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 hover:bg-red-50 transition"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="overflow-y-auto flex-1 py-4">
-            <a href="#sarees" class="block px-6 py-3 text-gray-700 hover:bg-brand-light hover:text-brand font-medium border-b border-gray-50 mobile-link">Sarees</a>
-            <div class="px-6 py-3 border-b border-gray-50">
-                <span class="text-gray-700 font-medium block mb-2">Dresses</span>
-                <div class="pl-4 flex flex-col space-y-3 mt-2">
-                    <a href="#dresses" onclick="switchTab('threepiece')" class="text-sm text-gray-500 hover:text-brand mobile-link transition">Three Piece</a>
-                    <a href="#dresses" onclick="switchTab('twopiece')" class="text-sm text-gray-500 hover:text-brand mobile-link transition">Two Piece</a>
-                    <a href="#dresses" onclick="switchTab('onepiece')" class="text-sm text-gray-500 hover:text-brand mobile-link transition">One Piece</a>
-                </div>
-            </div>
-            <a href="#jewellery" class="block px-6 py-3 text-gray-700 hover:bg-brand-light hover:text-brand font-medium border-b border-gray-50 mobile-link">Jewellery</a>
-            <a href="#new-arrivals" class="block px-6 py-3 text-gray-700 hover:bg-brand-light hover:text-brand font-medium border-b border-gray-50 mobile-link">New Arrivals</a>
-        </div>
-        <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-around">
-            <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
-                <i class="far fa-user mb-1 text-lg"></i><span class="text-xs font-medium">Account</span>
-            </a>
-            <a href="trackorder.html" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
-                <i class="fas fa-truck mb-1 text-lg"></i><span class="text-xs font-medium">Track Order</span>
-            </a>
-            <a href="wishlist.html" class="flex flex-col items-center text-gray-600 hover:text-brand transition">
-                <i class="far fa-heart mb-1 text-lg"></i><span class="text-xs font-medium">Wishlist</span>
-            </a>
-        </div>
-    </div>
-
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <!-- Header without Search Bar -->
+    <header class="bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                
-                <div class="flex items-center md:hidden">
-                    <button type="button" id="open-menu-btn" class="text-gray-500 hover:text-brand focus:outline-none" aria-label="Open Menu">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
+            <div class="flex justify-between items-center h-[72px]">
+                <!-- Empty div for flex spacing on mobile -->
+                <div class="flex items-center md:hidden w-10"></div>
 
                 <div class="flex-shrink-0 flex items-center justify-center md:justify-start flex-1 md:flex-none">
-                    <a href="#" class="font-serif text-2xl md:text-3xl font-bold text-brand-dark tracking-tight">
-                        Shirnahar House
+                    <a href="index.html" class="font-serif text-2xl md:text-3xl font-bold text-gray-900 tracking-tight hover:text-brand transition-colors">
+                        Shirnahar<span class="text-brand">House</span>
                     </a>
                 </div>
 
-                <div class="hidden md:flex flex-1 max-w-xl mx-8">
-                    <div class="relative w-full flex items-center">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                        <input type="text" 
-                               class="block w-full pl-10 pr-24 py-2 border border-gray-300 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand focus:border-brand sm:text-sm transition duration-150 ease-in-out" 
-                               placeholder="Search for sarees, dresses, jewellery...">
-                        <div class="absolute inset-y-0 right-0 pr-1 flex items-center">
-                            <button class="bg-brand hover:bg-brand-dark text-white rounded-full px-4 py-1 text-sm font-medium transition duration-150">
-                                Search
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-4 md:space-x-6">
-                    <a href="trackorder.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center">
-                        <i class="fas fa-truck text-xl mb-1"></i>
-                        <span class="text-xs hidden md:block font-medium whitespace-nowrap">Track Order</span>
+                <div class="flex items-center justify-end space-x-4 md:space-x-6 w-10 md:w-auto">
+                    <a href="trackorder.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition"><i class="fas fa-truck text-lg"></i></a>
+                    <a href="account.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition"><i class="far fa-user text-lg"></i></a>
+                    <a href="wishlist.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-red-500 transition"><i class="far fa-heart text-lg"></i></a>
+                    <a href="cart.html" class="relative flex items-center text-gray-500 hover:text-brand transition group">
+                        <i class="fas fa-shopping-bag text-xl"></i>
+                        <span id="cart-badge" class="absolute -top-1.5 -right-2 bg-brand text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white transform group-hover:scale-110 transition-transform duration-300" style="display: none;">0</span>
                     </a>
-                    <a href="account.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center">
-                        <i class="far fa-user text-xl mb-1"></i>
-                        <span class="text-xs hidden md:block font-medium">Account</span>
-                    </a>
-                    <a href="wishlist.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center hidden sm:flex">
-                        <i class="far fa-heart text-xl mb-1"></i>
-                        <span class="text-xs hidden md:block font-medium">Wishlist</span>
-                    </a>
-                    <a href="cart.html" class="text-gray-500 hover:text-brand transition flex flex-col items-center relative group">
-                        <i class="fas fa-shopping-bag text-xl mb-1"></i>
-                        <span id="cart-badge" class="absolute top-0 right-0 md:right-2 -mt-1 -mr-2 bg-brand text-white text-[10px] font-bold rounded-full h-4 w-4 items-center justify-center group-hover:bg-brand-dark transition-transform duration-300" style="display: none;">0</span>
-                        <span class="text-xs hidden md:block font-medium">Cart</span>
-                    </a>
-                </div>
-            </div>
-            
-            <nav class="hidden md:flex justify-center space-x-8 py-3 border-t border-gray-100">
-                <a href="#sarees" class="text-gray-600 hover:text-brand font-medium text-sm uppercase tracking-wider transition">Sarees</a>
-                <div class="relative group">
-                    <button class="text-gray-600 group-hover:text-brand font-medium text-sm uppercase tracking-wider flex items-center transition">
-                        Dresses <i class="fas fa-chevron-down ml-1 text-[10px]"></i>
-                    </button>
-                    <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200 z-50">
-                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                            <a href="#dresses" onclick="switchTab('threepiece')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-light hover:text-brand" role="menuitem">Three Piece</a>
-                            <a href="#dresses" onclick="switchTab('twopiece')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-light hover:text-brand" role="menuitem">Two Piece</a>
-                            <a href="#dresses" onclick="switchTab('onepiece')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-light hover:text-brand" role="menuitem">One Piece</a>
-                        </div>
-                    </div>
-                </div>
-                <a href="#jewellery" class="text-gray-600 hover:text-brand font-medium text-sm uppercase tracking-wider transition">Jewellery</a>
-                <a href="#new-arrivals" class="text-accent hover:text-brand font-medium text-sm uppercase tracking-wider transition">New Arrivals</a>
-            </nav>
-            
-            <div class="md:hidden py-3 border-t border-gray-100">
-                 <div class="relative w-full">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </div>
-                    <input type="text" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand sm:text-sm" placeholder="Search products...">
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="bg-gray-100">
-        <div id="home-view" class="transition-opacity duration-300">
-            <!-- Hero Section -->
-            <section class="relative w-full h-[60vh] md:h-[80vh] bg-gray-900 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1610030469983-98e550d6153c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
-                     alt="Elegant traditional wear" 
-                     class="absolute inset-0 w-full h-full object-cover object-center opacity-80">
-                
-                <div class="absolute inset-0 hero-overlay"></div>
-
-                <div class="absolute inset-0 flex items-center">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                        <div class="max-w-xl text-white">
-                            <h2 class="text-sm md:text-base uppercase tracking-[0.2em] font-medium mb-4 text-brand-light">New Collection</h2>
-                            <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6 leading-tight">Elegance in Every Thread</h1>
-                            <p class="text-lg md:text-xl mb-8 text-gray-200 font-light max-w-lg">
-                                Discover our curated collection of exquisite sarees, stunning dresses, and timeless jewellery crafted for the modern woman.
-                            </p>
-                            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                                <a href="#sarees" class="inline-flex justify-center items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-brand-dark bg-brand-light hover:bg-white transition duration-300 shadow-lg">
-                                    Shop Sarees
-                                </a>
-                                <a href="#dresses" class="inline-flex justify-center items-center px-8 py-3 border-2 border-white text-base font-medium rounded-full text-white hover:bg-white hover:text-brand-dark transition duration-300">
-                                    Explore Dresses
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-white">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-serif font-bold text-gray-900">Shop by Category</h2>
-                    <div class="w-24 h-1 bg-brand mx-auto mt-4 rounded"></div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="relative rounded-2xl overflow-hidden group h-96 cursor-pointer">
-                        <img src="https://images.unsplash.com/photo-1615886753866-79396abc446e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Sarees" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                        <div class="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition duration-300"></div>
-                        <div class="absolute inset-0 flex flex-col justify-end p-8">
-                            <h3 class="text-3xl font-serif text-white font-bold mb-2">Sarees</h3>
-                            <a href="#sarees" class="inline-block text-brand-light hover:text-white font-medium flex items-center transition">
-                                View Collection <i class="fas fa-arrow-right ml-2 text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-rows-2 gap-8 h-96">
-                        <div class="relative rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='#dresses'">
-                            <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Dresses" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-black bg-opacity-40"></div>
-                            <div class="absolute inset-0 flex flex-col justify-center items-center p-4 text-center">
-                                <h3 class="text-2xl font-serif text-white font-bold mb-1">Dresses</h3>
-                                <p class="text-gray-200 text-sm mb-2">1, 2 & 3 Piece Sets</p>
-                                <span class="text-sm text-brand-light hover:text-white font-medium border-b border-brand-light pb-0.5">Shop Now</span>
-                            </div>
-                        </div>
-                        <div class="relative rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='#jewellery'">
-                            <img src="https://images.unsplash.com/photo-1599643478524-fb66f7ca0f4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Jewellery" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-black bg-opacity-30"></div>
-                            <div class="absolute inset-0 flex flex-col justify-center items-center p-4 text-center">
-                                <h3 class="text-2xl font-serif text-white font-bold mb-1">Jewellery</h3>
-                                <p class="text-gray-200 text-sm mb-2">Exquisite Adornments</p>
-                                <span class="text-sm text-brand-light hover:text-white font-medium border-b border-brand-light pb-0.5">Discover</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="relative rounded-2xl overflow-hidden group h-96 cursor-pointer bg-accent">
-                        <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-                        <div class="absolute inset-0 flex flex-col justify-center p-8 text-center">
-                            <span class="text-white uppercase tracking-widest text-sm mb-4">Trending Now</span>
-                            <h3 class="text-3xl font-serif text-white font-bold mb-6">Bridal Collection</h3>
-                            <p class="text-gray-100 mb-8 italic">Perfect attires for your special day</p>
-                            <a href="#" class="inline-block px-6 py-2 bg-white text-accent rounded-full font-medium hover:bg-gray-100 transition shadow-md w-max mx-auto">
-                                Explore Bridal
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="sarees" class="bg-white py-12">
-                <div class="max-w-7xl mx-auto md:px-6 lg:px-8">
-                    <div class="px-4 md:px-0 mb-6 flex justify-between items-end">
-                        <div>
-                            <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Elegant Sarees</h2>
-                            <p class="text-gray-500 text-sm sm:text-base mt-1">Traditional weaves and modern designs.</p>
-                        </div>
-                    </div>
-
-                    <!-- 2-Column Mobile Layout via gap-[1px] & background color -->
-                    <div id="saree-grid" class="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-gray-200 border-y sm:border border-gray-200 sm:rounded-xl overflow-hidden shadow-sm">
-                        
-                        <!-- Saree 1 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top">
-                                <!-- Top Right Wishlist -->
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <p class="text-[10px] text-gray-500 mb-1">Sponsored</p>
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Womens Banarasi Kanjivaram Silk Saree with Blouse...</h3>
-                                <div class="flex items-center mb-1">
-                                    <span class="text-[11px] font-bold text-gray-800 mr-1">4.2</span>
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(124)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹4,500</span>
-                                    <span class="text-[11px] text-gray-500 line-through">M.R.P: ₹5,999</span>
-                                    <span class="text-[11px] text-gray-900">(25% off)</span>
-                                </div>
-                                <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Saree 2 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1583391733958-69345e5251a3?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <p class="text-[10px] text-gray-500 mb-1">Sponsored</p>
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Womens Soft Banarasi Kanjivaram Silk Saree with...</h3>
-                                <div class="flex items-center mb-1">
-                                    <span class="text-[11px] font-bold text-gray-800 mr-1">3.8</span>
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(89)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹1,200</span>
-                                    <span class="text-[11px] text-gray-500 line-through">M.R.P: ₹2,400</span>
-                                    <span class="text-[11px] text-gray-900">(50% off)</span>
-                                </div>
-                                <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong><br><span class="text-red-600">Only 2 left in stock.</span></p>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Saree 3 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <span class="absolute top-0 left-0 bg-[#c45500] text-white text-[10px] font-bold px-2 py-1 z-10">Best seller</span>
-                                <img src="https://images.unsplash.com/photo-1620011500318-72eeab4376c9?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Emerald Green Georgette Party Wear Saree</h3>
-                                <div class="flex items-center mb-1">
-                                    <span class="text-[11px] font-bold text-gray-800 mr-1">4.5</span>
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(430)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹3,250</span>
-                                    <span class="text-[11px] text-gray-500 line-through">M.R.P: ₹4,500</span>
-                                    <span class="text-[11px] text-gray-900">(27% off)</span>
-                                </div>
-                                <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Saree 4 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1555529733-0e67056058e1?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Pink Kanjivaram Silk South Saree with Zari Work</h3>
-                                <div class="flex items-center mb-1">
-                                    <span class="text-[11px] font-bold text-gray-800 mr-1">4.8</span>
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(2,105)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹8,500</span>
-                                    <span class="text-[11px] text-gray-500 line-through">M.R.P: ₹12,000</span>
-                                    <span class="text-[11px] text-gray-900">(29% off)</span>
-                                </div>
-                                <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Saree 5 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1583391733958-69345e5251a3?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top hue-rotate-60">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Golden Zari Tissue Silk Wedding Collection Saree</h3>
-                                <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.1</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div><span class="text-amazon-link text-xs ml-1">(45)</span></div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹6,200</span><span class="text-[11px] text-gray-500 line-through">M.R.P: ₹8,000</span></div>
-                                <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                            </div>
-                        </div>
-
-                        <!-- Saree 6 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1620011500318-72eeab4376c9?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top grayscale">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Midnight Black Chiffon Evening Wear Saree</h3>
-                                <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">3.9</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div><span class="text-amazon-link text-xs ml-1">(12)</span></div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹2,900</span></div>
-                                <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                            </div>
-                        </div>
-
-                    </div>
-                    
-                    <div class="mt-10 flex justify-center items-center space-x-2" id="saree-pagination"></div>
-                </div>
-            </section>
-
-            <section id="dresses" class="bg-gray-100 py-12">
-                <div class="max-w-7xl mx-auto md:px-6 lg:px-8">
-                    <div class="text-center px-4 md:px-0 mb-8">
-                        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900 mb-4">Dress Collection</h2>
-                        
-                        <div class="inline-flex bg-white rounded-full p-1 shadow-sm border border-gray-200">
-                            <button onclick="switchTab('threepiece')" id="tab-threepiece" class="px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors bg-brand text-white">Three Piece</button>
-                            <button onclick="switchTab('twopiece')" id="tab-twopiece" class="px-5 py-2 rounded-full text-xs sm:text-sm font-medium text-gray-600 hover:text-brand transition-colors">Two Piece</button>
-                            <button onclick="switchTab('onepiece')" id="tab-onepiece" class="px-5 py-2 rounded-full text-xs sm:text-sm font-medium text-gray-600 hover:text-brand transition-colors">One Piece</button>
-                        </div>
-                    </div>
-
-                    <!-- Three Piece Content Wrapper -->
-                    <div id="wrapper-threepiece">
-                        <div id="content-threepiece" class="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-gray-200 border-y sm:border border-gray-200 sm:rounded-xl overflow-hidden shadow-sm">
-                            
-                            <!-- Dress 1 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80" alt="Dress" class="w-full h-full object-cover object-top">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Embroidered Salwar Suit (Kurta, Pant & Dupatta)</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.6</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹2,800</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Dress 2 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1605763240000-7e93b172d754?auto=format&fit=crop&w=400&q=80" alt="Dress" class="w-full h-full object-cover object-top">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Cotton Printed Casual Daily Wear Suit Set</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">3.5</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹1,500</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-
-                            <!-- Dress 3 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1583391733958-69345e5251a3?auto=format&fit=crop&w=400&q=80" alt="Dress" class="w-full h-full object-cover object-top">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Silk Blend Festive Collection Anarkali Set</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.8</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹3,400</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-
-                            <!-- Dress 4 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80" alt="Dress" class="w-full h-full object-cover object-top sepia">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Golden Zari Party Wear 3-Piece Suit</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.0</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹4,200</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Dress 5 (Added for Pagination) -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80" alt="Dress" class="w-full h-full object-cover object-top hue-rotate-[90deg]">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Purple Silk Embellished Suit</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.5</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹3,800</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Dress 6 (Added for Pagination) -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1605763240000-7e93b172d754?auto=format&fit=crop&w=400&q=80" alt="Dress" class="w-full h-full object-cover object-top grayscale">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Black and White Georgette Suit</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">3.9</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹2,100</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-8 flex justify-center items-center space-x-2" id="threepiece-pagination"></div>
-                    </div>
-
-                    <!-- Two Piece Wrapper -->
-                    <div id="wrapper-twopiece" class="hidden">
-                        <div id="content-twopiece" class="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-gray-200 border-y sm:border border-gray-200 sm:rounded-xl overflow-hidden shadow-sm">
-                            
-                            <!-- Product 1 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1620011500318-72eeab4376c9?auto=format&fit=crop&w=400&q=80" alt="Two Piece" class="w-full h-full object-cover object-top grayscale">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Black Kurta & Palazzo Bottom Set</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.2</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹1,800</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 2 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1620011500318-72eeab4376c9?auto=format&fit=crop&w=400&q=80" alt="Two Piece" class="w-full h-full object-cover object-top hue-rotate-90">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Green Printed Kurta Set</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.0</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹1,500</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 3 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1620011500318-72eeab4376c9?auto=format&fit=crop&w=400&q=80" alt="Two Piece" class="w-full h-full object-cover object-top hue-rotate-[180deg]">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Blue Cotton Top and Skirt</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.6</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹2,200</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 4 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1620011500318-72eeab4376c9?auto=format&fit=crop&w=400&q=80" alt="Two Piece" class="w-full h-full object-cover object-top sepia">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Beige Linen Co-ord Set</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.3</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹1,950</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 5 (Added for Pagination) -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1620011500318-72eeab4376c9?auto=format&fit=crop&w=400&q=80" alt="Two Piece" class="w-full h-full object-cover object-top invert">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">White and Blue Abstract Set</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.8</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹2,500</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                        </div>
-                        <div class="mt-8 flex justify-center items-center space-x-2" id="twopiece-pagination"></div>
-                    </div>
-
-                    <!-- One Piece Wrapper -->
-                    <div id="wrapper-onepiece" class="hidden">
-                        <div id="content-onepiece" class="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-gray-200 border-y sm:border border-gray-200 sm:rounded-xl overflow-hidden shadow-sm">
-                            
-                            <!-- Product 1 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6153c?auto=format&fit=crop&w=400&q=80" alt="One Piece" class="w-full h-full object-cover object-top">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Maroon Maxi Evening Gown Dress</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.9</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹3,200</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 2 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6153c?auto=format&fit=crop&w=400&q=80" alt="One Piece" class="w-full h-full object-cover object-top hue-rotate-90">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Green Silk Anarkali Gown</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.5</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹4,100</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 3 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6153c?auto=format&fit=crop&w=400&q=80" alt="One Piece" class="w-full h-full object-cover object-top hue-rotate-[180deg]">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Blue Embroidered Long Dress</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.2</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹2,800</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 4 -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6153c?auto=format&fit=crop&w=400&q=80" alt="One Piece" class="w-full h-full object-cover object-top grayscale">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Black Sequin Party Dress</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.7</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹3,500</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Product 5 (Added for Pagination) -->
-                            <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                                <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6153c?auto=format&fit=crop&w=400&q=80" alt="One Piece" class="w-full h-full object-cover object-top sepia">
-                                    <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                    <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Golden Evening Gown</h3>
-                                    <div class="flex items-center mb-1"><span class="text-[11px] font-bold text-gray-800 mr-1">4.0</span><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                    <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap"><span class="text-xl font-medium text-gray-900">₹4,800</span></div>
-                                    <p class="text-[11px] text-gray-900 mb-3 mt-1">FREE delivery <strong>Sat, 3 Oct</strong></p>
-                                    <div class="mt-auto pt-2"><button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button></div>
-                                </div>
-                            </div>
-                            
-                        </div>
-                        <div class="mt-8 flex justify-center items-center space-x-2" id="onepiece-pagination"></div>
-                    </div>
-
-                </div>
-            </section>
-
-            <section id="jewellery" class="bg-white py-12">
-                <div class="max-w-7xl mx-auto md:px-6 lg:px-8">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-gray-900 md:rounded-2xl p-6 sm:p-12 relative overflow-hidden">
-                        <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E');"></div>
-                        <div class="relative z-10 text-center md:text-left mb-6 md:mb-0 md:max-w-lg">
-                            <h2 class="text-2xl sm:text-4xl font-serif font-bold text-brand-light mb-2">Exquisite Jewellery</h2>
-                            <p class="text-gray-300 text-sm sm:text-lg">Traditional and contemporary necklaces, earrings, and bangles.</p>
-                        </div>
-                    </div>
-
-                    <div id="jewellery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-gray-200 border-y sm:border border-gray-200 sm:rounded-xl overflow-hidden shadow-sm">
-                        <!-- Jewellery Item 1 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative p-3 sm:p-4">
-                            <div class="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0 rounded-lg mb-3">
-                                <img src="https://images.unsplash.com/photo-1599643478524-fb66f7ca0f4b?auto=format&fit=crop&w=300&q=80" alt="Necklace" class="w-full h-full object-cover">
-                                <button class="absolute top-1 right-1 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart text-xs"></i></button>
-                            </div>
-                            <div class="flex flex-col flex-grow text-center">
-                                <h3 class="text-xs sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Kundan Necklace Set</h3>
-                                <div class="flex justify-center items-center mb-1"><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                <div class="flex justify-center items-baseline space-x-1 mb-2">
-                                    <span class="text-base sm:text-lg font-medium text-gray-900">₹1,850</span>
-                                </div>
-                                <div class="mt-auto pt-1">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Jewellery Item 2 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative p-3 sm:p-4">
-                            <div class="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0 rounded-lg mb-3">
-                                <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=300&q=80" alt="Earrings" class="w-full h-full object-cover">
-                                <button class="absolute top-1 right-1 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart text-xs"></i></button>
-                            </div>
-                            <div class="flex flex-col flex-grow text-center">
-                                <h3 class="text-xs sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Traditional Jhumki Earrings</h3>
-                                <div class="flex justify-center items-center mb-1"><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                <div class="flex justify-center items-baseline space-x-1 mb-2">
-                                    <span class="text-base sm:text-lg font-medium text-gray-900">₹450</span>
-                                </div>
-                                <div class="mt-auto pt-1">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Jewellery Item 3 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative p-3 sm:p-4">
-                            <div class="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0 rounded-lg mb-3">
-                                <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=300&q=80" alt="Bangles" class="w-full h-full object-cover">
-                                <button class="absolute top-1 right-1 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart text-xs"></i></button>
-                            </div>
-                            <div class="flex flex-col flex-grow text-center">
-                                <h3 class="text-xs sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Gold Plated Hand Bangles</h3>
-                                <div class="flex justify-center items-center mb-1"><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div>
-                                <div class="flex justify-center items-baseline space-x-1 mb-2">
-                                    <span class="text-base sm:text-lg font-medium text-gray-900">₹800</span>
-                                </div>
-                                <div class="mt-auto pt-1">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Jewellery Item 4 -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative p-3 sm:p-4">
-                            <div class="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0 rounded-lg mb-3">
-                                <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=300&q=80" alt="Ring" class="w-full h-full object-cover">
-                                <button class="absolute top-1 right-1 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart text-xs"></i></button>
-                            </div>
-                            <div class="flex flex-col flex-grow text-center">
-                                <h3 class="text-xs sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Premium Statement Ring</h3>
-                                <div class="flex justify-center items-center mb-1"><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div></div>
-                                <div class="flex justify-center items-baseline space-x-1 mb-2">
-                                    <span class="text-base sm:text-lg font-medium text-gray-900">₹350</span>
-                                </div>
-                                <div class="mt-auto pt-1">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Jewellery Item 5 (Added for Pagination) -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative p-3 sm:p-4">
-                            <div class="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0 rounded-lg mb-3">
-                                <img src="https://images.unsplash.com/photo-1599643478524-fb66f7ca0f4b?auto=format&fit=crop&w=300&q=80" alt="Necklace" class="w-full h-full object-cover grayscale">
-                                <button class="absolute top-1 right-1 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart text-xs"></i></button>
-                            </div>
-                            <div class="flex flex-col flex-grow text-center">
-                                <h3 class="text-xs sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Silver Oxidized Choker</h3>
-                                <div class="flex justify-center items-center mb-1"><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div></div>
-                                <div class="flex justify-center items-baseline space-x-1 mb-2">
-                                    <span class="text-base sm:text-lg font-medium text-gray-900">₹1,200</span>
-                                </div>
-                                <div class="mt-auto pt-1">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Jewellery Item 6 (Added for Pagination) -->
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative p-3 sm:p-4">
-                            <div class="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0 rounded-lg mb-3">
-                                <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=300&q=80" alt="Earrings" class="w-full h-full object-cover sepia">
-                                <button class="absolute top-1 right-1 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition"><i class="far fa-heart text-xs"></i></button>
-                            </div>
-                            <div class="flex flex-col flex-grow text-center">
-                                <h3 class="text-xs sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2">Polki Diamond Studs</h3>
-                                <div class="flex justify-center items-center mb-1"><div class="flex text-amazon-star text-[10px] sm:text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div></div>
-                                <div class="flex justify-center items-baseline space-x-1 mb-2">
-                                    <span class="text-base sm:text-lg font-medium text-gray-900">₹2,100</span>
-                                </div>
-                                <div class="mt-auto pt-1">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-amazon-border transition">Add to cart</button>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="mt-8 flex justify-center items-center space-x-2" id="jewellery-pagination"></div>
-                </div>
-            </section>
+    <main class="w-full relative flex flex-col min-h-screen">
         
-        </div>
-
-        <div id="product-view" class="hidden bg-white pb-20 pt-6 min-h-screen opacity-0 transition-opacity duration-300">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <button onclick="closeProduct()" class="text-sm text-gray-500 hover:text-brand mb-8 flex items-center transition group">
-                    <div class="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center mr-3 group-hover:bg-brand-light group-hover:border-brand-light transition">
-                        <i class="fas fa-arrow-left text-gray-600 group-hover:text-brand"></i>
-                    </div>
-                    <span class="font-medium tracking-wide">Back to Catalog</span>
-                </button>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 mb-20">
-                    <div class="relative rounded-2xl overflow-hidden bg-gray-100 aspect-[3/4] md:aspect-auto md:h-[650px] shadow-sm border border-gray-100">
-                        <span class="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded z-10 shadow-sm">SPECIAL OFFER</span>
-                        <img id="detail-image" src="" alt="Product Detail" class="w-full h-full object-cover object-top">
-                        <button class="absolute top-4 right-4 bg-white/90 text-gray-900 w-12 h-12 rounded-full flex items-center justify-center hover:bg-brand hover:text-white transition shadow-md z-10">
-                            <i class="far fa-heart text-xl"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="flex flex-col justify-center py-4">
-                        <span class="text-brand text-xs font-bold tracking-widest uppercase mb-2">Authentic Collection</span>
-                        <h2 id="detail-title" class="text-2xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-4 leading-tight">Product Title</h2>
-                        
-                        <div class="flex items-center mb-6">
-                            <div class="flex text-amazon-star text-sm">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                            </div>
-                            <span class="text-amazon-link text-sm ml-3 pl-3">(124 ratings)</span>
-                        </div>
-                        
-                        <div class="flex items-end space-x-3 mb-6">
-                            <span id="detail-current-price" class="text-3xl lg:text-4xl font-bold text-gray-900">₹...</span>
-                            <span id="detail-original-price" class="text-lg text-gray-500 line-through mb-1">M.R.P: ₹...</span>
-                            <span class="text-sm font-medium text-gray-800 mb-1">(25% off)</span>
-                        </div>
-                        
-                        <div class="w-full h-px bg-gray-200 mb-6"></div>
-                        
-                        <p class="text-gray-600 mb-8 leading-relaxed text-sm md:text-base">
-                            Experience elegance with this beautifully crafted piece from Shirnahar House. Designed with intricate detailing and premium materials, it ensures both supreme comfort and a stunning appearance for your most special occasions.
-                        </p>
-                        
-                        <div class="flex flex-col gap-3 mb-10">
-                            <button id="detail-add-cart-btn" class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-3.5 rounded-full font-medium transition shadow-sm border border-amazon-border flex justify-center items-center">
-                                Add to cart
-                            </button>
-                            <button id="detail-buy-now-btn" class="w-full bg-[#FFA41C] hover:bg-[#FA8900] text-gray-900 py-3.5 rounded-full font-medium transition shadow-sm border border-[#FF8F00] flex justify-center items-center">
-                                Buy Now
-                            </button>
-                        </div>
-                        
-                        <div class="border-t border-gray-200">
-                            <div id="accordion-fabric-btn" class="py-5 border-b border-gray-200 flex justify-between items-center cursor-pointer hover:text-brand transition group" onclick="toggleAccordion('accordion-fabric-content', 'accordion-fabric-icon')">
-                                <span class="font-medium text-gray-900 group-hover:text-brand">Fabric & Care Instructions</span>
-                                <i id="accordion-fabric-icon" class="fas fa-chevron-down text-gray-400 group-hover:text-brand transition-transform duration-300"></i>
-                            </div>
-                            <div id="accordion-fabric-content" class="hidden py-4 text-gray-600 text-sm border-b border-gray-200">
-                                <ul class="list-disc pl-5 space-y-2">
-                                    <li>Hand wash separately in cold water or dry clean.</li>
-                                    <li>Do not bleach or use harsh chemicals.</li>
-                                    <li>Dry in shade to maintain color vibrancy.</li>
-                                    <li>Iron on low heat, preferably inside out.</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+        <section class="relative w-full h-[75vh] md:h-[85vh] bg-gray-900 overflow-hidden flex-shrink-0">
+            <img src="https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=1600&q=80" alt="Hero Background" class="absolute inset-0 w-full h-full object-cover object-top opacity-90 scale-105 animate-[pulse_20s_ease-in-out_infinite_alternate]">
+            <div class="absolute inset-0 hero-gradient"></div>
+            <div class="absolute inset-0 pattern-bg opacity-10"></div>
+            
+            <div class="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto mt-8">
+                <span class="text-brand-light text-xs md:text-sm font-bold tracking-[0.4em] uppercase mb-4 opacity-90 border-b border-brand-light/30 pb-2">Festive Collection 2026</span>
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-[1.1] drop-shadow-2xl">
+                    Embrace <span class="italic font-light text-brand-light">Tradition</span><br>With Every Drape
+                </h1>
+                <p class="text-gray-200 text-sm md:text-lg mb-10 max-w-2xl font-light leading-relaxed drop-shadow-md opacity-90">
+                    Discover our handpicked selection of premium attire and fine jewellery crafted for modern elegance.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="products.html" class="bg-brand hover:bg-white text-white hover:text-brand-dark px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs md:text-sm transition-all duration-300 shadow-[0_0_20px_rgba(180,83,9,0.4)] hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] group">
+                        Explore Collection <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
                 </div>
+            </div>
 
-                <!-- Customer Reviews Section -->
-                <div class="border-t border-gray-200 pt-16 mb-16">
-                    <div class="flex justify-between items-end mb-8">
-                        <div>
-                            <h3 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Customer Reviews</h3>
-                            <p class="text-gray-500 mt-2 text-sm sm:text-base">Read what our customers are saying and share your experience.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                        <div class="lg:col-span-1 bg-gray-50 p-6 rounded-2xl border border-gray-200 h-max">
-                            <h4 class="font-medium text-lg text-gray-900 mb-4">Write a Review</h4>
-                            <form id="review-form" onsubmit="submitReview(event)">
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                                    <div class="flex text-gray-300 text-2xl cursor-pointer" id="rating-stars">
-                                        <i class="far fa-star hover:text-amazon-star transition-colors" onclick="setRating(1)"></i>
-                                        <i class="far fa-star hover:text-amazon-star transition-colors" onclick="setRating(2)"></i>
-                                        <i class="far fa-star hover:text-amazon-star transition-colors" onclick="setRating(3)"></i>
-                                        <i class="far fa-star hover:text-amazon-star transition-colors" onclick="setRating(4)"></i>
-                                        <i class="far fa-star hover:text-amazon-star transition-colors" onclick="setRating(5)"></i>
-                                    </div>
-                                    <input type="hidden" id="review-rating" value="0" required>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="review-name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                    <input type="text" id="review-name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition" required placeholder="Your name">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="review-text" class="block text-sm font-medium text-gray-700 mb-1">Review</label>
-                                    <textarea id="review-text" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition" required placeholder="What did you like or dislike?"></textarea>
-                                </div>
-                                <button type="submit" class="w-full bg-brand text-white font-medium py-3 rounded-lg hover:bg-brand-dark transition shadow-md">Post Review</button>
-                            </form>
-                        </div>
-                        
-                        <div class="lg:col-span-2">
-                            <div id="reviews-list" class="space-y-6">
-                                <div class="border-b border-gray-100 pb-6">
-                                    <div class="flex items-center mb-2">
-                                        <div class="flex text-amazon-star text-sm mr-3">
-                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-900 text-sm">Priya S.</span>
-                                        <span class="text-gray-400 text-xs ml-2">- 2 weeks ago</span>
-                                    </div>
-                                    <p class="text-gray-600 text-sm leading-relaxed">Absolutely beautiful piece! The quality of the fabric is amazing and it looks exactly like the pictures. I got so many compliments wearing this to a family function. The fit was perfect too!</p>
-                                </div>
-                                <div class="border-b border-gray-100 pb-6">
-                                    <div class="flex items-center mb-2">
-                                        <div class="flex text-amazon-star text-sm mr-3">
-                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-900 text-sm">Anjali K.</span>
-                                        <span class="text-gray-400 text-xs ml-2">- 1 month ago</span>
-                                    </div>
-                                    <p class="text-gray-600 text-sm leading-relaxed">Very good quality for the price. The delivery was remarkably fast and the packaging was very secure. I would definitely recommend Shirnahar House to my friends.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 flex flex-col items-center float-anim">
+                <span class="text-[10px] uppercase tracking-widest mb-2 font-medium">Scroll</span>
+                <div class="w-[1px] h-12 bg-gradient-to-b from-white/50 to-transparent"></div>
+            </div>
+        </section>
 
-                <div class="border-t border-gray-200 pt-16">
-                    <div class="flex justify-between items-end mb-8">
-                        <div>
-                            <h3 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">You May Also Like</h3>
-                            <p class="text-gray-500 mt-2 text-sm sm:text-base">Curated selections based on this item</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-gray-200 border-y sm:border border-gray-200 sm:rounded-xl overflow-hidden shadow-sm">
-                        
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Classic Silk Saree</h3>
-                                <div class="flex items-center mb-1">
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(312)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹4,500</span>
-                                </div>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80" alt="Suit" class="w-full h-full object-cover object-top">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Embroidered 3-Piece</h3>
-                                <div class="flex items-center mb-1">
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(120)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹2,800</span>
-                                </div>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=400&q=80" alt="Jewellery" class="w-full h-full object-cover object-top">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Gold Plated Jhumki</h3>
-                                <div class="flex items-center mb-1">
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(890)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹450</span>
-                                </div>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="group bg-white flex flex-col h-full cursor-pointer relative">
-                            <div class="relative h-56 sm:h-80 mobile-img-h overflow-hidden bg-gray-100 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1583391733958-69345e5251a3?auto=format&fit=crop&w=400&q=80" alt="Saree" class="w-full h-full object-cover object-top">
-                                <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm z-10 transition">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                                <h3 class="text-[13px] sm:text-sm text-gray-900 leading-snug mb-1 line-clamp-2 mt-1">Maroon Cotton Saree</h3>
-                                <div class="flex items-center mb-1">
-                                    <div class="flex text-amazon-star text-[10px] sm:text-xs">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
-                                    </div>
-                                    <span class="text-amazon-link text-xs ml-1">(54)</span>
-                                </div>
-                                <div class="flex items-baseline space-x-1.5 mb-1 flex-wrap">
-                                    <span class="text-xl font-medium text-gray-900">₹1,200</span>
-                                </div>
-                                <div class="mt-auto pt-2">
-                                    <button class="w-full bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 py-2 sm:py-2.5 rounded-full text-sm font-medium shadow-sm border border-amazon-border transition">
-                                        Add to cart
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
+        <!-- Premium Marquee Strip -->
+        <div class="bg-brand-dark text-brand-light py-3.5 overflow-hidden flex relative whitespace-nowrap border-y border-brand/30 shadow-inner flex-shrink-0">
+            <div class="animate-marquee inline-block font-serif text-[13px] md:text-sm tracking-[0.2em] uppercase">
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Pure Handloom Sarees</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Exclusive Designer Wear</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Premium Fine Jewellery</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Authentic Elegance</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Free Nationwide Shipping</span>
+                <!-- Duplicate for seamless looping -->
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Pure Handloom Sarees</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Exclusive Designer Wear</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Premium Fine Jewellery</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Authentic Elegance</span>
+                <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Free Nationwide Shipping</span>
             </div>
         </div>
+
+        <!-- Interactive Wardrobe Section -->
+        <section class="py-24 md:py-32 bg-[#0a0f1d] relative overflow-hidden flex-shrink-0 flex-grow">
+            <!-- Premium Lighting/Glow Effects -->
+            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-full bg-gradient-to-b from-brand/20 to-transparent blur-[120px] rounded-full pointer-events-none opacity-50"></div>
+            
+            <div class="max-w-7xl mx-auto px-4 relative z-10">
+                <div class="text-center mb-20 md:mb-28">
+                    <span class="text-brand text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 block">Signature Basics</span>
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white tracking-wide">The Everyday Collection</h2>
+                </div>
+
+                <!-- Wardrobe Interactive Container -->
+                <div class="relative w-full max-w-5xl mx-auto pb-12 mt-16">
+                    
+                    <!-- The Metal Hanging Bar -->
+                    <div class="absolute top-[8px] sm:top-[12px] md:top-[18px] lg:top-[22px] left-[-5%] right-[-5%] h-[4px] sm:h-[6px] md:h-[8px] bg-gradient-to-r from-[#1a1f2c] via-[#cbd5e1] to-[#1a1f2c] rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.8)] z-0"></div>
+                    
+                    <!-- Rack Container handling overlapping and hover states -->
+                    <!-- Tightly packed for mobile, expanding for desktop -->
+                    <div class="rack-container flex justify-center items-start -space-x-14 sm:-space-x-16 md:-space-x-24 lg:-space-x-28 pt-0 px-2 sm:px-12 relative z-10">
+                        
+                        <!-- 1: Light Grey -->
+                        <div class="hanging-wrapper delay-0 z-[10]">
+                            <div class="hanging-item relative w-24 sm:w-32 md:w-48 lg:w-56 cursor-pointer text-[#c8cbd0]" onclick="window.location.href='products.html'">
+                                <svg viewBox="0 0 200 320" class="w-full h-auto drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]">
+                                    <path d="M100 10 C 100 10, 115 -5, 125 10 C 135 25, 110 35, 100 50" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 L 185 85 C 190 88, 192 95, 188 100 L 168 140 C 165 145, 158 146, 152 142 L 140 130 L 140 300 C 140 306, 135 310, 130 310 L 70 310 C 65 310, 60 306, 60 300 L 60 130 L 48 142 C 42 146, 35 145, 32 140 L 12 100 C 8 95, 10 88, 15 85 Z" fill="currentColor"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 C 120 40, 80 40, 65 50 Z" fill="rgba(0,0,0,0.15)"/>
+                                    <path d="M 60 130 C 65 100, 65 70, 65 50 M 140 130 C 135 100, 135 70, 135 50" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 2: Black -->
+                        <div class="hanging-wrapper delay-1 z-[20]">
+                            <div class="hanging-item relative w-24 sm:w-32 md:w-48 lg:w-56 cursor-pointer text-[#151515]" onclick="window.location.href='products.html'">
+                                <svg viewBox="0 0 200 320" class="w-full h-auto drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]">
+                                    <path d="M100 10 C 100 10, 115 -5, 125 10 C 135 25, 110 35, 100 50" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 L 185 85 C 190 88, 192 95, 188 100 L 168 140 C 165 145, 158 146, 152 142 L 140 130 L 140 300 C 140 306, 135 310, 130 310 L 70 310 C 65 310, 60 306, 60 300 L 60 130 L 48 142 C 42 146, 35 145, 32 140 L 12 100 C 8 95, 10 88, 15 85 Z" fill="currentColor"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 C 120 40, 80 40, 65 50 Z" fill="rgba(255,255,255,0.05)"/>
+                                    <path d="M 60 130 C 65 100, 65 70, 65 50 M 140 130 C 135 100, 135 70, 135 50" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 3: Dark Grey -->
+                        <div class="hanging-wrapper delay-2 z-[30]">
+                            <div class="hanging-item relative w-24 sm:w-32 md:w-48 lg:w-56 cursor-pointer text-[#4a4d52]" onclick="window.location.href='products.html'">
+                                <svg viewBox="0 0 200 320" class="w-full h-auto drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]">
+                                    <path d="M100 10 C 100 10, 115 -5, 125 10 C 135 25, 110 35, 100 50" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 L 185 85 C 190 88, 192 95, 188 100 L 168 140 C 165 145, 158 146, 152 142 L 140 130 L 140 300 C 140 306, 135 310, 130 310 L 70 310 C 65 310, 60 306, 60 300 L 60 130 L 48 142 C 42 146, 35 145, 32 140 L 12 100 C 8 95, 10 88, 15 85 Z" fill="currentColor"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 C 120 40, 80 40, 65 50 Z" fill="rgba(0,0,0,0.15)"/>
+                                    <path d="M 60 130 C 65 100, 65 70, 65 50 M 140 130 C 135 100, 135 70, 135 50" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 4: Navy -->
+                        <div class="hanging-wrapper delay-3 z-[40]">
+                            <div class="hanging-item relative w-24 sm:w-32 md:w-48 lg:w-56 cursor-pointer text-[#1c2336]" onclick="window.location.href='products.html'">
+                                <svg viewBox="0 0 200 320" class="w-full h-auto drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]">
+                                    <path d="M100 10 C 100 10, 115 -5, 125 10 C 135 25, 110 35, 100 50" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 L 185 85 C 190 88, 192 95, 188 100 L 168 140 C 165 145, 158 146, 152 142 L 140 130 L 140 300 C 140 306, 135 310, 130 310 L 70 310 C 65 310, 60 306, 60 300 L 60 130 L 48 142 C 42 146, 35 145, 32 140 L 12 100 C 8 95, 10 88, 15 85 Z" fill="currentColor"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 C 120 40, 80 40, 65 50 Z" fill="rgba(0,0,0,0.2)"/>
+                                    <path d="M 60 130 C 65 100, 65 70, 65 50 M 140 130 C 135 100, 135 70, 135 50" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 5: Sage Green -->
+                        <div class="hanging-wrapper delay-4 z-[50]">
+                            <div class="hanging-item relative w-24 sm:w-32 md:w-48 lg:w-56 cursor-pointer text-[#69827c]" onclick="window.location.href='products.html'">
+                                <svg viewBox="0 0 200 320" class="w-full h-auto drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]">
+                                    <path d="M100 10 C 100 10, 115 -5, 125 10 C 135 25, 110 35, 100 50" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 L 185 85 C 190 88, 192 95, 188 100 L 168 140 C 165 145, 158 146, 152 142 L 140 130 L 140 300 C 140 306, 135 310, 130 310 L 70 310 C 65 310, 60 306, 60 300 L 60 130 L 48 142 C 42 146, 35 145, 32 140 L 12 100 C 8 95, 10 88, 15 85 Z" fill="currentColor"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 C 120 40, 80 40, 65 50 Z" fill="rgba(0,0,0,0.15)"/>
+                                    <path d="M 60 130 C 65 100, 65 70, 65 50 M 140 130 C 135 100, 135 70, 135 50" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 6: White -->
+                        <div class="hanging-wrapper delay-5 z-[60]">
+                            <div class="hanging-item relative w-24 sm:w-32 md:w-48 lg:w-56 cursor-pointer text-[#fdfdfd]" onclick="window.location.href='products.html'">
+                                <svg viewBox="0 0 200 320" class="w-full h-auto drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]">
+                                    <path d="M100 10 C 100 10, 115 -5, 125 10 C 135 25, 110 35, 100 50" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 L 185 85 C 190 88, 192 95, 188 100 L 168 140 C 165 145, 158 146, 152 142 L 140 130 L 140 300 C 140 306, 135 310, 130 310 L 70 310 C 65 310, 60 306, 60 300 L 60 130 L 48 142 C 42 146, 35 145, 32 140 L 12 100 C 8 95, 10 88, 15 85 Z" fill="currentColor"/>
+                                    <path d="M 65 50 C 80 65, 120 65, 135 50 C 120 40, 80 40, 65 50 Z" fill="rgba(0,0,0,0.05)"/>
+                                    <path d="M 60 130 C 65 100, 65 70, 65 50 M 140 130 C 135 100, 135 70, 135 50" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="mt-20 md:mt-24 text-center">
+                    <a href="products.html" class="inline-flex items-center justify-center border border-brand/50 bg-brand/10 backdrop-blur-md text-white hover:bg-brand hover:border-brand px-10 py-4 rounded-full text-xs md:text-sm font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-[0_0_20px_rgba(180,83,9,0.15)] hover:shadow-[0_0_30px_rgba(180,83,9,0.4)] hover:-translate-y-1 group">
+                        Explore Collection <i class="fas fa-long-arrow-alt-right ml-3 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Floating Trust Strip (Moved above Footer) -->
+        <section class="bg-[#1e1b18] relative z-20 pt-16 pb-8 border-t border-[#2d2824] flex-shrink-0">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-[#2d2824]/50 rounded-2xl shadow-xl p-6 md:p-8 grid grid-cols-3 gap-4 md:gap-8 text-center divide-x divide-white/10 border border-white/5">
+                    <div class="px-2 group">
+                        <div class="w-12 h-12 mx-auto bg-brand/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-truck-fast text-brand-light text-xl"></i>
+                        </div>
+                        <h4 class="text-[11px] md:text-sm font-bold text-white uppercase tracking-wider">Free Shipping</h4>
+                        <p class="text-[10px] md:text-xs text-gray-400 mt-1 hidden md:block">On orders above ₹1000</p>
+                    </div>
+                    <div class="px-2 group">
+                        <div class="w-12 h-12 mx-auto bg-brand/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-shield-alt text-brand-light text-xl"></i>
+                        </div>
+                        <h4 class="text-[11px] md:text-sm font-bold text-white uppercase tracking-wider">Secure Payment</h4>
+                        <p class="text-[10px] md:text-xs text-gray-400 mt-1 hidden md:block">100% safe & protected</p>
+                    </div>
+                    <div class="px-2 group">
+                        <div class="w-12 h-12 mx-auto bg-brand/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-undo text-brand-light text-xl"></i>
+                        </div>
+                        <h4 class="text-[11px] md:text-sm font-bold text-white uppercase tracking-wider">Easy Returns</h4>
+                        <p class="text-[10px] md:text-xs text-gray-400 mt-1 hidden md:block">7-day hassle-free return</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-[#1e1b18] text-brand-light pt-8 pb-24 md:pb-8 relative overflow-hidden flex-shrink-0">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <a href="index.html" class="font-serif text-3xl font-bold text-white tracking-tight mb-4 inline-block">
+                    Shirnahar<span class="text-brand">House</span>
+                </a>
+                <p class="text-gray-400 text-sm mt-4">&copy; 2026 Shirnahar House. All rights reserved.</p>
+            </div>
+        </footer>
     </main>
 
-    <footer class="bg-gray-900 text-white pt-12 pb-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-8">
-                <div>
-                    <h3 class="font-serif text-2xl font-bold text-brand-light mb-4">Shirnahar House</h3>
-                    <p class="text-gray-400 text-sm mb-6 leading-relaxed max-w-md">
-                        Curating the finest ethnic wear and jewellery. We bring tradition and modern elegance together to make you feel beautiful every day.
-                    </p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-brand hover:text-white transition">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-brand hover:text-white transition">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-brand hover:text-white transition">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="md:text-right">
-                    <h4 class="text-lg font-medium mb-4">Customer Service</h4>
-                    <ul class="space-y-3 text-sm text-gray-400">
-                        <li>
-                            <a href="#contact" class="hover:text-brand-light transition inline-flex items-center md:justify-end w-full">
-                                <i class="fas fa-envelope mr-2"></i> Contact Us
-                            </a>
-                        </li>
-                        <li>
-                            <span class="text-gray-300 inline-flex items-center md:justify-end w-full">
-                                <i class="fas fa-phone-alt mr-2 text-brand"></i> +91 98765 43210
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-500 text-xs mb-4 md:mb-0">
-                    &copy; 2026 Shirnahar House. All rights reserved.
-                </p>
-                <div class="flex space-x-2 text-gray-400 text-2xl">
-                    <i class="fab fa-cc-visa hover:text-white transition cursor-pointer"></i>
-                    <i class="fab fa-cc-mastercard hover:text-white transition cursor-pointer"></i>
-                    <i class="fab fa-cc-paypal hover:text-white transition cursor-pointer"></i>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- Mobile Bottom Navigation -->
+    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        <a href="index.html" class="flex flex-col items-center w-16 text-brand pb-2 relative">
+            <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-brand rounded-b-md"></div>
+            <i class="fas fa-home text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Home</span>
+        </a>
+        <a href="products.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-layer-group text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Catalog</span>
+        </a>
+        <a href="account.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-user text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Account</span>
+        </a>
+        <a href="cart.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative group">
+            <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Cart</span>
+        </a>
+    </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = 'shirnahar-house';
         const firebaseConfig = {
             apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
             authDomain: "shirnahar-house.firebaseapp.com",
             projectId: "shirnahar-house",
             storageBucket: "shirnahar-house.firebasestorage.app",
             messagingSenderId: "289287900697",
-            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
-            measurementId: "G-L4MK6TB4EX"
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        let userId = null;
-        let useFallback = false;
 
-        window.showToast = showToast;
-        window.toggleMenu = toggleMenu;
-        window.switchTab = switchTab;
-        window.openProduct = openProduct;
-        window.closeProduct = closeProduct;
-        window.setRating = setRating;
-        window.submitReview = submitReview;
-        window.toggleAccordion = toggleAccordion;
-
-        if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
-        let homeScrollPosition = 0;
-        
-        function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
-            const iconColor = type === 'success' ? 'text-green-400' : (type === 'info' ? 'text-brand-light' : 'text-white');
-
-            toast.className = `flex items-center px-5 py-3 space-x-3 rounded-full shadow-2xl ${bgColor} text-white transform transition-all duration-400 translate-y-12 opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<i class="${icon} ${iconColor} text-lg"></i><span class="text-sm font-medium tracking-wide">${message}</span>`;
-            
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('translate-y-12', 'opacity-0'));
-            setTimeout(() => {
-                toast.classList.add('translate-y-12', 'opacity-0');
-                setTimeout(() => toast.remove(), 400);
-            }, 2500);
-        }
-
-        const mobileMenu = document.getElementById('mobile-menu');
-        const overlay = document.getElementById('mobile-menu-overlay');
-        const openBtn = document.getElementById('open-menu-btn');
-        const closeBtn = document.getElementById('close-menu-btn');
-
-        function toggleMenu(show) {
-            if (show) {
-                overlay.classList.remove('hidden');
-                setTimeout(() => {
-                    overlay.classList.remove('opacity-0');
-                    mobileMenu.classList.remove('-translate-x-full');
-                }, 10);
-                document.body.style.overflow = 'hidden';
-            } else {
-                overlay.classList.add('opacity-0');
-                mobileMenu.classList.add('-translate-x-full');
-                setTimeout(() => { overlay.classList.add('hidden'); }, 300);
-                document.body.style.overflow = '';
-            }
-        }
-
-        openBtn?.addEventListener('click', () => toggleMenu(true));
-        closeBtn?.addEventListener('click', () => toggleMenu(false));
-        overlay?.addEventListener('click', () => toggleMenu(false));
-        document.querySelectorAll('.mobile-link').forEach(link => link.addEventListener('click', () => toggleMenu(false)));
-
-        const cartBadge = document.getElementById('cart-badge');
-
-        function updateCartBadge(count) {
-            if (cartBadge) {
-                if (count > 0) {
-                    cartBadge.style.display = 'flex';
-                    cartBadge.textContent = count;
-                    cartBadge.classList.add('scale-150');
-                    setTimeout(() => cartBadge.classList.remove('scale-150'), 200);
-                } else {
-                    cartBadge.style.display = 'none';
-                }
-            }
-        }
-
-        function updateFallbackBadge() {
-            let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-            let total = 0;
-            localCart.forEach(i => total += i.quantity);
-            updateCartBadge(total);
-        }
-
-        async function handleAddToCart(title, price, img) {
-            if(useFallback || !userId) {
-                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                let existing = localCart.find(i => i.name === title);
-                if(existing) existing.quantity += 1;
-                else localCart.push({ id: Date.now().toString(), name: title, price: price, mrp: Math.floor(price * 1.3), image: img, quantity: 1 });
-                localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
-                updateFallbackBadge();
-                return;
-            }
-
+        function updateCartBadge() {
             try {
-                const cartId = title.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const cartRef = doc(db, 'artifacts', appId, 'users', userId, 'cart', cartId);
-                const docSnap = await getDoc(cartRef);
+                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                let total = 0; 
+                localCart.forEach(i => total += i.quantity); 
                 
-                if (docSnap.exists()) {
-                    await setDoc(cartRef, { quantity: docSnap.data().quantity + 1 }, { merge: true });
-                } else {
-                    await setDoc(cartRef, { name: title, price: price, mrp: Math.floor(price * 1.3), image: img, quantity: 1 });
+                const badge = document.getElementById('cart-badge');
+                if (badge) {
+                    badge.style.display = total > 0 ? 'flex' : 'none';
+                    badge.textContent = total > 99 ? '99+' : total;
                 }
-            } catch (err) {
-                useFallback = true;
-                handleAddToCart(title, price, img);
-            }
-        }
-
-        updateFallbackBadge();
-
-        function attachCartAndWishlist() {
-            document.querySelectorAll('.group button').forEach(btn => {
-                const html = btn.innerHTML.toLowerCase();
-                
-                if (html.includes('add to cart') || html.includes('fa-shopping-bag')) {
-                    btn.onclick = (e) => {
-                        e.preventDefault(); 
-                        e.stopPropagation(); 
-                        
-                        const card = btn.closest('.group');
-                        if (!card) return;
-                        
-                        const titleEl = card.querySelector('h3');
-                        const imgEl = card.querySelector('img');
-                        const priceEls = card.querySelectorAll('.text-xl.font-medium, .text-lg.font-bold');
-                        
-                        const title = titleEl ? titleEl.innerText : "Premium Item";
-                        const img = imgEl ? imgEl.src : "";
-                        const price = priceEls.length > 0 ? parseInt(priceEls[0].innerText.replace(/[^0-9]/g, '')) || 1500 : 1500;
-                        
-                        handleAddToCart(title, price, img);
-                        showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
-                    };
-                }
-                
-                if (html.includes('fa-heart')) {
-                    btn.onclick = (e) => {
-                        e.preventDefault(); 
-                        e.stopPropagation();
-                        const icon = btn.querySelector('.fa-heart');
-                        if (icon) {
-                            if (icon.classList.contains('far')) {
-                                icon.classList.remove('far', 'text-gray-400');
-                                icon.classList.add('fas', 'text-red-500');
-                                showToast('Added to your wishlist.', 'success', 'fas fa-heart');
-                            } else {
-                                icon.classList.remove('fas', 'text-red-500');
-                                icon.classList.add('far', 'text-gray-400');
-                                showToast('Removed from wishlist.', 'info', 'far fa-heart');
-                            }
-                        }
-                    };
-                }
-            });
-
-            const detailAdd = document.getElementById('detail-add-cart-btn');
-            if (detailAdd) {
-                detailAdd.onclick = (e) => {
-                    e.preventDefault(); 
-                    e.stopPropagation();
-                    const title = document.getElementById('detail-title').innerText;
-                    const img = document.getElementById('detail-image').src;
-                    const price = parseInt(document.getElementById('detail-current-price').innerText.replace(/[^0-9]/g, '')) || 1500;
-                    handleAddToCart(title, price, img);
-                    showToast('Item successfully added to your cart!', 'success', 'fas fa-shopping-bag');
-                };
-            }
-        }
-        
-        attachCartAndWishlist();
-
-        function switchTab(tabId) {
-            const tabs = ['threepiece', 'twopiece', 'onepiece'];
-            tabs.forEach(id => {
-                const btn = document.getElementById(`tab-${id}`);
-                const wrapper = document.getElementById(`wrapper-${id}`);
-                if (!btn || !wrapper) return;
-
-                if (id === tabId) {
-                    btn.classList.add('bg-brand', 'text-white');
-                    btn.classList.remove('text-gray-600');
-                    wrapper.classList.remove('hidden');
-                } else {
-                    btn.classList.remove('bg-brand', 'text-white');
-                    btn.classList.add('text-gray-600');
-                    wrapper.classList.add('hidden');
-                }
-            });
-        }
-
-        function updateProductDetailsContent(isJewellery) {
-            const accordionBtnText = document.querySelector('#accordion-fabric-btn span');
-            const accordionContent = document.querySelector('#accordion-fabric-content ul');
-            if (isJewellery) {
-                accordionBtnText.innerText = "Material & Care Instructions";
-                accordionContent.innerHTML = `<li>Store in an airtight box or pouch to prevent oxidation.</li><li>Keep away from water, perfumes, and harsh chemicals.</li><li>Clean with a soft, dry cloth after every use.</li><li>Avoid wearing while exercising or sleeping.</li>`;
-            } else {
-                accordionBtnText.innerText = "Fabric & Care Instructions";
-                accordionContent.innerHTML = `<li>Hand wash separately in cold water or dry clean.</li><li>Do not bleach or use harsh chemicals.</li><li>Dry in shade to maintain color vibrancy.</li><li>Iron on low heat, preferably inside out.</li>`;
-            }
-        }
-
-        function openProduct(card) {
-            const titleEl = card.querySelector('h3');
-            const imgEl = card.querySelector('img');
-            const priceEls = card.querySelectorAll('.text-xl.font-medium, .text-lg.font-bold');
-            
-            if (!titleEl || !imgEl) return;
-            
-            const title = titleEl.innerText;
-            const imgSrc = imgEl.src;
-            let currentPrice = '₹1,500'; 
-            if (priceEls.length > 0) currentPrice = priceEls[0].innerText;
-
-            let numPrice = parseInt(currentPrice.replace(/[^0-9]/g, ''));
-            if(isNaN(numPrice)) numPrice = 1500;
-            let origPrice = Math.floor(numPrice * 1.3);
-            let formattedOrigPrice = 'M.R.P: ₹' + origPrice.toLocaleString('en-IN');
-
-            const isJewellery = card.closest('#jewellery') !== null;
-            updateProductDetailsContent(isJewellery);
-
-            document.getElementById('detail-image').src = imgSrc;
-            document.getElementById('detail-title').innerText = title;
-            document.getElementById('detail-current-price').innerText = currentPrice;
-            document.getElementById('detail-original-price').innerText = formattedOrigPrice;
-            
-            const slug = '#product-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            try { history.pushState({ view: 'product', title: title, imgSrc: imgSrc, currentPrice: currentPrice, origPrice: formattedOrigPrice, isJewellery: isJewellery }, title, slug); } catch (err) {}
-            
-            const homeView = document.getElementById('home-view');
-            const productView = document.getElementById('product-view');
-            
-            if (!homeView.classList.contains('hidden')) {
-                homeScrollPosition = window.scrollY || window.pageYOffset;
-                homeView.classList.add('opacity-0');
-                setTimeout(() => {
-                    homeView.classList.add('hidden');
-                    productView.classList.remove('hidden');
-                    window.scrollTo({ top: 0, behavior: 'instant' });
-                    setTimeout(() => productView.classList.remove('opacity-0'), 50);
-                }, 300);
-            } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                const img = document.getElementById('detail-image');
-                img.style.opacity = '0.5';
-                setTimeout(() => img.style.opacity = '1', 200);
-            }
-        }
-
-        function closeProductUI(restoreScroll = true) {
-            const homeView = document.getElementById('home-view');
-            const productView = document.getElementById('product-view');
-            productView.classList.add('opacity-0');
-            setTimeout(() => {
-                productView.classList.add('hidden');
-                homeView.classList.remove('hidden');
-                if (restoreScroll) window.scrollTo({ top: homeScrollPosition, behavior: 'instant' });
-                else window.scrollTo({ top: 0, behavior: 'instant' });
-                setTimeout(() => homeView.classList.remove('opacity-0'), 50);
-            }, 300);
-        }
-
-        function closeProduct() {
-            if (location.hash.startsWith('#product')) history.back();
-            else closeProductUI(true);
-        }
-
-        window.addEventListener('popstate', (e) => {
-            const productView = document.getElementById('product-view');
-            if (e.state && e.state.view === 'product') {
-                document.getElementById('detail-image').src = e.state.imgSrc;
-                document.getElementById('detail-title').innerText = e.state.title;
-                document.getElementById('detail-current-price').innerText = e.state.currentPrice;
-                document.getElementById('detail-original-price').innerText = e.state.origPrice;
-                updateProductDetailsContent(e.state.isJewellery);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                if (productView && productView.classList.contains('hidden')) {
-                    document.getElementById('home-view').classList.add('hidden', 'opacity-0');
-                    productView.classList.remove('hidden', 'opacity-0');
-                }
-            } else if (!location.hash.startsWith('#product') && productView && !productView.classList.contains('hidden')) {
-                closeProductUI(true);
-            }
-        });
-
-        function toggleAccordion(contentId, iconId) {
-            const content = document.getElementById(contentId);
-            const icon = document.getElementById(iconId);
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                content.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
-        }
-
-        function setRating(rating) {
-            document.getElementById('review-rating').value = rating;
-            const stars = document.getElementById('rating-stars').children;
-            for (let i = 0; i < stars.length; i++) {
-                if (i < rating) {
-                    stars[i].classList.remove('far', 'text-gray-300');
-                    stars[i].classList.add('fas', 'text-amazon-star');
-                } else {
-                    stars[i].classList.remove('fas', 'text-amazon-star');
-                    stars[i].classList.add('far', 'text-gray-300');
-                }
-            }
-        }
-
-        function submitReview(event) {
-            event.preventDefault();
-            const rating = document.getElementById('review-rating').value;
-            const name = document.getElementById('review-name').value;
-            const text = document.getElementById('review-text').value;
-
-            if (rating == 0) {
-                showToast('Please select a star rating by clicking the stars.', 'info', 'fas fa-star');
-                return;
-            }
-
-            const reviewList = document.getElementById('reviews-list');
-            const newReview = document.createElement('div');
-            newReview.className = 'border-b border-gray-100 pb-6 opacity-0 transition-opacity duration-500 transform -translate-y-4';
-            
-            let starsHtml = '';
-            for(let i = 1; i <= 5; i++) {
-                if(i <= rating) starsHtml += '<i class="fas fa-star"></i>';
-                else starsHtml += '<i class="far fa-star text-gray-300"></i>';
-            }
-
-            newReview.innerHTML = `
-                <div class="flex items-center mb-2">
-                    <div class="flex text-amazon-star text-sm mr-3">${starsHtml}</div>
-                    <span class="font-medium text-gray-900">${name}</span>
-                    <span class="bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm ml-3">Verified Buyer</span>
-                    <span class="text-gray-400 text-xs ml-2">- Just now</span>
-                </div>
-                <p class="text-gray-600 text-sm leading-relaxed">${text.replace(/\n/g, '<br>')}</p>
-            `;
-
-            reviewList.insertBefore(newReview, reviewList.firstChild);
-            requestAnimationFrame(() => newReview.classList.remove('opacity-0', '-translate-y-4'));
-            event.target.reset();
-            setRating(0); 
-            showToast('Thank you! Your review has been posted.', 'success', 'fas fa-check-circle');
-        }
-
-        function setupPagination(gridId, paginationContainerId, itemsPerPage) {
-            const grid = document.getElementById(gridId);
-            const paginationContainer = document.getElementById(paginationContainerId);
-            if (!grid || !paginationContainer) return;
-
-            if (!document.getElementById('pagination-style')) {
-                const style = document.createElement('style');
-                style.id = 'pagination-style';
-                style.innerHTML = '.page-hidden { display: none !important; }';
-                document.head.appendChild(style);
-            }
-
-            const items = Array.from(grid.children);
-            const totalPages = Math.ceil(items.length / itemsPerPage);
-            let currentPage = 1;
-
-            function showPage(page, isInitialLoad = false) {
-                currentPage = page;
-                
-                items.forEach((item, index) => {
-                    if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
-                        item.classList.remove('page-hidden');
-                        item.style.opacity = '0';
-                        setTimeout(() => {
-                            item.style.transition = 'opacity 0.4s ease';
-                            item.style.opacity = '1';
-                        }, 50);
-                    } else {
-                        item.classList.add('page-hidden');
-                    }
-                });
-                
-                renderPaginationButtons();
-                
-                if (!isInitialLoad) {
-                    const yOffset = -100;
-                    if(grid.offsetParent !== null) { 
-                        const y = grid.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                        window.scrollTo({top: y, behavior: 'smooth'});
-                    }
-                }
-            }
-
-            function renderPaginationButtons() {
-                paginationContainer.innerHTML = '';
-                
-                if(totalPages <= 1) return; 
-                
-                const prevBtn = document.createElement('button');
-                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-                prevBtn.className = `w-10 h-10 rounded-full flex items-center justify-center font-medium transition ${currentPage === 1 ? 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100' : 'bg-white text-gray-700 hover:bg-brand hover:text-white border border-gray-200 hover:border-brand shadow-sm'}`;
-                prevBtn.disabled = currentPage === 1;
-                prevBtn.onclick = () => { if(currentPage > 1) showPage(currentPage - 1); };
-                paginationContainer.appendChild(prevBtn);
-
-                for (let i = 1; i <= totalPages; i++) {
-                    const btn = document.createElement('button');
-                    btn.innerText = i;
-                    btn.className = `w-10 h-10 rounded-full flex items-center justify-center font-medium transition ${currentPage === i ? 'bg-amazon-yellow text-gray-900 shadow-md border-amazon-border' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`;
-                    btn.onclick = () => showPage(i);
-                    paginationContainer.appendChild(btn);
-                }
-
-                const nextBtn = document.createElement('button');
-                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                nextBtn.className = `w-10 h-10 rounded-full flex items-center justify-center font-medium transition ${currentPage === totalPages ? 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100' : 'bg-white text-gray-700 hover:bg-brand hover:text-white border border-gray-200 hover:border-brand shadow-sm'}`;
-                nextBtn.disabled = currentPage === totalPages;
-                nextBtn.onclick = () => { if(currentPage < totalPages) showPage(currentPage + 1); };
-                paginationContainer.appendChild(nextBtn);
-            }
-
-            showPage(1, true);
+            } catch (e) {}
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Re-initialize pagination for all updated tabs
-            setupPagination('saree-grid', 'saree-pagination', 4);
-            setupPagination('content-threepiece', 'threepiece-pagination', 4);
-            setupPagination('content-twopiece', 'twopiece-pagination', 4);
-            setupPagination('content-onepiece', 'onepiece-pagination', 4);
-            setupPagination('jewellery-grid', 'jewellery-pagination', 4);
-
-            const productCards = document.querySelectorAll('#home-view section .group, #product-view .group');
-            productCards.forEach(card => {
-                card.addEventListener('click', (e) => {
-                    // Prevent opening the product page if they clicked "Add to Cart" or "Wishlist"
-                    if(e.target.closest('button') || e.target.closest('a')) return;
-                    openProduct(card);
-                });
-            });
-            
-            const detailBuyNow = document.getElementById('detail-buy-now-btn');
-            if(detailBuyNow) {
-                detailBuyNow.addEventListener('click', async () => {
-                    const title = document.getElementById('detail-title').innerText;
-                    const img = document.getElementById('detail-image').src;
-                    const price = parseInt(document.getElementById('detail-current-price').innerText.replace(/[^0-9]/g, '')) || 1500;
-                    await handleAddToCart(title, price, img);
-                    showToast('Proceeding to secure checkout...', 'info', 'fas fa-shield-alt');
-                    setTimeout(() => window.location.href = 'cart.html', 1200);
-                });
-            }
-
+            updateCartBadge();
             try {
                 await signInAnonymously(auth);
-                userId = auth.currentUser?.uid;
-
-                if(userId) {
-                    onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'cart'), (snapshot) => {
-                        let totalCount = 0;
-                        snapshot.forEach(doc => { totalCount += (doc.data().quantity || 1); });
-                        updateCartBadge(totalCount);
-                    }, (err) => {
-                        useFallback = true;
-                        updateFallbackBadge();
-                    });
-                }
             } catch(e) {
-                useFallback = true;
-                updateFallbackBadge();
-            }
-
-            const pendingProductStr = localStorage.getItem('shirnahar_view_product');
-            if (pendingProductStr) {
-                localStorage.removeItem('shirnahar_view_product');
-                try {
-                    const productData = JSON.parse(pendingProductStr);
-                    const virtualCard = document.createElement('div');
-                    virtualCard.innerHTML = `<h3>${productData.name}</h3><img src="${productData.image}"><span class="text-xl font-medium text-gray-900">₹${productData.price.toLocaleString('en-IN')}</span>`;
-                    setTimeout(() => openProduct(virtualCard), 400);
-                } catch(e) {}
+                console.warn("Auth failed, loading offline fallback.");
             }
         });
     </script>
