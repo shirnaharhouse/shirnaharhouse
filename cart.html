@@ -165,8 +165,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        const appId = 'shirnahar-house';
         const firebaseConfig = {
             apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
             authDomain: "shirnahar-house.firebaseapp.com",
@@ -177,6 +179,10 @@
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let unsubscribeCart = null;
 
         // Global functions mapped for inline HTML events
         window.updateQty = updateQty;
@@ -207,97 +213,177 @@
             document.getElementById('cart-item-count').innerText = count;
         }
 
-        function loadCart() {
+        function renderCartUI(cartArray) {
+            const container = document.getElementById('cart-items-container');
+            const contentWrapper = document.getElementById('cart-content');
+            const emptyState = document.getElementById('empty-cart-state');
+
+            let totalItems = 0;
+            let subtotal = 0;
+
+            if (!cartArray || cartArray.length === 0) {
+                contentWrapper.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                updateCartBadge(0);
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            contentWrapper.classList.remove('hidden');
+            
+            let html = '';
+            
+            cartArray.forEach((item, index) => {
+                totalItems += item.quantity;
+                subtotal += (item.price * item.quantity);
+
+                html += `
+                <div class="bg-white p-4 rounded-2xl shadow-[0_2px_15px_-5px_rgba(0,0,0,0.05)] border border-gray-100 flex gap-4 transition-all duration-300 hover:shadow-md">
+                    <div class="w-24 h-32 sm:w-28 sm:h-36 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-[13px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug">${item.name}</h3>
+                                <button onclick="removeItem(${index})" class="text-gray-400 hover:text-red-500 transition-colors p-1"><i class="far fa-trash-alt"></i></button>
+                            </div>
+                            <p class="text-sm sm:text-lg font-bold text-brand mt-1 sm:mt-2">₹${parseInt(item.price).toLocaleString('en-IN')}</p>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex items-center border border-gray-200 rounded-lg bg-gray-50/50">
+                                <button onclick="updateQty(${index}, -1)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 hover:text-brand transition-colors"><i class="fas fa-minus text-xs"></i></button>
+                                <span class="w-6 sm:w-8 text-center text-xs sm:text-sm font-bold text-gray-900">${item.quantity}</span>
+                                <button onclick="updateQty(${index}, 1)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 hover:text-brand transition-colors"><i class="fas fa-plus text-xs"></i></button>
+                            </div>
+                            <span class="text-xs text-gray-500 font-medium hidden sm:block">Sub: ₹${(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('summary-subtotal').innerText = '₹' + subtotal.toLocaleString('en-IN');
+            document.getElementById('summary-total').innerText = '₹' + subtotal.toLocaleString('en-IN');
+            
+            updateCartBadge(totalItems);
+        }
+
+        async function syncCartToCloud() {
+            if (!currentUser) return;
+            const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+            const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
+            
             try {
-                const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                const container = document.getElementById('cart-items-container');
-                const contentWrapper = document.getElementById('cart-content');
-                const emptyState = document.getElementById('empty-cart-state');
-
-                let totalItems = 0;
-                let subtotal = 0;
-
-                if (localCart.length === 0) {
-                    contentWrapper.classList.add('hidden');
-                    emptyState.classList.remove('hidden');
-                    updateCartBadge(0);
-                    return;
+                const docSnap = await getDoc(cartRef);
+                let cloudCart = [];
+                if (docSnap.exists()) {
+                    cloudCart = docSnap.data().items || [];
                 }
 
-                emptyState.classList.add('hidden');
-                contentWrapper.classList.remove('hidden');
-                
-                let html = '';
-                
-                localCart.forEach((item, index) => {
-                    totalItems += item.quantity;
-                    subtotal += (item.price * item.quantity);
-
-                    html += `
-                    <div class="bg-white p-4 rounded-2xl shadow-[0_2px_15px_-5px_rgba(0,0,0,0.05)] border border-gray-100 flex gap-4 transition-all duration-300 hover:shadow-md">
-                        <div class="w-24 h-32 sm:w-28 sm:h-36 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-1 flex flex-col justify-between py-1">
-                            <div>
-                                <div class="flex justify-between items-start gap-2">
-                                    <h3 class="text-[13px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug">${item.name}</h3>
-                                    <button onclick="removeItem(${index})" class="text-gray-400 hover:text-red-500 transition-colors p-1"><i class="far fa-trash-alt"></i></button>
-                                </div>
-                                <p class="text-sm sm:text-lg font-bold text-brand mt-1 sm:mt-2">₹${parseInt(item.price).toLocaleString('en-IN')}</p>
-                            </div>
-                            
-                            <div class="flex items-center justify-between mt-4">
-                                <div class="flex items-center border border-gray-200 rounded-lg bg-gray-50/50">
-                                    <button onclick="updateQty(${index}, -1)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 hover:text-brand transition-colors"><i class="fas fa-minus text-xs"></i></button>
-                                    <span class="w-6 sm:w-8 text-center text-xs sm:text-sm font-bold text-gray-900">${item.quantity}</span>
-                                    <button onclick="updateQty(${index}, 1)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 hover:text-brand transition-colors"><i class="fas fa-plus text-xs"></i></button>
-                                </div>
-                                <span class="text-xs text-gray-500 font-medium hidden sm:block">Sub: ₹${(item.price * item.quantity).toLocaleString('en-IN')}</span>
-                            </div>
-                        </div>
-                    </div>`;
-                });
-
-                container.innerHTML = html;
-                document.getElementById('summary-subtotal').innerText = '₹' + subtotal.toLocaleString('en-IN');
-                document.getElementById('summary-total').innerText = '₹' + subtotal.toLocaleString('en-IN');
-                
-                updateCartBadge(totalItems);
-
+                // Merge guest cart items into the authenticated cloud cart
+                if (localCart.length > 0) {
+                    localCart.forEach(localItem => {
+                        const existingIdx = cloudCart.findIndex(i => i.name === localItem.name);
+                        if (existingIdx > -1) {
+                            cloudCart[existingIdx].quantity += localItem.quantity;
+                            const maxStock = cloudCart[existingIdx].stock || 5;
+                            if (cloudCart[existingIdx].quantity > maxStock) {
+                                cloudCart[existingIdx].quantity = maxStock;
+                            }
+                        } else {
+                            cloudCart.push(localItem);
+                        }
+                    });
+                    
+                    await setDoc(cartRef, { items: cloudCart });
+                    localStorage.removeItem('shirnahar_local_cart'); // Clear local memory after merge
+                } else if (!docSnap.exists()) {
+                    // Create empty cart document if it doesn't exist
+                    await setDoc(cartRef, { items: [] });
+                }
             } catch (e) {
-                console.error("Cart loading error", e);
+                console.error("Cart sync error", e);
             }
         }
 
-        function updateQty(index, change) {
-            let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-            if (localCart[index]) {
-                const maxStock = localCart[index].stock || 5;
-                
-                if (change > 0 && localCart[index].quantity >= maxStock) {
-                    showToast(`Only ${maxStock} items available in stock`, 'error');
-                    return;
+        function listenToCloudCart() {
+            if (!currentUser) return;
+            const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
+            
+            if (unsubscribeCart) unsubscribeCart();
+            
+            unsubscribeCart = onSnapshot(cartRef, (docSnap) => {
+                let items = [];
+                if (docSnap.exists()) {
+                    items = docSnap.data().items || [];
                 }
+                renderCartUI(items);
+            }, (error) => {
+                console.error("Cloud cart listen error:", error);
+            });
+        }
 
-                localCart[index].quantity += change;
-                if (localCart[index].quantity <= 0) {
-                    localCart.splice(index, 1);
+        async function updateQty(index, change) {
+            if (currentUser) {
+                // Update Cloud Cart
+                const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
+                try {
+                    const docSnap = await getDoc(cartRef);
+                    if (docSnap.exists()) {
+                        let items = docSnap.data().items || [];
+                        if (items[index]) {
+                            const maxStock = items[index].stock || 5;
+                            if (change > 0 && items[index].quantity >= maxStock) {
+                                showToast(`Only ${maxStock} items available in stock`, 'error');
+                                return;
+                            }
+                            items[index].quantity += change;
+                            if (items[index].quantity <= 0) items.splice(index, 1);
+                            await setDoc(cartRef, { items });
+                        }
+                    }
+                } catch(e) { console.error(e); }
+            } else {
+                // Update Guest Local Cart
+                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                if (localCart[index]) {
+                    const maxStock = localCart[index].stock || 5;
+                    if (change > 0 && localCart[index].quantity >= maxStock) {
+                        showToast(`Only ${maxStock} items available in stock`, 'error');
+                        return;
+                    }
+                    localCart[index].quantity += change;
+                    if (localCart[index].quantity <= 0) localCart.splice(index, 1);
+                    localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
+                    renderCartUI(localCart);
                 }
+            }
+        }
+
+        async function removeItem(index) {
+            if (currentUser) {
+                // Remove from Cloud Cart
+                const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
+                try {
+                    const docSnap = await getDoc(cartRef);
+                    if (docSnap.exists()) {
+                        let items = docSnap.data().items || [];
+                        items.splice(index, 1);
+                        await setDoc(cartRef, { items });
+                    }
+                } catch(e) { console.error(e); }
+            } else {
+                // Remove from Guest Local Cart
+                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                localCart.splice(index, 1);
                 localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
-                loadCart();
+                renderCartUI(localCart);
             }
-        }
-
-        function removeItem(index) {
-            let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-            localCart.splice(index, 1);
-            localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
-            loadCart();
         }
 
         function proceedToCheckout() {
-            // Processing animation before redirection
             const btn = document.querySelector('button[onclick="proceedToCheckout()"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
@@ -310,12 +396,36 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            loadCart(); // Initialize cart view immediately on load
+            // Render local guest cart immediately to prevent visual flashing
+            if (!currentUser) {
+                const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                renderCartUI(localCart);
+            }
             
+            // Monitor Auth State for Account Syncing
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await syncCartToCloud();
+                    listenToCloudCart();
+                } else {
+                    currentUser = null;
+                    if (unsubscribeCart) unsubscribeCart();
+                    const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                    renderCartUI(localCart);
+                }
+            });
+
+            // Initialize Auth logic
+            const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
             try {
-                await signInAnonymously(auth);
+                if (initialToken) {
+                    await signInWithCustomToken(auth, initialToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch(e) {
-                console.warn("Auth failed, loading offline fallback.");
+                console.warn("Auth initialization error", e);
             }
         });
     </script>
