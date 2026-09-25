@@ -44,6 +44,8 @@
 </head>
 <body class="bg-[#f8fafc] font-sans text-gray-800 antialiased selection:bg-brand-light selection:text-brand-dark overflow-x-hidden pb-20 md:pb-0 min-h-screen flex flex-col">
 
+    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+
     <!-- Header -->
     <header class="bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b border-gray-100 flex-shrink-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -181,6 +183,21 @@
         window.removeItem = removeItem;
         window.proceedToCheckout = proceedToCheckout;
 
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const icon = type === 'error' ? '<i class="fas fa-exclamation-circle text-red-400"></i>' : '<i class="fas fa-check-circle text-green-400"></i>';
+            toast.className = `flex items-center px-4 py-3 space-x-3 rounded-xl shadow-xl bg-gray-900 text-white transform transition-all duration-300 translate-y-12 opacity-0 text-xs sm:text-sm`;
+            toast.innerHTML = `${icon}<span>${message}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-12', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('translate-y-12', 'opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 2000);
+        }
+
         function updateCartBadge(count) {
             const badge = document.getElementById('cart-badge');
             if (badge) {
@@ -256,6 +273,13 @@
         function updateQty(index, change) {
             let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
             if (localCart[index]) {
+                const maxStock = localCart[index].stock || 5;
+                
+                if (change > 0 && localCart[index].quantity >= maxStock) {
+                    showToast(`Only ${maxStock} items available in stock`, 'error');
+                    return;
+                }
+
                 localCart[index].quantity += change;
                 if (localCart[index].quantity <= 0) {
                     localCart.splice(index, 1);
@@ -273,19 +297,16 @@
         }
 
         function proceedToCheckout() {
-            // Placeholder for checkout logic (e.g., redirecting to checkout page or opening modal)
+            // Processing animation before redirection
             const btn = document.querySelector('button[onclick="proceedToCheckout()"]');
-            const originalText = btn.innerText;
+            const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
             btn.disabled = true;
             btn.classList.add('opacity-75');
 
             setTimeout(() => {
-                alert("This would typically open your secure checkout payment gateway!");
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                btn.classList.remove('opacity-75');
-            }, 1000);
+                window.location.href = 'order.html';
+            }, 800);
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
