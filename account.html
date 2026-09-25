@@ -2,17 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport tag explicitly prevents zooming on mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Account | Shirnahar House</title>
+    <title>My Account | Shirnahar House</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
@@ -29,318 +23,318 @@
                             DEFAULT: '#b45309', 
                             dark: '#78350f', 
                         }
-                    },
-                    boxShadow: {
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
                     }
                 }
             }
         }
     </script>
+    
     <style>
-        /* Mobile Specific Overrides for Native App Feel */
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-        .bg-premium-gradient { background: linear-gradient(135deg, #ffffff 0%, #fdf6e3 100%); }
-        
-        /* Disable double-tap zoom on links and buttons */
+        html { scroll-behavior: smooth; }
+        .hide-scroll-bar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scroll-bar::-webkit-scrollbar { display: none; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
         a, button, input { touch-action: manipulation; }
         
-        .feature-icon-box {
-            width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            background-color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(180, 83, 9, 0.1); transition: all 0.3s ease;
+        .pattern-bg {
+            background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        
+        .auth-transition {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<!-- overscroll-none prevents the elastic "bounce" effect on mobile screens -->
-<body class="bg-premium-gradient font-sans text-gray-900 antialiased min-h-screen flex flex-col pb-16 md:pb-0 selection:bg-brand-light selection:text-brand-dark overscroll-none overflow-x-hidden">
+<body class="bg-[#f8fafc] font-sans text-gray-800 antialiased selection:bg-brand-light selection:text-brand-dark overflow-x-hidden overscroll-none pb-20 md:pb-0 min-h-screen flex flex-col">
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+    <!-- Custom Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
-    <!-- Minimal Top Bar -->
-    <header class="w-full bg-transparent absolute top-0 z-50">
-        <div class="px-4 py-4 flex items-center">
-            <a href="index.html" class="group flex items-center justify-center w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-gray-100 text-gray-700 hover:text-brand hover:bg-white transition-all duration-300">
-                <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-            </a>
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b border-gray-100 flex-shrink-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-[72px]">
+                <div class="flex items-center md:hidden w-10">
+                    <button onclick="handleBackNavigation()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:text-brand transition focus:outline-none">
+                        <i class="fas fa-arrow-left text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="flex-shrink-0 flex items-center justify-center md:justify-start flex-1 md:flex-none">
+                    <a href="index.html" class="font-serif text-2xl md:text-3xl font-bold text-gray-900 tracking-tight hover:text-brand transition-colors">
+                        Shirnahar<span class="text-brand">House</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-2 md:space-x-6 w-10 md:w-auto justify-end">
+                    <a href="trackorder.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition"><i class="fas fa-truck text-lg"></i></a>
+                    <a href="account.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-brand transition"><i class="fas fa-user text-lg"></i></a>
+                    <a href="wishlist.html" class="w-10 h-10 hidden sm:flex items-center justify-center rounded-full text-gray-500 hover:text-red-500 transition"><i class="far fa-heart text-lg"></i></a>
+                    <a href="cart.html" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 hover:text-brand transition relative group">
+                        <i class="fas fa-shopping-bag text-lg"></i>
+                        <span id="cart-badge" class="absolute top-0 right-0 -mt-0.5 -mr-0.5 bg-brand text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-md border border-white transform group-hover:scale-110 transition-transform duration-300" style="display: none;">0</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </header>
 
-    <main class="flex-1 w-full max-w-md mx-auto flex flex-col pt-16">
+    <main class="flex-grow w-full relative pattern-bg flex items-center justify-center py-8">
         
-        <!-- Header Section -->
-        <div class="w-[calc(100%-2rem)] mx-auto py-7 mt-2 bg-gradient-to-br from-brand-dark to-brand rounded-2xl shadow-lg mb-6 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
-            <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E');"></div>
-            <h1 class="text-3xl md:text-4xl font-serif font-bold text-white tracking-wide drop-shadow-md relative z-10">Shirnahar House</h1>
-            <p class="text-brand-light text-[10px] font-medium tracking-widest uppercase mt-1.5 opacity-90 relative z-10">Authentic Elegance</p>
-        </div>
-
-        <div class="px-6 md:px-8 flex-1 flex flex-col md:bg-white md:shadow-soft md:rounded-3xl md:mx-4 md:mb-12 md:pb-8 relative overflow-hidden">
-            
-            <!-- Loading Overlay -->
-            <div id="account-loading-view" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm transition-opacity duration-300">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-brand mb-4"></i>
-                <span class="text-sm font-medium text-gray-500 tracking-wide animate-pulse mt-2">Securely connecting...</span>
-            </div>
-
-            <!-- Welcome Section -->
-            <div id="welcome-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 transform translate-x-0 opacity-100">
-                <div class="text-center mb-6 mt-2">
-                    <h2 class="text-2xl font-serif text-gray-900 mb-1">Welcome Back</h2>
-                    <p class="text-gray-500 text-sm">Sign in to access your wishlist, track orders, and discover exclusive offers.</p>
+        <!-- Auth Section (Visible when logged out) -->
+        <div id="auth-section" class="w-full max-w-md px-4 auth-transition">
+            <div class="bg-white rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden">
+                
+                <!-- Toggle Tabs -->
+                <div class="flex border-b border-gray-100">
+                    <button onclick="switchAuthTab('login')" id="tab-login" class="flex-1 py-4 text-sm font-bold text-brand border-b-2 border-brand transition-colors">Login</button>
+                    <button onclick="switchAuthTab('signup')" id="tab-signup" class="flex-1 py-4 text-sm font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition-colors">Sign Up</button>
                 </div>
 
-                <div class="space-y-4 mb-10 w-full">
-                    <button onclick="showSection('register-section')" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center group">
-                        <span>Create an Account</span>
-                        <i class="fas fa-arrow-right ml-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 absolute right-6"></i>
-                    </button>
-                    <button onclick="showSection('login-section')" class="w-full bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 py-3 rounded-xl font-medium text-[15px] transition-all duration-300 flex justify-center items-center">
-                        Sign In
-                    </button>
-                </div>
-
-                <div class="relative flex py-2 items-center mb-8">
-                    <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium uppercase tracking-widest">Why join us?</span>
-                    <div class="flex-grow border-t border-gray-200"></div>
-                </div>
-
-                <div class="space-y-6">
-                    <div class="flex items-start group">
-                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0"><i class="fas fa-wallet text-lg"></i></div>
-                        <div class="pt-1">
-                            <h3 class="text-[15px] font-semibold text-gray-900 mb-0.5 group-hover:text-brand transition-colors">First Order Reward</h3>
-                            <p class="text-[13px] text-gray-500 leading-snug">Get up to ₹100 cashback instantly credited to your wallet on your first purchase.</p>
+                <div class="p-6 sm:p-8">
+                    <!-- Login Form -->
+                    <form id="login-form" onsubmit="handleAuthSubmit(event, 'login')" class="space-y-5" novalidate>
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-serif font-bold text-gray-900">Welcome Back</h2>
+                            <p class="text-xs text-gray-500 mt-1">Sign in with your phone number and password.</p>
                         </div>
-                    </div>
-                    <div class="flex items-start group">
-                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0 relative">
-                            <i class="fas fa-truck-fast text-lg"></i>
-                            <span class="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">FREE</span>
-                        </div>
-                        <div class="pt-1">
-                            <h3 class="text-[15px] font-semibold text-gray-900 mb-0.5 group-hover:text-brand transition-colors">Complimentary Shipping</h3>
-                            <p class="text-[13px] text-gray-500 leading-snug">Enjoy free delivery on your first order across our top premium categories.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start group">
-                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0"><i class="fas fa-box-open text-lg"></i></div>
-                        <div class="pt-1">
-                            <h3 class="text-[15px] font-semibold text-gray-900 mb-0.5 group-hover:text-brand transition-colors">Hassle-Free Returns</h3>
-                            <p class="text-[13px] text-gray-500 leading-snug">Not perfectly satisfied? We offer an easy, no-questions-asked return process.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start group">
-                        <div class="feature-icon-box mr-4 text-brand group-hover:scale-110 group-hover:bg-brand-light flex-shrink-0"><i class="far fa-handshake text-lg"></i></div>
-                        <div class="pt-1">
-                            <h3 class="text-[15px] font-semibold text-gray-900 mb-0.5 group-hover:text-brand transition-colors">Pay on Delivery</h3>
-                            <p class="text-[13px] text-gray-500 leading-snug">Shop with confidence. Pay in cash or UPI only when the package reaches your door.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Register Section -->
-            <div id="register-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
-                <div class="flex items-center mb-6 mt-2">
-                    <button onclick="showSection('welcome-section')" class="text-gray-400 hover:text-brand transition w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 shadow-sm border border-gray-100"><i class="fas fa-arrow-left"></i></button>
-                    <h2 class="text-xl font-serif text-gray-900 ml-3">Create Account</h2>
-                </div>
-                <form onsubmit="handleRegister(event)" class="space-y-4 flex-1">
-                    <div class="flex gap-3">
-                        <div class="flex-1">
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Name</label>
-                            <input type="text" id="reg-firstname" required placeholder="First" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Surname</label>
-                            <input type="text" id="reg-lastname" required placeholder="Last" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Address</label>
-                        <textarea id="reg-address" required rows="2" placeholder="Your full delivery address" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm resize-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Phone No.</label>
-                        <div class="flex shadow-sm rounded-xl">
-                            <span class="inline-flex items-center px-4 py-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm font-medium">+91</span>
-                            <input type="tel" id="reg-phone" pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" required placeholder="10-digit number" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Password</label>
-                        <input type="password" id="reg-pass" required placeholder="Create a password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Retype Password</label>
-                        <input type="password" id="reg-pass-confirm" required placeholder="Confirm your password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                        <p id="pass-error" class="text-red-500 text-xs mt-1.5 ml-1 hidden font-medium">Passwords do not match.</p>
-                    </div>
-                    <button type="submit" class="w-full mt-6 bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5">
-                        Create Account
-                    </button>
-                </form>
-            </div>
-
-            <!-- Login Section -->
-            <div id="login-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
-                <div class="flex items-center mb-8 mt-2">
-                    <button onclick="showSection('welcome-section')" class="text-gray-400 hover:text-brand transition w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 shadow-sm border border-gray-100"><i class="fas fa-arrow-left"></i></button>
-                    <h2 class="text-xl font-serif text-gray-900 ml-3">Sign In</h2>
-                </div>
-                <form onsubmit="handleLogin(event)" class="space-y-5 flex-1">
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Phone No.</label>
-                        <div class="flex shadow-sm rounded-xl">
-                            <span class="inline-flex items-center px-4 py-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm font-medium">+91</span>
-                            <input type="tel" id="login-phone" pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" required placeholder="10-digit number" class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1 flex justify-between">
-                            <span>Password</span>
-                            <a href="#" class="text-brand hover:underline text-[10px] normal-case">Forgot password?</a>
-                        </label>
-                        <input type="password" id="login-pass" required placeholder="Enter your password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                    </div>
-                    <button type="submit" class="w-full mt-8 bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5">
-                        Sign In
-                    </button>
-                </form>
-            </div>
-            
-            <!-- Profile Section -->
-            <div id="profile-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
-                <div class="flex items-center space-x-4 mb-6 mt-2 bg-white p-4 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-brand/10 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-bl-full pointer-events-none"></div>
-                    <div class="w-16 h-16 bg-gradient-to-br from-brand-light to-brand text-brand-dark rounded-full flex items-center justify-center text-2xl font-serif font-bold shadow-inner border border-brand/20 relative z-10" id="profile-initials">--</div>
-                    <div class="relative z-10 flex-1">
-                        <h2 class="text-xl font-serif text-gray-900 font-bold mb-0.5 truncate" id="profile-name-display">Welcome User</h2>
-                        <p class="text-gray-500 text-sm flex items-center"><i class="fas fa-phone-alt text-brand/70 mr-1.5 text-[10px]"></i> <span id="profile-phone-display">+91 ----------</span></p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <a href="trackorder.html" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group">
-                        <div class="w-10 h-10 rounded-full bg-orange-50 text-brand flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="fas fa-box"></i></div>
-                        <span class="text-[13px] font-semibold text-gray-800">Your Orders</span>
-                    </a>
-                    <a href="wishlist.html" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group">
-                        <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="far fa-heart"></i></div>
-                        <span class="text-[13px] font-semibold text-gray-800">Wishlist</span>
-                    </a>
-                    <button class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group relative">
-                        <span class="absolute top-2 right-2 bg-green-100 text-green-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full">₹100</span>
-                        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="fas fa-wallet"></i></div>
-                        <span class="text-[13px] font-semibold text-gray-800">Wallet</span>
-                    </button>
-                    <button class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-brand hover:shadow-md transition-all group">
-                        <div class="w-10 h-10 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><i class="fas fa-headset"></i></div>
-                        <span class="text-[13px] font-semibold text-gray-800">Support</span>
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-                    <h3 class="px-5 py-4 text-[11px] font-bold text-gray-500 border-b border-gray-100 bg-gray-50 uppercase tracking-wider">Account Settings</h3>
-                    <div class="divide-y divide-gray-100">
-                        <button onclick="openEditProfile()" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
-                            <div class="flex items-center">
-                                <i class="fas fa-user-edit w-6 text-gray-400 group-hover:text-brand transition-colors text-left"></i>
-                                <span class="text-sm font-medium text-gray-700 ml-2">Edit Profile</span>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1.5 ml-1">Phone Number</label>
+                            <div class="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand transition-all">
+                                <span class="pl-4 pr-2 py-3 text-sm font-bold text-gray-600 bg-gray-100 border-r border-gray-200">+91</span>
+                                <input type="tel" id="login-phone" required pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" class="w-full px-3 py-3 bg-transparent text-sm outline-none" placeholder="10-digit mobile number">
                             </div>
-                            <i class="fas fa-chevron-right text-xs text-gray-300 group-hover:text-brand transition-colors"></i>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1.5 ml-1">Password</label>
+                            <input type="password" id="login-password" required minlength="6" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Enter your password">
+                        </div>
+                        <button type="submit" id="login-btn" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl text-sm font-bold shadow-md transition-all uppercase tracking-wider mt-2">
+                            Secure Login
                         </button>
-                        <button onclick="openEditProfile()" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
-                            <div class="flex items-center text-left w-full overflow-hidden">
-                                <i class="fas fa-map-marker-alt w-6 text-gray-400 group-hover:text-brand transition-colors flex-shrink-0"></i>
-                                <div class="flex flex-col ml-2 flex-1 min-w-0 pr-4">
-                                    <span class="text-sm font-medium text-gray-700">Saved Addresses</span>
-                                    <span class="text-[11px] text-gray-400 truncate block w-full mt-0.5" id="profile-address-display">Loading...</span>
+                    </form>
+
+                    <!-- Sign Up Form (Hidden initially) -->
+                    <form id="signup-form" onsubmit="handleAuthSubmit(event, 'signup')" class="space-y-4 hidden" novalidate>
+                        <div class="text-center mb-4">
+                            <h2 class="text-2xl font-serif font-bold text-gray-900">Create Account</h2>
+                            <p class="text-xs text-gray-500 mt-1">Join us to enjoy a personalized shopping experience.</p>
+                        </div>
+                        
+                        <!-- Personal Info -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Full Name</label>
+                                <input type="text" id="signup-name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Enter your name">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Phone Number</label>
+                                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand transition-all">
+                                    <span class="pl-4 pr-2 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 border-r border-gray-200">+91</span>
+                                    <input type="tel" id="signup-phone" required pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" class="w-full px-3 py-2.5 bg-transparent text-sm outline-none" placeholder="10-digit mobile number">
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-right text-xs text-gray-300 group-hover:text-brand transition-colors flex-shrink-0"></i>
-                        </button>
-                    </div>
-                </div>
+                        </div>
 
-                <a href="index.html" class="mt-auto mb-3 w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center">
-                    <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
-                </a>
-                <button onclick="handleLogout()" class="w-full bg-white text-red-500 border border-red-100 shadow-sm py-3.5 rounded-xl font-medium text-[15px] transition-all duration-300 flex justify-center items-center hover:bg-red-50">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Sign Out
-                </button>
+                        <!-- Delivery Address -->
+                        <div class="space-y-3 border-t border-gray-100 pt-3 mt-3">
+                            <h3 class="text-[11px] font-bold uppercase text-gray-800 tracking-wider ml-1 mb-2">Delivery Address</h3>
+                            <div>
+                                <input type="text" id="signup-address" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Flat, House no., Building, Street">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <input type="text" id="signup-city" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="City / Town">
+                                </div>
+                                <div>
+                                    <select id="signup-state" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all text-gray-900 appearance-none font-medium pointer-events-none">
+                                        <option value="Tripura" selected>Tripura</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security -->
+                        <div class="space-y-3 border-t border-gray-100 pt-3 mt-3">
+                            <h3 class="text-[11px] font-bold uppercase text-gray-800 tracking-wider ml-1 mb-2">Security</h3>
+                            <div>
+                                <input type="password" id="signup-password" required minlength="6" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Create Password (Min. 6 chars)">
+                            </div>
+                            <div>
+                                <input type="password" id="signup-confirm-password" required minlength="6" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Confirm Password">
+                            </div>
+                        </div>
+
+                        <p class="text-[10px] text-gray-500 text-center px-2 pt-2">By creating an account, you agree to our Terms of Service.</p>
+                        <button type="submit" id="signup-btn" class="w-full bg-gray-900 hover:bg-black text-white py-3.5 rounded-xl text-sm font-bold shadow-md transition-all uppercase tracking-wider mt-2">
+                            Create Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section (Visible when logged in) -->
+        <div id="dashboard-section" class="w-full max-w-4xl px-4 hidden auth-transition opacity-0 translate-y-4">
+            
+            <div class="bg-white rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] border border-gray-100 p-6 sm:p-10 mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-bl-full pointer-events-none"></div>
+                
+                <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#b45309] to-[#78350f] rounded-full flex items-center justify-center text-white text-3xl font-serif font-bold shadow-lg flex-shrink-0" id="user-avatar">
+                    -
+                </div>
+                
+                <div class="text-center sm:text-left flex-1">
+                    <h1 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900 mb-1">Welcome, <span id="user-display-name">...</span></h1>
+                    <p class="text-sm text-gray-500 mb-4" id="user-display-email">...</p>
+                    
+                    <button onclick="handleLogout()" class="inline-flex items-center text-xs font-bold text-red-500 hover:text-red-600 uppercase tracking-wider px-4 py-2 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Sign Out
+                    </button>
+                </div>
             </div>
 
-            <!-- Edit Profile Section -->
-            <div id="edit-profile-section" class="hidden w-full flex-1 flex flex-col transition-all duration-300 pb-4 opacity-0 transform translate-y-4">
-                <div class="flex items-center mb-6 mt-2">
-                    <button onclick="showSection('profile-section')" class="text-gray-400 hover:text-brand transition w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 shadow-sm border border-gray-100"><i class="fas fa-arrow-left"></i></button>
-                    <h2 class="text-xl font-serif text-gray-900 ml-3">Edit Profile</h2>
+            <!-- Profile Details Card -->
+            <div class="bg-white rounded-3xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-100 p-6 max-w-2xl mx-auto mb-6">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400"><i class="fas fa-id-card mr-2"></i> Profile & Delivery Details</h3>
+                    <button onclick="openEditModal()" class="text-xs text-brand hover:text-brand-dark font-bold px-3 py-1.5 bg-brand-light rounded-lg transition-colors"><i class="fas fa-pen mr-1"></i> Edit</button>
                 </div>
-                <form onsubmit="handleEditProfile(event)" class="space-y-4 flex-1">
-                    <div class="flex gap-3">
-                        <div class="flex-1">
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Name</label>
-                            <input type="text" id="edit-firstname" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Surname</label>
-                            <input type="text" id="edit-lastname" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
-                        </div>
+                
+                <div class="space-y-4 text-sm">
+                    <div class="flex flex-col sm:flex-row sm:justify-between gap-1">
+                        <span class="text-gray-500 font-medium">Full Name</span>
+                        <span class="font-bold text-gray-900" id="profile-name">...</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:justify-between gap-1">
+                        <span class="text-gray-500 font-medium">Registered Phone</span>
+                        <span class="font-bold text-gray-900" id="profile-phone">...</span>
+                    </div>
+                    <div class="flex flex-col gap-1 pt-2 border-t border-gray-50">
+                        <span class="text-gray-500 font-medium">Delivery Address</span>
+                        <span class="font-bold text-gray-900 leading-relaxed" id="profile-address">...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links Grid -->
+            <div class="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto mb-10">
+                <a href="trackorder.html" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-brand/30 transition-all group flex flex-col items-center text-center">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-[#f8fafc] group-hover:bg-[#1e293b] rounded-full flex items-center justify-center mb-2 sm:mb-3 transition-colors">
+                        <i class="fas fa-truck text-lg sm:text-xl text-[#334155] group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 leading-tight">Your Orders</h3>
+                    <p class="text-[9px] sm:text-xs text-gray-500 mt-1 hidden sm:block">Track & return</p>
+                </a>
+                
+                <a href="wishlist.html" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-brand/30 transition-all group flex flex-col items-center text-center">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-[#f8fafc] group-hover:bg-[#1e293b] rounded-full flex items-center justify-center mb-2 sm:mb-3 transition-colors">
+                        <i class="far fa-heart text-lg sm:text-xl text-[#334155] group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 leading-tight">Wishlist</h3>
+                    <p class="text-[9px] sm:text-xs text-gray-500 mt-1 hidden sm:block">Saved items</p>
+                </a>
+
+                <a href="cart.html" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-brand/30 transition-all group flex flex-col items-center text-center">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-[#f8fafc] group-hover:bg-[#1e293b] rounded-full flex items-center justify-center mb-2 sm:mb-3 transition-colors">
+                        <i class="fas fa-shopping-bag text-lg sm:text-xl text-[#334155] group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 leading-tight">Your Cart</h3>
+                    <p class="text-[9px] sm:text-xs text-gray-500 mt-1 hidden sm:block">Ready checkout</p>
+                </a>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="max-w-2xl mx-auto text-center border-t border-gray-200/60 pt-6 pb-12">
+                <button onclick="openDeleteModal()" class="text-xs text-red-400 hover:text-red-600 font-bold transition-colors">
+                    <i class="fas fa-trash-alt mr-1.5"></i> Delete Account permanently
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Delete Account Warning Modal -->
+        <div id="delete-confirm-modal" class="hidden fixed inset-0 z-[120] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl relative animate-[fadeInUp_0.3s_ease-out] text-center">
+                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-serif font-bold text-gray-900 mb-2">Are you sure?</h3>
+                <p class="text-sm text-gray-600 mb-6 leading-relaxed">This action will <b>permanently delete</b> your account, order history, and saved details from our servers. This cannot be undone.</p>
+                
+                <div class="flex flex-col gap-3">
+                    <button onclick="executeAccountDeletion()" id="confirm-delete-btn" class="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 shadow-md transition-colors">Yes, Delete My Account</button>
+                    <button onclick="closeDeleteModal()" class="w-full py-3.5 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <div id="edit-profile-modal" class="hidden fixed inset-0 z-[120] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative animate-[fadeInUp_0.3s_ease-out]">
+                <button onclick="closeEditModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                <h3 class="text-xl font-serif font-bold text-gray-900 mb-6">Edit Profile</h3>
+                
+                <form id="edit-profile-form" onsubmit="handleProfileUpdate(event)" class="space-y-4" novalidate>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Full Name</label>
+                        <input type="text" id="edit-name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Phone No.</label>
-                        <div class="flex shadow-sm rounded-xl">
-                            <span class="inline-flex items-center px-4 py-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm font-medium">+91</span>
-                            <input type="tel" id="edit-phone" pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" required class="w-full px-4 py-3 rounded-r-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm">
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Delivery Address</label>
+                        <input type="text" id="edit-address" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">City</label>
+                            <input type="text" id="edit-city" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">State</label>
+                            <select id="edit-state" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand outline-none transition-all text-gray-900 appearance-none font-medium pointer-events-none">
+                                <option value="Tripura" selected>Tripura</option>
+                            </select>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Saved Address</label>
-                        <textarea id="edit-address" required rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition bg-gray-50 focus:bg-white text-sm resize-none"></textarea>
-                    </div>
-                    <button type="submit" class="w-full mt-6 bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl shadow-lg shadow-brand/20 font-medium text-[15px] transition-all duration-300 transform hover:-translate-y-0.5">
+                    <button type="submit" id="edit-submit-btn" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl text-sm font-bold shadow-md transition-all uppercase tracking-wider mt-4">
                         Save Changes
                     </button>
                 </form>
             </div>
-
         </div>
+
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
+    <!-- Mobile Bottom Navigation -->
+    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
         <a href="index.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
             <i class="fas fa-home text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Home</span>
+        </a>
+        <a href="products.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
+            <i class="fas fa-layer-group text-xl mb-1 mt-1"></i>
+            <span class="text-[10px] font-medium tracking-wide">Catalog</span>
         </a>
         <a href="account.html" class="flex flex-col items-center w-16 text-brand pb-2 relative">
             <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-brand rounded-b-md"></div>
             <i class="fas fa-user text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Account</span>
         </a>
-        <a href="#" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
-            <i class="fas fa-wallet text-xl mb-1 mt-1"></i>
-            <span class="text-[10px] font-medium tracking-wide">Wallet</span>
-        </a>
-        <a href="cart.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative">
+        <a href="cart.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2 relative group">
             <i class="fas fa-shopping-bag text-xl mb-1 mt-1"></i>
             <span class="text-[10px] font-medium tracking-wide">Cart</span>
         </a>
-        <a href="#" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
-            <i class="fas fa-bars-staggered text-xl mb-1 mt-1"></i>
-            <span class="text-[10px] font-medium tracking-wide">Menu</span>
-        </a>
     </nav>
 
-    <!-- Scripts with strict Javascript content (No HTML comments allowed) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'shirnahar-house';
         const firebaseConfig = {
@@ -349,261 +343,337 @@
             projectId: "shirnahar-house",
             storageBucket: "shirnahar-house.firebasestorage.app",
             messagingSenderId: "289287900697",
-            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
-            measurementId: "G-L4MK6TB4EX"
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let userId = null;
+        
+        let currentUserData = null; 
 
-        window.showToast = showToast;
-        window.showSection = showSection;
-        window.handleRegister = handleRegister;
-        window.handleLogin = handleLogin;
+        window.switchAuthTab = switchAuthTab;
+        window.handleAuthSubmit = handleAuthSubmit;
         window.handleLogout = handleLogout;
-        window.loadProfile = loadProfile;
-        window.openEditProfile = openEditProfile;
-        window.handleEditProfile = handleEditProfile;
+        window.handleBackNavigation = handleBackNavigation;
+        window.openEditModal = openEditModal;
+        window.closeEditModal = closeEditModal;
+        window.handleProfileUpdate = handleProfileUpdate;
+        window.openDeleteModal = openDeleteModal;
+        window.closeDeleteModal = closeDeleteModal;
+        window.executeAccountDeletion = executeAccountDeletion;
 
-        function showToast(message, type = 'success', icon = 'fas fa-check-circle') {
+        function handleBackNavigation() {
+            if (window.history.length > 1 || document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
-            const iconColor = type === 'success' ? 'text-green-400' : (type === 'info' ? 'text-brand-light' : 'text-white');
-
-            toast.className = `flex items-center px-5 py-3 space-x-3 rounded-full shadow-2xl ${bgColor} text-white transform transition-all duration-400 translate-y-12 opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<i class="${icon} ${iconColor} text-lg"></i><span class="text-sm font-medium tracking-wide">${message}</span>`;
-            
+            const icon = type === 'error' ? '<i class="fas fa-exclamation-circle text-red-400"></i>' : '<i class="fas fa-check-circle text-green-400"></i>';
+            toast.className = `flex items-center px-4 py-3 space-x-3 rounded-xl shadow-xl bg-gray-900 text-white transform transition-all duration-300 translate-y-12 opacity-0 text-xs sm:text-sm`;
+            toast.innerHTML = `${icon}<span>${message}</span>`;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-y-12', 'opacity-0'));
-            
             setTimeout(() => {
                 toast.classList.add('translate-y-12', 'opacity-0');
                 setTimeout(() => toast.remove(), 400);
-            }, 2500);
+            }, 3000);
         }
 
-        function showSection(sectionId) {
-            const sections = ['welcome-section', 'register-section', 'login-section', 'profile-section', 'edit-profile-section'];
-            sections.forEach(id => {
-                const el = document.getElementById(id);
-                if (id === sectionId) {
-                    el.classList.remove('hidden');
-                    void el.offsetWidth;
-                    el.classList.remove('opacity-0', 'translate-y-4');
+        function updateCartBadge() {
+            try {
+                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                let total = 0; localCart.forEach(i => total += i.quantity); 
+                const badge = document.getElementById('cart-badge');
+                if (badge) {
+                    badge.style.display = total > 0 ? 'flex' : 'none';
+                    badge.textContent = total > 99 ? '99+' : total;
+                }
+            } catch (e) {}
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const tabLogin = document.getElementById('tab-login');
+            const tabSignup = document.getElementById('tab-signup');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                
+                tabLogin.classList.add('text-brand', 'border-brand');
+                tabLogin.classList.remove('text-gray-400', 'border-transparent');
+                
+                tabSignup.classList.remove('text-brand', 'border-brand');
+                tabSignup.classList.add('text-gray-400', 'border-transparent');
+            } else {
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                
+                tabSignup.classList.add('text-brand', 'border-brand');
+                tabSignup.classList.remove('text-gray-400', 'border-transparent');
+                
+                tabLogin.classList.remove('text-brand', 'border-brand');
+                tabLogin.classList.add('text-gray-400', 'border-transparent');
+            }
+        }
+
+        async function toggleUI(isLoggedIn, user = null) {
+            const authSection = document.getElementById('auth-section');
+            const dashSection = document.getElementById('dashboard-section');
+            
+            if (isLoggedIn && user && !user.isAnonymous) {
+                
+                let name = '...';
+                let phone = user.email ? user.email.replace('@shirnahar.app', '') : '...';
+                let addressText = '...';
+                
+                currentUserData = { name: '', address: { street: '', city: '', state: 'Tripura' } };
+
+                try {
+                    const userDoc = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid));
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        currentUserData = data;
+                        
+                        if (data.name) name = data.name;
+                        if (data.phone) phone = data.phone;
+                        
+                        if (data.address) {
+                            const { street, city, state } = data.address;
+                            addressText = [street, city, state].filter(Boolean).join(', ');
+                        }
+                    }
+                } catch(e) { console.error(e); }
+
+                document.getElementById('user-display-name').innerText = name;
+                document.getElementById('user-display-email').innerText = phone;
+                document.getElementById('user-avatar').innerText = name.charAt(0).toUpperCase();
+
+                const pName = document.getElementById('profile-name');
+                if(pName) pName.innerText = name;
+                
+                const pPhone = document.getElementById('profile-phone');
+                if(pPhone) pPhone.innerText = phone;
+                
+                const pAddr = document.getElementById('profile-address');
+                if(pAddr) pAddr.innerText = addressText || 'No address provided.';
+
+                authSection.classList.add('hidden');
+                dashSection.classList.remove('hidden');
+                setTimeout(() => {
+                    dashSection.classList.remove('opacity-0', 'translate-y-4');
+                }, 50);
+            } else {
+                dashSection.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => {
+                    dashSection.classList.add('hidden');
+                    authSection.classList.remove('hidden');
+                    document.getElementById('tab-login').parentElement.classList.remove('hidden');
+                    switchAuthTab('login');
+                }, 400);
+            }
+        }
+
+        function openEditModal() {
+            if (currentUserData) {
+                document.getElementById('edit-name').value = currentUserData.name || '';
+                document.getElementById('edit-address').value = currentUserData.address?.street || '';
+                document.getElementById('edit-city').value = currentUserData.address?.city || '';
+            }
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+        }
+
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            const btn = document.getElementById('edit-submit-btn');
+            const ogText = btn.innerText;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            const newName = document.getElementById('edit-name').value;
+            const newStreet = document.getElementById('edit-address').value;
+            const newCity = document.getElementById('edit-city').value;
+            
+            if(!newName || !newStreet || !newCity) {
+                showToast('Please fill all profile fields.', 'error');
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                if (user.displayName !== newName) {
+                    await updateProfile(user, { displayName: newName });
+                }
+                
+                await setDoc(doc(db, 'artifacts', appId, 'users', user.uid), {
+                    name: newName,
+                    address: { street: newStreet, city: newCity, state: 'Tripura' }
+                }, { merge: true });
+
+                showToast('Profile updated successfully!');
+                closeEditModal();
+                await toggleUI(true, user); 
+            } catch (error) {
+                showToast('Failed to update profile.', 'error');
+                console.error(error);
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        }
+
+        function openDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        }
+
+        async function executeAccountDeletion() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const btn = document.getElementById('confirm-delete-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+            btn.disabled = true;
+            
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid));
+                await deleteUser(user);
+                
+                showToast('Account permanently deleted from Firebase.');
+                closeDeleteModal();
+            } catch (error) {
+                console.error("Delete account error:", error);
+                closeDeleteModal();
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast('Security check: Please sign out and sign back in to prove your identity before deleting.', 'error');
                 } else {
-                    el.classList.add('hidden', 'opacity-0', 'translate-y-4');
+                    showToast('Failed to delete account. Please try again later.', 'error');
+                }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleAuthSubmit(e, mode) {
+            e.preventDefault();
+            
+            const phoneInput = document.getElementById(mode + '-phone').value;
+            const password = document.getElementById(mode + '-password').value;
+            
+            if (!phoneInput || phoneInput.length !== 10 || isNaN(phoneInput)) {
+                return showToast('Please enter a valid 10-digit mobile number.', 'error');
+            }
+            if (!password || password.length < 6) {
+                return showToast('Password must be at least 6 characters long.', 'error');
+            }
+
+            if (mode === 'signup') {
+                const name = document.getElementById('signup-name').value;
+                const address = document.getElementById('signup-address').value;
+                const city = document.getElementById('signup-city').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                
+                if (!name || !address || !city) {
+                    return showToast('Please fill in all your personal and address details.', 'error');
+                }
+                if (password !== confirmPassword) {
+                    return showToast('Passwords do not match!', 'error');
+                }
+            }
+
+            const pseudoEmail = `+91${phoneInput}@shirnahar.app`;
+            
+            const btn = document.getElementById(mode + '-btn');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+            btn.disabled = true;
+
+            try {
+                if (mode === 'signup') {
+                    const confirmPassword = document.getElementById('signup-confirm-password').value;
+                    if (password !== confirmPassword) {
+                        showToast('Passwords do not match!', 'error');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    const name = document.getElementById('signup-name').value;
+                    const address = document.getElementById('signup-address').value;
+                    const city = document.getElementById('signup-city').value;
+
+                    const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
+                    const user = userCredential.user;
+                    
+                    await updateProfile(user, { displayName: name });
+                    
+                    const userRef = doc(db, 'artifacts', appId, 'users', user.uid);
+                    await setDoc(userRef, {
+                        name: name,
+                        phone: `+91${phoneInput}`,
+                        address: { street: address, city: city, state: 'Tripura' },
+                        createdAt: new Date().toISOString()
+                    }, { merge: true });
+                    
+                    await toggleUI(true, auth.currentUser);
+                    showToast('Account created successfully!');
+                } else {
+                    await signInWithEmailAndPassword(auth, pseudoEmail, password);
+                    await toggleUI(true, auth.currentUser);
+                    showToast('Logged in successfully!');
+                }
+                e.target.reset();
+            } catch (error) {
+                console.error("Auth Error:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showToast('Phone number is already registered.', 'error');
+                } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    showToast('Account not found', 'error');
+                } else {
+                    showToast('Authentication failed. Please try again.', 'error');
+                }
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                showToast('Signed out successfully');
+            } catch (error) {
+                showToast('Error signing out', 'error');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartBadge();
+            onAuthStateChanged(auth, (user) => {
+                if (user && !user.isAnonymous) {
+                    toggleUI(true, user);
+                } else {
+                    toggleUI(false);
                 }
             });
-        }
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            if(!userId) return;
-
-            const pass = document.getElementById('reg-pass').value;
-            const confirm = document.getElementById('reg-pass-confirm').value;
-            const errorLabel = document.getElementById('pass-error');
-            const confirmInput = document.getElementById('reg-pass-confirm');
-            
-            const firstName = document.getElementById('reg-firstname').value;
-            const lastName = document.getElementById('reg-lastname').value;
-            const address = document.getElementById('reg-address').value;
-            const phone = document.getElementById('reg-phone').value;
-
-            if (pass !== confirm) {
-                errorLabel.classList.remove('hidden');
-                confirmInput.classList.remove('border-gray-200', 'focus:ring-brand', 'focus:border-brand');
-                confirmInput.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
-                return;
-            }
-
-            errorLabel.classList.add('hidden');
-            confirmInput.classList.add('border-gray-200', 'focus:ring-brand', 'focus:border-brand');
-            confirmInput.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
-            
-            showToast('Saving account securely to cloud...', 'info', 'fas fa-spinner fa-spin');
-            
-            try {
-                const userData = { firstName, lastName, address, phone };
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData);
-                localStorage.setItem('shirnahar_logged_in', 'true');
-                showToast('Account created successfully! Welcome to Shirnahar House.', 'success', 'fas fa-user-check');
-                e.target.reset(); 
-                
-                setTimeout(() => {
-                    loadProfile();
-                    showSection('profile-section');
-                }, 1500);
-            } catch (err) {
-                console.error(err);
-                showToast('Error connecting to database.', 'error', 'fas fa-exclamation-triangle');
-            }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const phoneInput = document.getElementById('login-phone').value;
-            const passInput = document.getElementById('login-pass').value;
-
-            showToast('Authenticating...', 'info', 'fas fa-spinner fa-spin');
-
-            try {
-                // Admin Authenticator: Checks against Firebase 'admins' collection
-                const adminsRef = collection(db, 'artifacts', appId, 'admins');
-                const q = query(adminsRef, where("phone", "==", phoneInput), where("password", "==", passInput));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    localStorage.setItem('shirnahar_admin_logged_in', 'true');
-                    showToast('Admin access verified! Redirecting to Dashboard...', 'success', 'fas fa-shield-alt');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
-                    return;
-                }
-
-                // Regular User Fallback
-                localStorage.setItem('shirnahar_logged_in', 'true');
-                showToast('Signed in successfully! Loading your profile...', 'success', 'fas fa-unlock-alt');
-                
-                setTimeout(() => {
-                    loadProfile();
-                    showSection('profile-section');
-                }, 1500);
-
-            } catch(error) {
-                console.error("Login Error: ", error);
-                showToast('Authentication check failed.', 'error', 'fas fa-exclamation-triangle');
-            }
-        }
-        
-        function handleLogout() {
-            localStorage.removeItem('shirnahar_logged_in');
-            localStorage.removeItem('shirnahar_admin_logged_in');
-            showToast('You have been securely signed out.', 'info', 'fas fa-sign-out-alt');
-            setTimeout(() => { showSection('welcome-section'); }, 1000);
-        }
-        
-        async function loadProfile(forceLocal = false) {
-            try {
-                let user = null;
-                if (forceLocal || !userId) {
-                    user = JSON.parse(localStorage.getItem('shirnahar_user_data'));
-                } else {
-                    const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
-                    if(docSnap.exists()) user = docSnap.data();
-                }
-                
-                if(user && (user.firstName || user.lastName)) {
-                    document.getElementById('profile-name-display').innerText = `${user.firstName || ''} ${user.lastName || ''}`;
-                    document.getElementById('profile-initials').innerText = `${(user.firstName || 'G').charAt(0)}${(user.lastName || 'U').charAt(0)}`.toUpperCase();
-                    document.getElementById('profile-phone-display').innerText = `+91 ${user.phone || '----------'}`;
-                    document.getElementById('profile-address-display').innerText = user.address || 'No address saved.';
-                } else {
-                    document.getElementById('profile-name-display').innerText = "Guest User";
-                    document.getElementById('profile-initials').innerText = "GU";
-                    document.getElementById('profile-address-display').innerText = "No address saved on file.";
-                }
-            } catch(e) {
-                console.error("Error loading profile", e);
-            }
-        }
-        
-        async function openEditProfile() {
-            if(!userId) return;
-            try {
-                const docSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'));
-                if (docSnap.exists()) {
-                    const user = docSnap.data();
-                    document.getElementById('edit-firstname').value = user.firstName || '';
-                    document.getElementById('edit-lastname').value = user.lastName || '';
-                    document.getElementById('edit-phone').value = user.phone || '';
-                    document.getElementById('edit-address').value = user.address || '';
-                }
-                showSection('edit-profile-section');
-            } catch (e) {
-                showToast('Could not load profile to edit.', 'error');
-            }
-        }
-
-        async function handleEditProfile(e) {
-            e.preventDefault();
-            if(!userId) return;
-            
-            showToast('Saving changes...', 'info', 'fas fa-spinner fa-spin');
-            
-            try {
-                const userData = {
-                    firstName: document.getElementById('edit-firstname').value,
-                    lastName: document.getElementById('edit-lastname').value,
-                    phone: document.getElementById('edit-phone').value,
-                    address: document.getElementById('edit-address').value
-                };
-                
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'profile', 'info'), userData, { merge: true });
-                showToast('Profile updated successfully!', 'success', 'fas fa-check-circle');
-                loadProfile();
-                showSection('profile-section');
-            } catch(e) {
-                showToast('Error saving profile.', 'error', 'fas fa-exclamation-triangle');
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', async () => {
-            const loadingView = document.getElementById('account-loading-view');
-            
-            // SECURITY REDIRECT: If already an Admin, go straight to dashboard so they aren't stuck here
-            let isAdmin = false;
-            try { isAdmin = localStorage.getItem('shirnahar_admin_logged_in') === 'true'; } catch(e){}
-            if (isAdmin) {
-                window.location.href = 'dashboard.html';
-                return;
-            }
-
-            const safetyTimer = setTimeout(() => {
-                if (loadingView && !loadingView.classList.contains('hidden')) {
-                    loadingView.classList.add('hidden');
-                    if (localStorage.getItem('shirnahar_logged_in') === 'true') {
-                        loadProfile(true); 
-                        showSection('profile-section');
-                    } else {
-                        showSection('welcome-section');
-                    }
-                }
-            }, 1200);
-
-            try {
-                await signInAnonymously(auth);
-                userId = auth.currentUser?.uid;
-                
-                clearTimeout(safetyTimer);
-                
-                if (localStorage.getItem('shirnahar_logged_in') === 'true') {
-                    await loadProfile();
-                    if (loadingView) loadingView.classList.add('hidden');
-                    showSection('profile-section');
-                } else {
-                    if (loadingView) loadingView.classList.add('hidden');
-                    showSection('welcome-section');
-                }
-            } catch (err) {
-                console.error("Authentication Error:", err);
-                clearTimeout(safetyTimer);
-                
-                if (loadingView) loadingView.classList.add('hidden');
-                
-                if (localStorage.getItem('shirnahar_logged_in') === 'true') {
-                    loadProfile(true);
-                    showSection('profile-section');
-                } else {
-                    showSection('welcome-section');
-                }
-            }
         });
     </script>
 </body>
