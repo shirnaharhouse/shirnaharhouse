@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Viewport locked to prevent accidental double-tap zooming on mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Products | Shirnahar House</title>
     
@@ -82,7 +83,6 @@
 
     <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
-    <!-- Header -->
     <header class="bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-[72px]">
@@ -111,7 +111,6 @@
         </div>
     </header>
 
-    <!-- Sticky Category Nav -->
     <div class="border-b border-gray-100 sticky-nav shadow-sm hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav class="flex space-x-8 py-3.5 overflow-x-auto hide-scroll-bar justify-center md:justify-start">
@@ -136,21 +135,20 @@
                 </div>
             </div>
 
-            <!-- SAREES SECTION -->
+            <!-- Sarees Section -->
             <section id="sarees" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 scroll-mt-24">
                 <div class="mb-6 sm:mb-10 text-center md:text-left">
                     <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900">Premium Sarees</h2>
                     <div class="h-1 w-16 bg-brand mt-3 rounded-full mx-auto md:mx-0"></div>
                 </div>
 
-                <!-- 2-column mobile grid -->
                 <div id="saree-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
                     <div class="col-span-full py-12 text-center text-gray-500"><i class="fas fa-spinner fa-spin text-3xl mb-3 text-brand"></i><p>Loading...</p></div>
                 </div>
                 <div class="mt-10 flex justify-center items-center space-x-2" id="saree-pagination"></div>
             </section>
 
-            <!-- DRESSES SECTION -->
+            <!-- Dresses Section -->
             <section id="dresses" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-gray-100 scroll-mt-24 bg-white/50">
                 <div class="text-center mb-8 sm:mb-12">
                     <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900 mb-4 sm:mb-6">Dress Collection</h2>
@@ -177,7 +175,7 @@
                 </div>
             </section>
 
-            <!-- JEWELLERY SECTION -->
+            <!-- Jewellery Section -->
             <section id="jewellery" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-gray-100 scroll-mt-24">
                 <div class="mb-6 sm:mb-10 text-center md:text-left">
                     <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900">Fine Jewellery</h2>
@@ -191,7 +189,6 @@
 
         <div id="product-view" class="hidden fixed inset-0 z-[100] bg-white overflow-y-auto opacity-0 transition-opacity duration-500 pb-32">
             
-            <!-- Sticky Header with Consistent Logo / Actions -->
             <div class="sticky top-0 bg-white z-50 flex items-center justify-between px-4 h-14 border-b border-gray-200 shadow-sm">
                 <button onclick="handleBackNavigation()" class="w-8 h-8 flex items-center justify-center text-gray-800 -ml-1"><i class="fas fa-arrow-left text-xl"></i></button>
                 <div class="flex-shrink-0 flex items-center justify-center">
@@ -210,37 +207,19 @@
                 </div>
             </div>
 
-            <!-- Title Above Image -->
             <div class="px-4 py-3">
                 <h2 id="detail-title" class="text-[15px] text-gray-800 leading-snug font-medium line-clamp-2">Product Name</h2>
             </div>
 
-            <!-- Swipable Image Carousel Section -->
             <div class="relative w-full aspect-[4/5] sm:aspect-auto sm:h-[60vh] bg-gray-50">
                 <div id="detail-carousel" class="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scroll-bar">
                     <img src="" class="w-full h-full object-cover flex-shrink-0 snap-center" id="detail-fallback-img">
                 </div>
-            </div>
-
-            <!-- Dots & Actions -->
-            <div class="px-4 py-3 flex justify-between items-center relative">
-                <div class="flex-1"></div>
-                
-                <!-- Centered Dots -->
-                <div id="carousel-dots" class="absolute left-1/2 transform -translate-x-1/2 flex space-x-1.5">
-                    <!-- Dots injected here -->
-                </div>
-                
-                <!-- Actions -->
-                <div class="flex space-x-5 text-gray-700 text-xl z-10 mb-2">
-                    <button><i class="far fa-heart"></i></button>
-                    <button><i class="fas fa-share-nodes"></i></button>
-                </div>
+                <div id="carousel-dots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10"></div>
             </div>
 
             <div class="h-1.5 bg-gray-200/60 w-full"></div>
 
-            <!-- Price & Review Section -->
             <div class="px-4 py-4">
                 <div class="flex items-start gap-2 mb-1">
                     <span class="text-3xl text-[#cc0c39] font-light hidden" id="detail-discount">-33%</span>
@@ -249,16 +228,17 @@
                 <p class="text-xs text-gray-500 mb-2 font-medium" id="detail-mrp-container">M.R.P.: <span class="line-through">₹<span id="detail-original-price">0</span></span></p>
                 <p class="text-xs text-gray-700 font-medium mb-3">Inclusive of all taxes</p>
 
-                <!-- Inline Review Stars -->
                 <div class="flex items-center gap-2 mt-2">
-                    <div id="detail-stars-container" class="flex text-[#FFA41C] text-sm">
-                        <!-- Stars injected via JS -->
-                    </div>
+                    <div id="detail-stars-container" class="flex text-[#FFA41C] text-sm"></div>
                     <span id="rating-count-text" class="text-xs text-blue-600 font-medium hover:underline cursor-pointer">0 ratings</span>
                 </div>
                 
-                <!-- Stock Status controlled by database via productcontrol.html -->
                 <p class="text-lg font-bold text-green-700 mt-4 mb-1" id="detail-stock-status">In stock</p>
+                
+                <div id="detail-description-container" class="mt-5 pt-4 border-t border-gray-100 hidden">
+                    <h4 class="text-sm font-bold text-gray-900 mb-2">Product Details</h4>
+                    <p class="text-[13px] text-gray-600 leading-relaxed whitespace-pre-line" id="detail-description"></p>
+                </div>
             </div>
 
             <div class="h-1.5 bg-gray-200/60 w-full"></div>
@@ -268,21 +248,15 @@
                     <h3 class="font-bold text-lg text-gray-900">Customer Reviews</h3>
                     <button onclick="openReviewModal()" class="bg-gray-100 hover:bg-brand hover:text-white text-gray-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Write a Review</button>
                 </div>
-                
-                <div id="dynamic-reviews-list" class="space-y-6">
-                    <!-- Reviews injected dynamically -->
-                </div>
+                <div id="dynamic-reviews-list" class="space-y-6"></div>
             </div>
             
             <div class="h-1.5 bg-gray-200/60 w-full"></div>
 
-            <!-- Recommendation Section -->
             <div class="py-5 pb-8 bg-white">
                 <div class="px-4">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Customers who viewed this also viewed</h3>
-                    <div class="flex overflow-x-auto gap-4 hide-scroll-bar pb-4" id="recommendations-grid">
-                        <!-- Horizontal Scroll Cards injected here -->
-                    </div>
+                    <div class="flex overflow-x-auto gap-4 hide-scroll-bar pb-4" id="recommendations-grid"></div>
                 </div>
             </div>
 
@@ -327,7 +301,6 @@
         </div>
     </main>
 
-    <!-- Mobile Bottom Navigation -->
     <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around px-2 pt-2 pb-safe md:hidden z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
         <a href="index.html" class="flex flex-col items-center w-16 text-gray-400 hover:text-brand transition-colors pb-2">
             <i class="fas fa-home text-xl mb-1 mt-1"></i>
@@ -351,7 +324,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Added updateDoc to imports
+        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, onSnapshot, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'shirnahar-house';
         const firebaseConfig = {
@@ -482,7 +456,7 @@
                         <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug mb-1">${product.title}</h3>
                         <div class="mt-auto pt-2 flex flex-col gap-2">
                             <span class="text-sm sm:text-lg font-bold text-gray-900">₹${parseInt(product.price).toLocaleString('en-IN')}</span>
-                            <button class="w-full py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${btnClass}" onclick="event.stopPropagation(); handleAddToCart('${product.title}', ${product.price}, '${product.image}', ${product.stock !== undefined ? product.stock : 5})">${btnText}</button>
+                            <button class="w-full py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${btnClass}" onclick="event.stopPropagation(); handleAddToCart('${product.title.replace(/'/g, "\\'")}', ${product.price}, '${product.image}', ${product.stock !== undefined ? product.stock : 5})">${btnText}</button>
                         </div>
                     </div>
                 </div>`;
@@ -577,13 +551,11 @@
             const product = globalCatalog.find(p => p.id === productId);
             if (!product) return;
 
-            // Save current product view scroll position before navigating to recommendation
             if (currentOpenProduct) {
                 const currentScroll = document.getElementById('product-view').scrollTop || 0;
                 history.replaceState({ type: 'product', id: currentOpenProduct.id, scroll: currentScroll }, '', '');
             }
             
-            // Push new product state
             history.pushState({ type: 'product', id: productId, scroll: 0 }, '', '');
             
             document.getElementById('product-view').scrollTop = 0;
@@ -596,13 +568,13 @@
             document.getElementById('detail-title').innerText = product.title;
             
             const price = parseInt(product.price);
-            const discountPercent = product.discount || 33; // Default 33% if not set
-            const originalPrice = product.mrp || Math.round(price / (1 - (discountPercent > 0 ? discountPercent : 33) / 100));
+            const discountPercent = product.discount || null; 
+            const originalPrice = product.mrp || null;
             
             document.getElementById('detail-current-price').innerText = price.toLocaleString('en-IN');
             
-            if (discountPercent > 0 || !product.mrp) {
-                document.getElementById('detail-original-price').innerText = originalPrice.toLocaleString('en-IN');
+            if (discountPercent > 0 && originalPrice) {
+                document.getElementById('detail-original-price').innerText = parseInt(originalPrice).toLocaleString('en-IN');
                 document.getElementById('detail-discount').innerText = `-${discountPercent}%`;
                 document.getElementById('detail-discount').classList.remove('hidden');
                 document.getElementById('detail-mrp-container').classList.remove('hidden');
@@ -615,7 +587,7 @@
             const addToCartBtn = document.getElementById('btn-add-to-cart-overlay');
             const buyNowBtn = document.getElementById('btn-buy-now-overlay');
             
-            const availableStock = product.stock !== undefined ? product.stock : Math.floor(Math.random() * 8) + 3;
+            const availableStock = product.stock !== undefined ? product.stock : 0;
             
             if (product.status === 'outofstock' || availableStock === 0) {
                 stockStatusEl.innerText = 'Out of stock';
@@ -638,6 +610,13 @@
                     handleAddToCart(product.title, product.price, product.image, availableStock);
                 }
             };
+            
+            if (product.description && product.description.trim() !== '') {
+                document.getElementById('detail-description').innerText = product.description;
+                document.getElementById('detail-description-container').classList.remove('hidden');
+            } else {
+                document.getElementById('detail-description-container').classList.add('hidden');
+            }
             
             const carousel = document.getElementById('detail-carousel');
             const dotsContainer = document.getElementById('carousel-dots');
@@ -666,46 +645,18 @@
             renderRecommendations(product);
         }
 
-        function renderRecommendations(currentProduct) {
-            const grid = document.getElementById('recommendations-grid');
-            if (!grid) return;
-            
-            // Find products in the same category, excluding the current one
-            let recommended = globalCatalog.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id);
-            
-            // If we don't have enough similar items, fill it up with other items to ensure the UI looks full
-            if(recommended.length < 4) {
-                const others = globalCatalog.filter(p => p.id !== currentProduct.id);
-                recommended = [...new Set([...recommended, ...others])];
-            }
-            
-            recommended = recommended.slice(0, 6); // Show up to 6 recommended items
-
-            grid.innerHTML = recommended.map(p => `
-                <div class="w-32 sm:w-40 flex-shrink-0 cursor-pointer group snap-start" onclick="openRecommendation('${p.id}')">
-                    <div class="h-44 sm:h-56 rounded-xl overflow-hidden mb-2 bg-gray-50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] border border-gray-100">
-                        <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="${p.title}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
-                    </div>
-                    <h4 class="text-[11px] sm:text-xs font-medium text-gray-800 line-clamp-2 leading-snug mb-1">${p.title}</h4>
-                    <p class="text-[13px] font-bold text-gray-900">₹${parseInt(p.price).toLocaleString('en-IN')}</p>
-                </div>
-            `).join('');
-        }
-
         function renderReviews(product) {
             const list = document.getElementById('dynamic-reviews-list');
             const ratingText = document.getElementById('rating-count-text');
             const starsContainer = document.getElementById('detail-stars-container');
             const reviews = product.reviews || [];
 
-            // Future-proofing: Calculate dynamic average rating based on data
-            let avgRating = product.averageRating || 4.5; // Default mock rating
+            let avgRating = 0;
             if (reviews.length > 0) {
                 const total = reviews.reduce((sum, rev) => sum + (rev.rating || 5), 0);
                 avgRating = total / reviews.length;
             }
 
-            // Render Stars
             let starsHtml = '';
             for (let i = 1; i <= 5; i++) {
                 if (i <= Math.floor(avgRating)) starsHtml += '<i class="fas fa-star"></i>';
@@ -714,9 +665,8 @@
             }
             starsContainer.innerHTML = starsHtml;
 
-            // Rating count text (using real reviews length + mock base for visual heft)
-            const displayCount = reviews.length + (product.mockReviewCount || 1240);
-            ratingText.innerText = `${displayCount} ratings`;
+            // Updated to only use genuine reviews count, no mock data
+            ratingText.innerText = `${reviews.length} ratings`;
 
             if (reviews.length === 0) {
                 list.innerHTML = `<p class="text-xs text-gray-500 italic">No customer reviews yet. Be the first to review this product!</p>`;
@@ -724,7 +674,7 @@
             }
 
             list.innerHTML = reviews.map(rev => `
-                <div>
+                <div class="mb-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                     <div class="flex items-center gap-2 mb-1.5">
                         <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500"><i class="fas fa-user text-xs"></i></div>
                         <span class="text-sm font-medium text-gray-900">${rev.author}</span>
@@ -735,7 +685,7 @@
                     </div>
                     <p class="text-xs text-gray-500 mb-2 font-medium">Reviewed on ${rev.date}</p>
                     <p class="text-sm text-gray-800 leading-relaxed mb-2">${rev.body}</p>
-                    <p class="text-xs text-gray-500 font-medium"><i class="fas fa-check text-orange-500 mr-1"></i> Verified Purchase</p>
+                    <p class="text-[10px] text-gray-500 font-medium"><i class="fas fa-check text-orange-500 mr-1"></i> Verified Purchase</p>
                 </div>
             `).join('');
         }
@@ -748,9 +698,14 @@
             document.getElementById('review-modal').classList.add('hidden');
         }
 
-        function handleReviewSubmit(e) {
+        async function handleReviewSubmit(e) {
             e.preventDefault();
             if (!currentOpenProduct) return;
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = 'Submitting...';
+            submitBtn.disabled = true;
 
             const newRev = {
                 author: document.getElementById('review-author').value,
@@ -760,13 +715,61 @@
                 date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
             };
 
-            if (!currentOpenProduct.reviews) currentOpenProduct.reviews = [];
-            currentOpenProduct.reviews.unshift(newRev);
+            const updatedReviews = currentOpenProduct.reviews ? [...currentOpenProduct.reviews] : [];
+            updatedReviews.unshift(newRev);
 
-            renderReviews(currentOpenProduct);
-            closeReviewModal();
-            e.target.reset();
-            showToast('Review submitted successfully!');
+            try {
+                // Save immediately to Firestore Database
+                await updateDoc(doc(db, 'artifacts', appId, 'products', currentOpenProduct.id), {
+                    reviews: updatedReviews
+                });
+
+                // Update local memory so we don't need to refresh the page
+                currentOpenProduct.reviews = updatedReviews;
+                
+                // Update global catalog so it stays updated if the user goes back to grid and re-opens
+                const catalogIndex = globalCatalog.findIndex(p => p.id === currentOpenProduct.id);
+                if (catalogIndex > -1) {
+                    globalCatalog[catalogIndex].reviews = updatedReviews;
+                }
+
+                // Render instantly
+                renderReviews(currentOpenProduct);
+                
+                closeReviewModal();
+                e.target.reset();
+                showToast('Review submitted successfully!');
+            } catch (error) {
+                console.error("Error saving review:", error);
+                showToast('Failed to submit review.', 'error');
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function renderRecommendations(currentProduct) {
+            const grid = document.getElementById('recommendations-grid');
+            if (!grid) return;
+            
+            let recommended = globalCatalog.filter(p => p.category === currentProduct.category && p.id !== currentProduct.id);
+            
+            if(recommended.length < 4) {
+                const others = globalCatalog.filter(p => p.id !== currentProduct.id);
+                recommended = [...new Set([...recommended, ...others])];
+            }
+            
+            recommended = recommended.slice(0, 6); 
+
+            grid.innerHTML = recommended.map(p => `
+                <div class="w-32 sm:w-40 flex-shrink-0 cursor-pointer group snap-start" onclick="openRecommendation('${p.id}')">
+                    <div class="h-44 sm:h-56 rounded-xl overflow-hidden mb-2 bg-gray-50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] border border-gray-100">
+                        <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="${p.title}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
+                    </div>
+                    <h4 class="text-[11px] sm:text-xs font-medium text-gray-800 line-clamp-2 leading-snug mb-1">${p.title}</h4>
+                    <p class="text-[13px] font-bold text-gray-900">₹${parseInt(p.price).toLocaleString('en-IN')}</p>
+                </div>
+            `).join('');
         }
 
         function handleBuyNow() {
@@ -780,18 +783,15 @@
         }
 
         function handleBackNavigation() {
-            // Trigger the native browser back action, which fires 'popstate'
             history.back();
         }
 
-        // Listen for Hardware Back Button or Swipe Gestures
         window.addEventListener('popstate', (e) => {
             const state = e.state;
             const pView = document.getElementById('product-view');
             const catalogView = document.getElementById('catalog-view');
             
             if (state && state.type === 'product') {
-                // We popped back TO a previous product (e.g. from a recommendation)
                 const prevProduct = globalCatalog.find(p => p.id === state.id);
                 if (prevProduct) {
                     catalogView.classList.add('hidden');
@@ -804,7 +804,6 @@
                     }, 50);
                 }
             } else {
-                // We popped back to the main catalog
                 pView.classList.add('opacity-0');
                 setTimeout(() => { 
                     pView.classList.add('hidden'); 
@@ -819,7 +818,6 @@
         document.addEventListener('DOMContentLoaded', async () => {
             updateFallbackBadge();
             
-            // Initialize base history state on load
             history.replaceState({ type: 'catalog', scroll: window.scrollY }, '', '');
             
             const observer = new IntersectionObserver((entries) => {
@@ -839,11 +837,16 @@
             // Check if we need to open a specific product directly from the cart
             const pendingViewName = localStorage.getItem('shirnahar_view_product_name');
             if (pendingViewName) {
-                const targetProduct = globalCatalog.find(p => p.title === pendingViewName);
+                const targetProduct = globalCatalog.find(p => 
+                    p.title.trim().toLowerCase() === pendingViewName.trim().toLowerCase()
+                );
+                
                 if (targetProduct) {
-                    openProduct(targetProduct.id);
+                    setTimeout(() => {
+                        openProduct(targetProduct.id);
+                    }, 100);
                 }
-                localStorage.removeItem('shirnahar_view_product_name'); // Clear it so it doesn't loop
+                localStorage.removeItem('shirnahar_view_product_name'); 
             }
         });
     </script>
