@@ -329,7 +329,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'shirnahar-house';
@@ -343,6 +343,12 @@
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        
+        // Explicitly enforce local persistence so the user stays logged in across browser sessions
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.error("Failed to set auth persistence:", error);
+        });
+
         const db = getFirestore(app);
         
         let currentUserData = null; 
@@ -381,16 +387,62 @@
             }, 3000);
         }
 
-        function updateCartBadge() {
+        async function updateCartBadge(user = null) {
             try {
-                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                let total = 0; localCart.forEach(i => total += i.quantity); 
+                let total = 0;
+                
+                // If logged in, fetch accurate cart total from Cloud Firestore
+                if (user && !user.isAnonymous) {
+                    const cartRef = doc(db, 'artifacts', appId, 'users', user.uid, 'cart', 'currentCart');
+                    const docSnap = await getDoc(cartRef);
+                    if (docSnap.exists()) {
+                        const items = docSnap.data().items || [];
+                        items.forEach(i => total += i.quantity);
+                    }
+                } else {
+                    // If guest, fetch from local device memory
+                    let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                    localCart.forEach(i => total += i.quantity); 
+                }
+                
                 const badge = document.getElementById('cart-badge');
                 if (badge) {
                     badge.style.display = total > 0 ? 'flex' : 'none';
                     badge.textContent = total > 99 ? '99+' : total;
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("Badge update error:", e);
+            }
+        }
+
+        async function syncGuestCartToCloud(user) {
+            const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+            if (localCart.length === 0) return; // Nothing to sync
+
+            const cartRef = doc(db, 'artifacts', appId, 'users', user.uid, 'cart', 'currentCart');
+            try {
+                const docSnap = await getDoc(cartRef);
+                let cloudCart = [];
+                if (docSnap.exists()) {
+                    cloudCart = docSnap.data().items || [];
+                }
+
+                // Merge local items into cloud cart
+                localCart.forEach(localItem => {
+                    const existingIdx = cloudCart.findIndex(i => i.name === localItem.name);
+                    if (existingIdx > -1) {
+                        cloudCart[existingIdx].quantity += localItem.quantity;
+                    } else {
+                        cloudCart.push(localItem);
+                    }
+                });
+
+                await setDoc(cartRef, { items: cloudCart }, { merge: true });
+                // Clear local cart now that it is safely in the cloud
+                localStorage.removeItem('shirnahar_local_cart');
+            } catch (e) {
+                console.error("Cart sync error", e);
+            }
         }
 
         function switchAuthTab(tab) {
@@ -571,6 +623,9 @@
 
         async function handleLogout() {
             try {
+                // Clear guest cart on sign out to prevent mixing accounts
+                localStorage.removeItem('shirnahar_local_cart'); 
+                
                 await signOut(auth);
                 showToast('Signed out successfully');
             } catch (error) {
@@ -657,6 +712,9 @@
                 // Delete user from Auth
                 await deleteUser(user);
                 
+                // Clear local memory completely upon deletion
+                localStorage.removeItem('shirnahar_local_cart');
+                
                 showToast('Account permanently deleted.');
                 closeDeleteModal();
                 // We DO NOT reload the page here. 
@@ -676,11 +734,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            updateCartBadge();
-            onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, async (user) => {
                 if (user && !user.isAnonymous) {
+                    await syncGuestCartToCloud(user);
+                    await updateCartBadge(user);
                     toggleUI(true, user);
                 } else {
+                    await updateCartBadge(null);
                     toggleUI(false);
                 }
             });
