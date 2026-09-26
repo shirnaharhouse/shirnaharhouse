@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport locked to prevent accidental double-tap zooming on mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Products | Shirnahar House</title>
     
@@ -47,11 +46,10 @@
         .hide-scroll-bar::-webkit-scrollbar { display: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
         
-        /* Mobile Specific Overrides for Native App Feel */
         a, button, input { touch-action: manipulation; }
         
         @media (max-width: 639px) {
-            .mobile-img-h { height: 14rem !important; } /* Tighter aspect ratio for 2 columns */
+            .mobile-img-h { height: 14rem !important; } 
         }
 
         .sticky-nav {
@@ -71,7 +69,6 @@
         .group:hover .product-img { transform: scale(1.05); }
         .product-img { transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* Pagination Animation */
         .page-hidden { display: none !important; } 
         @keyframes fadeInUp { 
             from { opacity: 0; transform: translateY(15px); } 
@@ -124,7 +121,6 @@
     <main class="w-full relative">
         <div id="catalog-view" class="transition-opacity duration-500 pb-20 md:pb-16">
             
-            <!-- Hero Banner -->
             <div class="relative bg-gradient-to-br from-gray-900 via-[#1e1b18] to-[#2d1b0f] text-white py-12 md:py-24 px-4 text-center overflow-hidden">
                 <div class="absolute inset-0 pattern-bg opacity-20"></div>
                 <div class="absolute top-0 left-0 w-64 h-64 bg-brand rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-pulse"></div>
@@ -135,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- Sarees Section -->
             <section id="sarees" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 scroll-mt-24">
                 <div class="mb-6 sm:mb-10 text-center md:text-left">
                     <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900">Premium Sarees</h2>
@@ -148,7 +143,6 @@
                 <div class="mt-10 flex justify-center items-center space-x-2" id="saree-pagination"></div>
             </section>
 
-            <!-- Dresses Section -->
             <section id="dresses" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-gray-100 scroll-mt-24 bg-white/50">
                 <div class="text-center mb-8 sm:mb-12">
                     <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900 mb-4 sm:mb-6">Dress Collection</h2>
@@ -175,7 +169,6 @@
                 </div>
             </section>
 
-            <!-- Jewellery Section -->
             <section id="jewellery" class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-gray-100 scroll-mt-24">
                 <div class="mb-6 sm:mb-10 text-center md:text-left">
                     <h2 class="text-2xl sm:text-4xl font-serif font-bold text-gray-900">Fine Jewellery</h2>
@@ -235,6 +228,7 @@
                 
                 <p class="text-lg font-bold text-green-700 mt-4 mb-1" id="detail-stock-status">In stock</p>
                 
+                <!-- Product Details Container -->
                 <div id="detail-description-container" class="mt-5 pt-4 border-t border-gray-100 hidden">
                     <h4 class="text-sm font-bold text-gray-900 mb-2">Product Details</h4>
                     <p class="text-[13px] text-gray-600 leading-relaxed whitespace-pre-line" id="detail-description"></p>
@@ -260,26 +254,32 @@
                 </div>
             </div>
 
-            <!-- Sticky Bottom Nav (Amazon style) -->
+            <!-- Sticky Bottom Nav -->
             <div class="fixed bottom-0 w-full bg-white px-4 py-3 z-50 border-t border-gray-200 flex flex-col gap-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
                 <button class="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 rounded-full py-3.5 text-sm font-medium transition-colors shadow-sm" id="btn-add-to-cart-overlay">Add to Cart</button>
                 <button onclick="handleBuyNow()" id="btn-buy-now-overlay" class="w-full bg-[#ffa41c] hover:bg-[#fa8900] text-gray-900 rounded-full py-3.5 text-sm font-medium transition-colors shadow-sm">Buy Now</button>
             </div>
         </div>
 
-        <!-- Write Review Modal -->
+        <!-- Secure Logged-In Write Review Modal -->
         <div id="review-modal" class="hidden fixed inset-0 z-[120] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-[fadeInUp_0.3s_ease-out]">
-                <button onclick="closeReviewModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
-                <h3 class="text-xl font-serif font-bold mb-4">Write a Customer Review</h3>
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-[fadeInUp_0.3s_ease-out]">
+                <button onclick="closeReviewModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                <h3 class="text-xl font-serif font-bold text-gray-900 mb-5">Write a Review</h3>
+                
+                <!-- Display signed in user badge -->
+                <div class="bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center font-bold font-serif text-lg shadow-sm" id="reviewer-avatar">-</div>
+                    <div>
+                        <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Posting publicly as</p>
+                        <p class="text-sm font-bold text-gray-900 leading-none" id="reviewer-name-display">...</p>
+                    </div>
+                </div>
+
                 <form onsubmit="handleReviewSubmit(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Your Name</label>
-                        <input type="text" id="review-author" required class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none" placeholder="Enter your name">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Rating (1-5 Stars)</label>
-                        <select id="review-stars" class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none">
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Rating (1-5 Stars)</label>
+                        <select id="review-stars" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors">
                             <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
                             <option value="4">⭐⭐⭐⭐ (4/5)</option>
                             <option value="3">⭐⭐⭐ (3/5)</option>
@@ -288,14 +288,14 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Headline</label>
-                        <input type="text" id="review-headline" required class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none" placeholder="e.g. Absolutely stunning fabric!">
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Headline</label>
+                        <input type="text" id="review-headline" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors" placeholder="e.g. Absolutely stunning fabric!">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Review</label>
-                        <textarea id="review-body" required rows="3" class="w-full px-3 py-2 border rounded-xl text-sm focus:border-brand outline-none resize-none" placeholder="Share your experience with this product..."></textarea>
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Detailed Review</label>
+                        <textarea id="review-body" required rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors resize-none" placeholder="Share your experience with this product..."></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-brand hover:bg-brand-dark text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all">Submit Review</button>
+                    <button type="submit" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold text-sm shadow-md transition-all uppercase tracking-wider mt-2">Submit Review</button>
                 </form>
             </div>
         </div>
@@ -323,8 +323,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Added updateDoc to imports
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, setDoc, getDoc, onSnapshot, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'shirnahar-house';
@@ -341,8 +340,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        let userId = null;
-        let useFallback = false;
+        let currentUser = null;
         let globalCatalog = []; 
         let currentOpenProduct = null; 
 
@@ -361,8 +359,9 @@
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
+            const icon = type === 'error' ? '<i class="fas fa-exclamation-circle text-red-400"></i>' : '<i class="fas fa-check-circle text-green-400"></i>';
             toast.className = `flex items-center px-4 py-3 space-x-3 rounded-xl shadow-xl bg-gray-900 text-white transform transition-all duration-300 translate-y-12 opacity-0 text-xs sm:text-sm`;
-            toast.innerHTML = `<i class="fas fa-check-circle text-green-400"></i><span>${message}</span>`;
+            toast.innerHTML = `${icon}<span>${message}</span>`;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-y-12', 'opacity-0'));
             setTimeout(() => {
@@ -387,7 +386,11 @@
         function updateFallbackBadge() {
             try {
                 let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                let total = 0; localCart.forEach(i => total += i.quantity); updateCartBadge(total);
+                let cloudCache = JSON.parse(localStorage.getItem('shirnahar_cloud_cart_cache')) || [];
+                let itemsToCount = cloudCache.length > 0 ? cloudCache : localCart;
+                let total = 0; 
+                itemsToCount.forEach(i => total += i.quantity); 
+                updateCartBadge(total);
             } catch (e) {}
         }
 
@@ -397,66 +400,50 @@
                 let products = [];
                 snapshot.forEach(doc => { if(doc.data().status !== 'draft') products.push({ id: doc.id, ...doc.data() }); });
 
-                if(products.length === 0) {
-                    products = [
-                        { id: 's1', title: 'Emerald Green Georgette Saree', category: 'sarees', price: 3250, image: 'https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80', images: ['https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80', 'https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80', 'https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80', 'https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80'], status: 'active', stock: 12, reviews: [{author: 'Aditi Sharma', rating: 5, headline: 'Beautiful Georgette Saree', body: 'The fabric is incredibly soft and drapes perfectly.', date: '20 Sep 2026'}] },
-                        { id: 's2', title: 'Banarasi Kanjivaram Silk', category: 'sarees', price: 4500, image: 'https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80', images: ['https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80'], status: 'active', stock: 5, reviews: [] },
-                        { id: 's3', title: 'Crimson Red Bridal Saree', category: 'sarees', price: 5500, image: 'https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80', images: ['https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80'], status: 'active', stock: 8, reviews: [] },
-                        { id: 's4', title: 'Soft Cotton Handloom', category: 'sarees', price: 1800, image: 'https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80', images: ['https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80'], status: 'active', stock: 20, reviews: [] },
-                        { id: 's5', title: 'Midnight Blue Chiffon Saree', category: 'sarees', price: 2999, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80', images: ['https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80'], status: 'active', stock: 4, reviews: [] },
-                        
-                        { id: 't1', title: 'Embroidered Salwar Suit', category: 'threepiece', price: 2950, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80', images: ['https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80'], status: 'active', stock: 15, reviews: [] },
-                        { id: 't2', title: 'Pastel Designer Kurta Set', category: 'threepiece', price: 3100, image: 'https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80', images: ['https://images.unsplash.com/photo-1610189013233-6ba6a053f3e1?w=500&q=80'], status: 'active', reviews: [] },
-                        { id: 't3', title: 'Zari Work Anarkali', category: 'threepiece', price: 4200, image: 'https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80', images: ['https://images.unsplash.com/photo-1620011500318-72eeab4376c9?w=500&q=80'], status: 'active', reviews: [] },
-                        { id: 't4', title: 'Cotton Silk Punjabi Suit', category: 'threepiece', price: 2100, image: 'https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80', images: ['https://images.unsplash.com/photo-1583391733959-f183063608d0?w=500&q=80'], status: 'active', reviews: [] },
-                        { id: 't5', title: 'Velvet Winter Suit Set', category: 'threepiece', price: 5600, image: 'https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80', images: ['https://images.unsplash.com/photo-1610030469983-98e550d6153c?w=500&q=80'], status: 'active', reviews: [] },
-                        
-                        { id: 'j1', title: 'Gold Polki Choker', category: 'jewellery', price: 4500, image: 'https://images.unsplash.com/photo-1599643478524-fb66f7ca066b?w=500&q=80', images: ['https://images.unsplash.com/photo-1599643478524-fb66f7ca066b?w=500&q=80'], status: 'active', reviews: [] },
-                        { id: 'j2', title: 'Antique Bangles (Set of 2)', category: 'jewellery', price: 2800, image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&q=80', images: ['https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&q=80'], status: 'active', reviews: [] },
-                        { id: 'j3', title: 'Kundan Drop Earrings', category: 'jewellery', price: 1500, image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80', images: ['https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80'], status: 'active', reviews: [] },
-                        { id: 'j4', title: 'Pearl Bridal Set', category: 'jewellery', price: 6500, image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&q=80', images: ['https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&q=80'], status: 'active', reviews: [] },
-                        { id: 'j5', title: 'Ruby Gold Pendant', category: 'jewellery', price: 1800, image: 'https://images.unsplash.com/photo-1599643477877-53094032b3bd?w=500&q=80', images: ['https://images.unsplash.com/photo-1599643477877-53094032b3bd?w=500&q=80'], status: 'active', reviews: [] }
-                    ];
-                }
-                globalCatalog = products;
+                globalCatalog = products.reverse(); 
                 
-                renderCategoryGrid('saree-grid', products.filter(p => p.category === 'sarees'));
-                renderCategoryGrid('content-threepiece', products.filter(p => p.category === 'threepiece'));
-                renderCategoryGrid('content-twopiece', products.filter(p => p.category === 'twopiece'));
-                renderCategoryGrid('content-onepiece', products.filter(p => p.category === 'onepiece'));
-                renderCategoryGrid('jewellery-grid', products.filter(p => p.category === 'jewellery'));
+                renderCategoryGrid('saree-grid', globalCatalog.filter(p => p.category === 'sarees'));
+                renderCategoryGrid('content-threepiece', globalCatalog.filter(p => p.category === 'threepiece'));
+                renderCategoryGrid('content-twopiece', globalCatalog.filter(p => p.category === 'twopiece'));
+                renderCategoryGrid('content-onepiece', globalCatalog.filter(p => p.category === 'onepiece'));
+                renderCategoryGrid('jewellery-grid', globalCatalog.filter(p => p.category === 'jewellery'));
 
-                setupPagination('saree-grid', 'saree-pagination', 4);
-                setupPagination('content-threepiece', 'threepiece-pagination', 4);
-                setupPagination('content-twopiece', 'twopiece-pagination', 4);
-                setupPagination('content-onepiece', 'onepiece-pagination', 4);
-                setupPagination('jewellery-grid', 'jewellery-pagination', 4);
+                setupPagination('saree-grid', 'saree-pagination', 8);
+                setupPagination('content-threepiece', 'threepiece-pagination', 8);
+                setupPagination('content-twopiece', 'twopiece-pagination', 8);
+                setupPagination('content-onepiece', 'onepiece-pagination', 8);
+                setupPagination('jewellery-grid', 'jewellery-pagination', 8);
 
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Error loading catalog:", e); }
         }
 
         function renderCategoryGrid(gridId, items) {
             const grid = document.getElementById(gridId);
             if(!grid) return;
             if(items.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 text-sm">New items arriving soon.</div>`;
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 text-sm italic">New items arriving soon.</div>`;
                 return;
             }
             grid.innerHTML = items.map(product => {
                 const btnText = product.status === 'outofstock' ? 'Out of Stock' : 'Add to Bag';
                 const btnClass = product.status === 'outofstock' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-brand active:scale-95';
                 
+                let image = 'https://placehold.co/400x500?text=No+Image';
+                if (product.images && product.images.length > 0) image = product.images[0];
+                else if (product.image) image = product.image;
+
+                const price = product.price ? parseInt(product.price).toLocaleString('en-IN') : '0';
+
                 return `
                 <div class="group bg-white rounded-xl sm:rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden cursor-pointer" onclick="openProduct('${product.id}')">
-                    <div class="relative mobile-img-h sm:h-72 w-full bg-gray-50">
-                        <img src="${product.image}" class="w-full h-full object-cover product-img ${product.status==='outofstock'?'grayscale opacity-60':''}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
-                        <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm" onclick="event.stopPropagation()"><i class="far fa-heart text-sm"></i></button>
+                    <div class="relative mobile-img-h sm:h-72 w-full bg-gray-50 overflow-hidden">
+                        <img src="${image}" class="w-full h-full object-cover product-img ${product.status==='outofstock'?'grayscale opacity-60':''}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
                     </div>
                     <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                        <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug mb-1">${product.title}</h3>
+                        <h3 class="text-[11px] sm:text-sm font-bold text-gray-900 line-clamp-2 leading-snug mb-1">${product.title || 'Untitled'}</h3>
                         <div class="mt-auto pt-2 flex flex-col gap-2">
-                            <span class="text-sm sm:text-lg font-bold text-gray-900">₹${parseInt(product.price).toLocaleString('en-IN')}</span>
-                            <button class="w-full py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${btnClass}" onclick="event.stopPropagation(); handleAddToCart('${product.title.replace(/'/g, "\\'")}', ${product.price}, '${product.image}', ${product.stock !== undefined ? product.stock : 5})">${btnText}</button>
+                            <span class="text-sm sm:text-lg font-bold text-gray-900">₹${price}</span>
+                            <button class="w-full py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${btnClass}" onclick="event.stopPropagation(); handleAddToCart('${(product.title || '').replace(/'/g, "\\'")}', ${product.price}, '${image}', ${product.stock !== undefined ? product.stock : 5})">${btnText}</button>
                         </div>
                     </div>
                 </div>`;
@@ -497,8 +484,15 @@
 
         async function handleAddToCart(title, price, img, maxStock = 5) {
             try {
+                // If user is strictly logged in with cloud cart configured, redirect to cart logic for safety
+                // For immediate visual feedback, update local cache
                 let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                let existing = localCart.find(i => i.name === title);
+                let cloudCache = JSON.parse(localStorage.getItem('shirnahar_cloud_cart_cache')) || [];
+                
+                const isLogged = localStorage.getItem('shirnahar_is_logged_in') === 'true';
+                let activeArray = isLogged ? cloudCache : localCart;
+
+                let existing = activeArray.find(i => i.name === title);
                 if(existing) {
                     if (existing.quantity >= maxStock) {
                         showToast(`Only ${maxStock} items available in stock`, 'error');
@@ -507,9 +501,19 @@
                     existing.quantity += 1;
                 }
                 else {
-                    localCart.push({ id: Date.now().toString(), name: title, price: price, image: img, quantity: 1, stock: maxStock });
+                    activeArray.push({ id: Date.now().toString(), name: title, price: price, image: img, quantity: 1, stock: maxStock });
                 }
-                localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
+
+                if (isLogged) {
+                    localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(activeArray));
+                    // Push to cloud instantly
+                    if (currentUser && !currentUser.isAnonymous) {
+                        await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart'), { items: activeArray });
+                    }
+                } else {
+                    localStorage.setItem('shirnahar_local_cart', JSON.stringify(activeArray));
+                }
+                
                 updateFallbackBadge(); 
                 showToast('Added to bag successfully');
             } catch (e) { showToast('Added to cart'); }
@@ -533,11 +537,9 @@
             const product = globalCatalog.find(p => p.id === productId);
             if (!product) return;
 
-            // Push state to browser history for native back-button support
             history.replaceState({ type: 'catalog', scroll: window.scrollY }, '', '');
             history.pushState({ type: 'product', id: productId, scroll: 0 }, '', '');
             
-            // Trigger UI Transition
             document.getElementById('catalog-view').classList.add('hidden');
             const pView = document.getElementById('product-view');
             pView.classList.remove('hidden');
@@ -565,9 +567,9 @@
         function renderProductDetails(product) {
             currentOpenProduct = product;
             
-            document.getElementById('detail-title').innerText = product.title;
+            document.getElementById('detail-title').innerText = product.title || 'Untitled';
             
-            const price = parseInt(product.price);
+            const price = product.price ? parseInt(product.price) : 0;
             const discountPercent = product.discount || null; 
             const originalPrice = product.mrp || null;
             
@@ -605,23 +607,34 @@
                 buyNowBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
 
-            addToCartBtn.onclick = () => {
-                if(product.status !== 'outofstock' && availableStock !== 0) {
-                    handleAddToCart(product.title, product.price, product.image, availableStock);
-                }
-            };
-            
+            // Description logic
+            const descContainer = document.getElementById('detail-description-container');
             if (product.description && product.description.trim() !== '') {
                 document.getElementById('detail-description').innerText = product.description;
-                document.getElementById('detail-description-container').classList.remove('hidden');
+                descContainer.classList.remove('hidden');
             } else {
-                document.getElementById('detail-description-container').classList.add('hidden');
+                descContainer.classList.add('hidden');
             }
+
+            let primaryImg = product.image || 'https://placehold.co/400x500?text=No+Image';
+            
+            addToCartBtn.onclick = () => {
+                if(product.status !== 'outofstock' && availableStock !== 0) {
+                    handleAddToCart(product.title, product.price, primaryImg, availableStock);
+                }
+            };
             
             const carousel = document.getElementById('detail-carousel');
             const dotsContainer = document.getElementById('carousel-dots');
             
-            const images = (product.images && product.images.length > 0) ? product.images.slice(0, 4) : [product.image];
+            let images = [];
+            if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+                images = product.images.filter(img => img != null && img !== '');
+            } else if (product.image) {
+                images = [product.image];
+            } else {
+                images = [primaryImg];
+            }
             
             carousel.innerHTML = images.map(img => `<img src="${img}" class="w-full h-full object-cover flex-shrink-0 snap-center">`).join('');
             
@@ -649,6 +662,7 @@
             const list = document.getElementById('dynamic-reviews-list');
             const ratingText = document.getElementById('rating-count-text');
             const starsContainer = document.getElementById('detail-stars-container');
+            
             const reviews = product.reviews || [];
 
             let avgRating = 0;
@@ -665,7 +679,6 @@
             }
             starsContainer.innerHTML = starsHtml;
 
-            // Updated to only use genuine reviews count, no mock data
             ratingText.innerText = `${reviews.length} ratings`;
 
             if (reviews.length === 0) {
@@ -676,7 +689,7 @@
             list.innerHTML = reviews.map(rev => `
                 <div class="mb-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                     <div class="flex items-center gap-2 mb-1.5">
-                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500"><i class="fas fa-user text-xs"></i></div>
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold font-serif text-sm">${(rev.author || 'C').charAt(0).toUpperCase()}</div>
                         <span class="text-sm font-medium text-gray-900">${rev.author}</span>
                     </div>
                     <div class="flex items-center text-[#FFA41C] text-xs mb-1">
@@ -685,12 +698,28 @@
                     </div>
                     <p class="text-xs text-gray-500 mb-2 font-medium">Reviewed on ${rev.date}</p>
                     <p class="text-sm text-gray-800 leading-relaxed mb-2">${rev.body}</p>
-                    <p class="text-[10px] text-gray-500 font-medium"><i class="fas fa-check text-orange-500 mr-1"></i> Verified Purchase</p>
+                    <p class="text-[10px] text-gray-500 font-medium"><i class="fas fa-check text-green-600 mr-1"></i> Verified Purchase</p>
                 </div>
             `).join('');
         }
 
         function openReviewModal() {
+            // SECURE LOGIC: Check if user is logged in
+            const isLoggedIn = localStorage.getItem('shirnahar_is_logged_in') === 'true';
+            const cachedName = localStorage.getItem('shirnahar_cached_name');
+
+            if (!isLoggedIn || !cachedName) {
+                showToast('Please sign in to write a review', 'error');
+                setTimeout(() => {
+                    window.location.href = 'account.html';
+                }, 1500);
+                return;
+            }
+
+            // Populate the UI badge with the logged-in user's name automatically
+            document.getElementById('reviewer-name-display').innerText = cachedName;
+            document.getElementById('reviewer-avatar').innerText = cachedName.charAt(0).toUpperCase();
+
             document.getElementById('review-modal').classList.remove('hidden');
         }
 
@@ -702,13 +731,16 @@
             e.preventDefault();
             if (!currentOpenProduct) return;
 
+            // Automatically grab the logged in user's name
+            const authorName = localStorage.getItem('shirnahar_cached_name') || 'Customer';
+
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerText;
-            submitBtn.innerText = 'Submitting...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
             submitBtn.disabled = true;
 
             const newRev = {
-                author: document.getElementById('review-author').value,
+                author: authorName,
                 rating: parseInt(document.getElementById('review-stars').value),
                 headline: document.getElementById('review-headline').value,
                 body: document.getElementById('review-body').value,
@@ -719,26 +751,22 @@
             updatedReviews.unshift(newRev);
 
             try {
-                // Save immediately to Firestore Database
                 await updateDoc(doc(db, 'artifacts', appId, 'products', currentOpenProduct.id), {
                     reviews: updatedReviews
                 });
 
-                // Update local memory so we don't need to refresh the page
                 currentOpenProduct.reviews = updatedReviews;
                 
-                // Update global catalog so it stays updated if the user goes back to grid and re-opens
                 const catalogIndex = globalCatalog.findIndex(p => p.id === currentOpenProduct.id);
                 if (catalogIndex > -1) {
                     globalCatalog[catalogIndex].reviews = updatedReviews;
                 }
 
-                // Render instantly
                 renderReviews(currentOpenProduct);
                 
                 closeReviewModal();
                 e.target.reset();
-                showToast('Review submitted successfully!');
+                showToast('Review submitted securely!');
             } catch (error) {
                 console.error("Error saving review:", error);
                 showToast('Failed to submit review.', 'error');
@@ -761,21 +789,31 @@
             
             recommended = recommended.slice(0, 6); 
 
-            grid.innerHTML = recommended.map(p => `
+            grid.innerHTML = recommended.map(p => {
+                let img = 'https://placehold.co/400x500?text=No+Img';
+                if(p.images && p.images.length > 0) img = p.images[0];
+                else if (p.image) img = p.image;
+                
+                return `
                 <div class="w-32 sm:w-40 flex-shrink-0 cursor-pointer group snap-start" onclick="openRecommendation('${p.id}')">
                     <div class="h-44 sm:h-56 rounded-xl overflow-hidden mb-2 bg-gray-50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] border border-gray-100">
-                        <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="${p.title}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
+                        <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="${p.title}" onerror="this.src='https://placehold.co/400x500?text=Image+Not+Found'">
                     </div>
-                    <h4 class="text-[11px] sm:text-xs font-medium text-gray-800 line-clamp-2 leading-snug mb-1">${p.title}</h4>
-                    <p class="text-[13px] font-bold text-gray-900">₹${parseInt(p.price).toLocaleString('en-IN')}</p>
+                    <h4 class="text-[11px] sm:text-xs font-medium text-gray-800 line-clamp-2 leading-snug mb-1">${p.title || 'Untitled'}</h4>
+                    <p class="text-[13px] font-bold text-gray-900">₹${p.price ? parseInt(p.price).toLocaleString('en-IN') : 0}</p>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function handleBuyNow() {
             if (currentOpenProduct && currentOpenProduct.status !== 'outofstock' && currentOpenProduct.stock !== 0) {
                 const availableStock = currentOpenProduct.stock !== undefined ? currentOpenProduct.stock : 5;
-                handleAddToCart(currentOpenProduct.title, currentOpenProduct.price, currentOpenProduct.image, availableStock);
+                let primaryImg = 'https://placehold.co/400x500?text=No+Img';
+                if(currentOpenProduct.images && currentOpenProduct.images.length > 0) primaryImg = currentOpenProduct.images[0];
+                else if (currentOpenProduct.image) primaryImg = currentOpenProduct.image;
+
+                handleAddToCart(currentOpenProduct.title, currentOpenProduct.price, primaryImg, availableStock);
                 setTimeout(() => {
                     window.location.href = 'cart.html';
                 }, 400);
@@ -832,19 +870,31 @@
             }, { rootMargin: '-100px 0px -50% 0px' });
             document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
 
+            // AUTH LISTENER
+            onAuthStateChanged(auth, async (user) => {
+                if (user && !user.isAnonymous) {
+                    currentUser = user;
+                } else {
+                    currentUser = null;
+                    if (!user) {
+                        try { await signInAnonymously(auth); } catch (e) {}
+                    }
+                }
+            });
+
             await loadCatalogFromFirebase();
             
-            // Check if we need to open a specific product directly from the cart
+            // Check if we need to open a specific product directly from the cart or homepage
+            const pendingViewId = localStorage.getItem('shirnahar_view_product_id');
             const pendingViewName = localStorage.getItem('shirnahar_view_product_name');
-            if (pendingViewName) {
-                const targetProduct = globalCatalog.find(p => 
-                    p.title.trim().toLowerCase() === pendingViewName.trim().toLowerCase()
-                );
-                
+
+            if (pendingViewId) {
+                setTimeout(() => openProduct(pendingViewId), 100);
+                localStorage.removeItem('shirnahar_view_product_id'); 
+            } else if (pendingViewName) {
+                const targetProduct = globalCatalog.find(p => p.title && p.title.trim().toLowerCase() === pendingViewName.trim().toLowerCase());
                 if (targetProduct) {
-                    setTimeout(() => {
-                        openProduct(targetProduct.id);
-                    }, 100);
+                    setTimeout(() => openProduct(targetProduct.id), 100);
                 }
                 localStorage.removeItem('shirnahar_view_product_name'); 
             }
