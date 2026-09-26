@@ -125,7 +125,6 @@
 
     <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
-    <!-- Header without Search Bar -->
     <header class="bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-[72px]">
@@ -174,7 +173,6 @@
             </div>
         </section>
 
-        <!-- Premium Marquee Strip -->
         <div class="bg-brand-dark text-brand-light py-3.5 overflow-hidden flex relative whitespace-nowrap border-y border-brand/30 shadow-inner flex-shrink-0">
             <div class="animate-marquee inline-block font-serif text-[13px] md:text-sm tracking-[0.2em] uppercase">
                 <span class="mx-6 md:mx-10"><i class="fas fa-gem text-[10px] mr-2 text-brand"></i> Pure Handloom Sarees</span>
@@ -191,7 +189,6 @@
             </div>
         </div>
 
-        <!-- Interactive Wardrobe Section -->
         <section class="py-24 md:py-32 bg-[#0a0f1d] relative overflow-hidden flex-shrink-0 flex-grow">
             <!-- Premium Lighting/Glow Effects -->
             <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-full bg-gradient-to-b from-brand/20 to-transparent blur-[120px] rounded-full pointer-events-none opacity-50"></div>
@@ -208,8 +205,6 @@
                     <!-- The Metal Hanging Bar -->
                     <div class="absolute top-[8px] sm:top-[12px] md:top-[18px] lg:top-[22px] left-[-5%] right-[-5%] h-[4px] sm:h-[6px] md:h-[8px] bg-gradient-to-r from-[#1a1f2c] via-[#cbd5e1] to-[#1a1f2c] rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.8)] z-0"></div>
                     
-                    <!-- Rack Container handling overlapping and hover states -->
-                    <!-- Tightly packed for mobile, expanding for desktop -->
                     <div class="rack-container flex justify-center items-start -space-x-14 sm:-space-x-16 md:-space-x-24 lg:-space-x-28 pt-0 px-2 sm:px-12 relative z-10">
                         
                         <!-- 1: Light Grey -->
@@ -286,7 +281,6 @@
                     </div>
                 </div>
 
-                <!-- Action Button -->
                 <div class="mt-20 md:mt-24 text-center">
                     <a href="products.html" class="inline-flex items-center justify-center border border-brand/50 bg-brand/10 backdrop-blur-md text-white hover:bg-brand hover:border-brand px-10 py-4 rounded-full text-xs md:text-sm font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-[0_0_20px_rgba(180,83,9,0.15)] hover:shadow-[0_0_30px_rgba(180,83,9,0.4)] hover:-translate-y-1 group">
                         Explore Collection <i class="fas fa-long-arrow-alt-right ml-3 group-hover:translate-x-1 transition-transform"></i>
@@ -295,7 +289,7 @@
             </div>
         </section>
 
-        <!-- Floating Trust Strip (Moved above Footer) -->
+        <!-- Floating Trust Strip -->
         <section class="bg-[#1e1b18] relative z-20 pt-16 pb-8 border-t border-[#2d2824] flex-shrink-0">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-[#2d2824]/50 rounded-2xl shadow-xl p-6 md:p-8 grid grid-cols-3 gap-4 md:gap-8 text-center divide-x divide-white/10 border border-white/5">
@@ -357,7 +351,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -387,13 +381,21 @@
             } catch (e) {}
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             updateCartBadge();
-            try {
-                await signInAnonymously(auth);
-            } catch(e) {
-                console.warn("Auth failed, loading offline fallback.");
-            }
+            
+            // Wrap in an auth check so we don't accidentally overwrite a logged-in user
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    try {
+                        await signInAnonymously(auth);
+                    } catch(e) {
+                        console.warn("Auth failed, loading offline fallback.");
+                    }
+                }
+                // Unsubscribe immediately so this only runs once on load
+                unsubscribe(); 
+            });
         });
     </script>
 </body>
