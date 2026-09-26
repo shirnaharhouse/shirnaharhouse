@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Product Control | Shirnahar House</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Cropper.js for Mobile Image Cropping -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#fdf6e3', 
+                            DEFAULT: '#b45309', 
+                            dark: '#78350f', 
+                        },
+                        admin: {
+                            bg: '#f8fafc',
+                            sidebar: '#111827',
+                            card: '#ffffff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .hide-scroll-bar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scroll-bar::-webkit-scrollbar { display: none; }
+        
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms, transform 300ms; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 300ms, transform 300ms; }
+        
+        input, select, textarea, button { touch-action: manipulation; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+    </style>
+</head>
+<body class="bg-admin-bg font-sans text-gray-800 antialiased overflow-hidden h-screen flex relative">
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col items-end gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+    <div id="mobile-overlay" class="fixed inset-0 bg-gray-900/50 z-40 hidden md:hidden transition-opacity opacity-0" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-admin-sidebar text-gray-300 w-64 flex-shrink-0 flex flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 z-50 shadow-xl">
+        <div class="h-20 flex items-center justify-center border-b border-gray-800 bg-gray-900/50">
+            <h1 class="font-serif text-2xl font-bold text-white tracking-wide">
+                Shirnahar<span class="text-brand">Admin</span>
+            </h1>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 mt-2 px-3">Menu</p>
+            <nav class="space-y-1.5">
+                <a href="dashboard.html" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group">
+                    <i class="fas fa-chart-pie w-6 text-center text-gray-400 group-hover:text-gray-200"></i>
+                    <span class="font-medium text-sm ml-2">Dashboard</span>
+                </a>
+                <a href="orders.html" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group">
+                    <i class="fas fa-shopping-cart w-6 text-center text-gray-400 group-hover:text-gray-200"></i>
+                    <span class="font-medium text-sm ml-2">Orders</span>
+                </a>
+                <a href="productcontrol.html" class="w-full flex items-center px-3 py-2.5 bg-brand text-white rounded-lg transition-colors group">
+                    <i class="fas fa-box w-6 text-center"></i>
+                    <span class="font-medium text-sm ml-2">Products</span>
+                </a>
+                <a href="products.html" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group" target="_blank">
+                    <i class="fas fa-external-link-alt w-6 text-center text-gray-400 group-hover:text-gray-200"></i>
+                    <span class="font-medium text-sm ml-2">View Storefront</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-gray-800 bg-gray-900/30">
+            <button onclick="logoutAdmin()" class="w-full flex items-center px-3 py-2.5 hover:bg-red-900/50 text-red-400 hover:text-red-300 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt w-6 text-center"></i>
+                <span class="font-medium text-sm ml-2">Sign Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Clean Mobile Header -->
+        <header class="h-16 sm:h-20 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between px-4 sm:px-6 lg:px-8 flex-shrink-0 z-30 md:hidden">
+            <div class="flex items-center">
+                <button onclick="toggleSidebar()" class="text-gray-500 hover:text-brand focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <h2 class="ml-4 text-lg font-serif font-bold text-gray-900">Inventory</h2>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar relative">
+            <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mt-2 md:mt-0">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-gray-900">Product Inventory</h2>
+                    <p class="text-sm text-gray-500 mt-1">Manage your catalog, pricing, and stock levels.</p>
+                </div>
+                <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
+                    <button onclick="openProductModal('add')" id="btn-add-dynamic" class="w-full sm:w-auto bg-brand hover:bg-brand-dark text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2 flex-shrink-0">
+                        <i class="fas fa-plus"></i> Add Product
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Category Tabs -->
+            <div class="mb-4 flex space-x-2 overflow-x-auto hide-scroll-bar pb-2">
+                <button onclick="switchAdminTab('all')" id="tab-admin-all" class="px-4 py-2 rounded-xl text-sm font-bold bg-brand text-white shadow-md whitespace-nowrap transition-colors">All Products</button>
+                <button onclick="switchAdminTab('sarees')" id="tab-admin-sarees" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 whitespace-nowrap transition-colors">Sarees</button>
+                <button onclick="switchAdminTab('dresses')" id="tab-admin-dresses" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 whitespace-nowrap transition-colors">Dresses</button>
+                <button onclick="switchAdminTab('jewellery')" id="tab-admin-jewellery" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 whitespace-nowrap transition-colors">Jewellery</button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-200 overflow-hidden flex flex-col min-h-[400px]">
+                <div class="overflow-x-auto custom-scrollbar flex-1">
+                    <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-bold">
+                                <th class="px-6 py-4">Product</th>
+                                <th class="px-6 py-4">Category</th>
+                                <th class="px-6 py-4">Price / MRP</th>
+                                <th class="px-6 py-4">Stock</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body" class="divide-y divide-gray-100 text-sm">
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2 text-brand"></i>
+                                    <p>Loading inventory...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-sm text-gray-500 font-medium">
+                    <span id="inventory-count">Showing 0 products</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-gray-900/60 z-[120] hidden items-center justify-center p-2 sm:p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[95vh] flex flex-col shadow-2xl modal-enter" id="product-modal-content">
+            
+            <div class="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50 rounded-t-3xl flex-shrink-0">
+                <h3 class="font-serif font-bold text-lg sm:text-xl text-gray-900" id="modal-title">Add New Product</h3>
+                <button type="button" onclick="closeProductModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 bg-white rounded-full shadow-sm transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1 pb-safe">
+                <form id="product-form" onsubmit="handleProductSubmit(event)" class="space-y-5">
+                    <input type="hidden" id="prod-id">
+                    
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Product Title *</label>
+                        <input type="text" id="prod-title" required class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors" placeholder="e.g., Emerald Green Georgette Saree">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Category *</label>
+                            <select id="prod-category" required class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors appearance-none">
+                                <option value="sarees">Sarees</option>
+                                <option value="threepiece">Three Piece Dresses</option>
+                                <option value="twopiece">Two Piece Dresses</option>
+                                <option value="onepiece">One Piece Dresses</option>
+                                <option value="jewellery">Jewellery</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Status *</label>
+                            <select id="prod-status" required class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors appearance-none">
+                                <option value="active">Active (Visible)</option>
+                                <option value="outofstock">Out of Stock</option>
+                                <option value="draft">Draft (Hidden)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3 sm:gap-5">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1" title="Maximum Retail Price">M.R.P. (₹) *</label>
+                            <input type="number" id="prod-mrp" required min="0" class="w-full px-3 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors" placeholder="4403" oninput="calculateDiscount()">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1" title="Your Selling Price">Selling Price (₹) *</label>
+                            <input type="number" id="prod-price" required min="0" class="w-full px-3 py-3 rounded-xl border border-gray-200 bg-white font-bold text-brand focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors shadow-sm" placeholder="2950" oninput="calculateDiscount()">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Discount (%)</label>
+                            <input type="number" id="prod-discount" readonly class="w-full px-3 py-3 rounded-xl border border-gray-200 bg-gray-100 text-sm font-medium text-gray-500 cursor-not-allowed" placeholder="Auto %">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Stock Qty *</label>
+                        <input type="number" id="prod-stock" required min="0" value="10" class="w-full sm:w-1/3 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Product Details / Description</label>
+                        <textarea id="prod-description" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors custom-scrollbar resize-none" placeholder="Enter fabric details, dimensions, care instructions..."></textarea>
+                    </div>
+
+                    <div class="pt-3 border-t border-gray-100">
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 ml-1">Product Images (Max 4) *</label>
+                            <span class="text-[10px] text-gray-400">Main image is first</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 sm:gap-4">
+                            <!-- Image Slots -->
+                            <div class="relative aspect-[3/4] rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 hover:border-brand transition-colors group cursor-pointer" onclick="triggerImageUpload(0)">
+                                <img id="preview-img-0" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+                                <div id="placeholder-0" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                                    <i class="fas fa-camera text-xl sm:text-2xl mb-1"></i>
+                                    <span class="text-[9px] sm:text-[10px] font-bold mt-1 text-center leading-tight">Main<br>Photo</span>
+                                </div>
+                                <button type="button" id="remove-img-0" onclick="removeImage(event, 0)" class="absolute top-1 right-1 w-6 h-6 bg-white/90 text-red-500 rounded-full hidden items-center justify-center shadow-sm"><i class="fas fa-times text-xs"></i></button>
+                            </div>
+                            <div class="relative aspect-[3/4] rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 hover:border-brand transition-colors group cursor-pointer" onclick="triggerImageUpload(1)">
+                                <img id="preview-img-1" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+                                <div id="placeholder-1" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400"><i class="fas fa-plus text-lg sm:text-xl"></i></div>
+                                <button type="button" id="remove-img-1" onclick="removeImage(event, 1)" class="absolute top-1 right-1 w-6 h-6 bg-white/90 text-red-500 rounded-full hidden items-center justify-center shadow-sm"><i class="fas fa-times text-xs"></i></button>
+                            </div>
+                            <div class="relative aspect-[3/4] rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 hover:border-brand transition-colors group cursor-pointer" onclick="triggerImageUpload(2)">
+                                <img id="preview-img-2" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+                                <div id="placeholder-2" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400"><i class="fas fa-plus text-lg sm:text-xl"></i></div>
+                                <button type="button" id="remove-img-2" onclick="removeImage(event, 2)" class="absolute top-1 right-1 w-6 h-6 bg-white/90 text-red-500 rounded-full hidden items-center justify-center shadow-sm"><i class="fas fa-times text-xs"></i></button>
+                            </div>
+                            <div class="relative aspect-[3/4] rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 hover:border-brand transition-colors group cursor-pointer" onclick="triggerImageUpload(3)">
+                                <img id="preview-img-3" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+                                <div id="placeholder-3" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400"><i class="fas fa-plus text-lg sm:text-xl"></i></div>
+                                <button type="button" id="remove-img-3" onclick="removeImage(event, 3)" class="absolute top-1 right-1 w-6 h-6 bg-white/90 text-red-500 rounded-full hidden items-center justify-center shadow-sm"><i class="fas fa-times text-xs"></i></button>
+                            </div>
+                        </div>
+                        <input type="file" id="hidden-file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                    </div>
+                </form>
+            </div>
+            
+            <div class="px-4 sm:px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-3xl flex justify-end gap-3 flex-shrink-0">
+                <button type="button" onclick="closeProductModal()" class="w-full sm:w-auto px-5 py-3.5 sm:py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 transition-colors">Cancel</button>
+                <button type="submit" form="product-form" id="btn-save-product" class="w-full sm:w-auto px-8 py-3.5 sm:py-2.5 rounded-xl text-sm font-bold text-white bg-brand hover:bg-brand-dark shadow-md transition-colors uppercase tracking-wider">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Manager Modal -->
+    <div id="review-manager-modal" class="fixed inset-0 bg-gray-900/60 z-[140] hidden items-center justify-center p-2 sm:p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl modal-enter" id="review-manager-content">
+            <div class="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50 rounded-t-3xl flex-shrink-0">
+                <div>
+                    <h3 class="font-serif font-bold text-lg text-gray-900">Manage Customer Reviews</h3>
+                    <p class="text-xs text-gray-500 mt-0.5" id="review-manager-title">...</p>
+                </div>
+                <button type="button" onclick="closeReviewManager()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 bg-white rounded-full shadow-sm transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div id="review-list-container" class="space-y-4">
+                    <!-- Reviews populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Cropper Modal (Mobile Optimized) -->
+    <div id="cropper-modal" class="fixed inset-0 bg-black z-[150] hidden flex-col transition-opacity duration-300 opacity-0">
+        <div class="h-14 bg-gray-900 flex items-center justify-between px-4 text-white flex-shrink-0 shadow-md">
+            <button type="button" onclick="closeCropper()" class="p-2 text-gray-300 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="font-bold text-xs tracking-widest uppercase">Adjust Photo</h3>
+            <button type="button" onclick="applyCrop()" class="bg-brand hover:bg-brand-dark px-5 py-1.5 rounded-lg text-sm font-bold transition-colors shadow-md">Crop</button>
+        </div>
+        <div class="flex-1 w-full bg-black relative overflow-hidden flex items-center justify-center">
+            <img id="cropper-image" src="" class="max-w-full max-h-full block">
+        </div>
+        <div class="h-20 bg-gray-900 flex items-center justify-center gap-8 pb-safe flex-shrink-0">
+            <button type="button" onclick="cropper.rotate(-90)" class="w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition-colors shadow-lg"><i class="fas fa-undo"></i></button>
+            <button type="button" onclick="cropper.rotate(90)" class="w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition-colors shadow-lg"><i class="fas fa-redo"></i></button>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="fixed inset-0 bg-gray-900/60 z-[130] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl modal-enter" id="delete-modal-content">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-serif font-bold text-gray-900 mb-2">Delete Product?</h3>
+            <p class="text-sm text-gray-600 mb-6">Are you sure you want to delete this product? It will be removed from the catalog permanently.</p>
+            <input type="hidden" id="delete-prod-id">
+            <div class="flex gap-3">
+                <button type="button" onclick="closeDeleteModal()" class="flex-1 py-3.5 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">Cancel</button>
+                <button type="button" onclick="executeDeleteProduct()" id="btn-confirm-delete" class="flex-1 py-3.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 shadow-md transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Bindings
+        window.toggleSidebar = toggleSidebar;
+        window.logoutAdmin = logoutAdmin;
+        window.openProductModal = openProductModal;
+        window.closeProductModal = closeProductModal;
+        window.handleProductSubmit = handleProductSubmit;
+        window.openDeleteModal = openDeleteModal;
+        window.closeDeleteModal = closeDeleteModal;
+        window.executeDeleteProduct = executeDeleteProduct;
+        window.triggerImageUpload = triggerImageUpload;
+        window.handleFileSelect = handleFileSelect;
+        window.removeImage = removeImage;
+        window.closeCropper = closeCropper;
+        window.applyCrop = applyCrop;
+        window.calculateDiscount = calculateDiscount;
+        window.switchAdminTab = switchAdminTab;
+        window.openReviewManager = openReviewManager;
+        window.closeReviewManager = closeReviewManager;
+        window.deleteReview = deleteReview;
+
+        const appId = 'shirnahar-house';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let globalProducts = [];
+        let modalMode = 'add'; 
+        let productImages = [null, null, null, null]; 
+        let currentUploadIndex = 0;
+        let cropper = null;
+        let currentAdminTab = 'all';
+        let currentReviewProductId = null;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800';
+            const icon = type === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500';
+
+            toast.className = `flex items-center w-full p-4 rounded-xl shadow-lg border ${bg} transform transition-all duration-300 translate-x-full opacity-0`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg mr-3"></i> <span class="text-sm font-medium">${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        function logoutAdmin() {
+            showToast('Signing out...', 'success');
+            setTimeout(() => window.location.href = 'index.html', 800);
+        }
+
+        function switchAdminTab(tab) {
+            currentAdminTab = tab;
+            const tabs = ['all', 'sarees', 'dresses', 'jewellery'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-admin-${t}`);
+                if (t === tab) {
+                    el.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-brand text-white shadow-md whitespace-nowrap transition-colors';
+                } else {
+                    el.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 whitespace-nowrap transition-colors';
+                }
+            });
+
+            const addBtn = document.getElementById('btn-add-dynamic');
+            if (tab === 'sarees') addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Saree';
+            else if (tab === 'dresses') addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Dress';
+            else if (tab === 'jewellery') addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Jewellery';
+            else addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Product';
+
+            renderProductsTable(globalProducts);
+        }
+
+        function calculateDiscount() {
+            const priceVal = parseFloat(document.getElementById('prod-price').value);
+            const mrpVal = parseFloat(document.getElementById('prod-mrp').value);
+            const discountInput = document.getElementById('prod-discount');
+            
+            if (priceVal > 0 && mrpVal > priceVal) {
+                const percent = Math.round(((mrpVal - priceVal) / mrpVal) * 100);
+                discountInput.value = percent;
+            } else {
+                discountInput.value = '';
+            }
+        }
+
+        // ---------- REVIEW MANAGER ----------
+        function openReviewManager(productId) {
+            currentReviewProductId = productId;
+            const product = globalProducts.find(p => p.id === productId);
+            if(!product) return;
+
+            document.getElementById('review-manager-title').innerText = product.title || 'Product Reviews';
+            const container = document.getElementById('review-list-container');
+            
+            const reviews = product.reviews || [];
+            if(reviews.length === 0) {
+                container.innerHTML = '<div class="text-center py-12 text-gray-400 text-sm italic">No reviews found for this product.</div>';
+            } else {
+                container.innerHTML = reviews.map((rev, idx) => `
+                    <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm relative group">
+                        <button onclick="deleteReview(${idx})" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors" title="Delete Review">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="font-bold text-gray-900 text-sm">${rev.author}</span>
+                            <span class="text-xs text-gray-500 font-medium">(${rev.date})</span>
+                        </div>
+                        <div class="flex items-center text-[#FFA41C] text-xs mb-2">
+                            ${'<i class="fas fa-star"></i>'.repeat(rev.rating)}${'<i class="far fa-star"></i>'.repeat(5 - rev.rating)}
+                            <span class="text-gray-900 font-bold ml-2 text-sm">${rev.headline}</span>
+                        </div>
+                        <p class="text-sm text-gray-700">${rev.body}</p>
+                    </div>
+                `).join('');
+            }
+
+            const modal = document.getElementById('review-manager-modal');
+            const content = document.getElementById('review-manager-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                content.classList.remove('modal-enter');
+                content.classList.add('modal-enter-active');
+                setTimeout(() => content.classList.remove('modal-enter-active'), 300);
+            });
+        }
+
+        function closeReviewManager() {
+            const modal = document.getElementById('review-manager-modal');
+            const content = document.getElementById('review-manager-content');
+            content.classList.add('modal-exit-active');
+            setTimeout(() => {
+                content.classList.remove('modal-exit-active');
+                content.classList.add('modal-enter');
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+                currentReviewProductId = null;
+            }, 300);
+        }
+
+        async function deleteReview(index) {
+            if(!currentReviewProductId) return;
+            const product = globalProducts.find(p => p.id === currentReviewProductId);
+            if(!product || !product.reviews) return;
+
+            if(!confirm("Are you sure you want to permanently delete this review?")) return;
+
+            const updatedReviews = [...product.reviews];
+            updatedReviews.splice(index, 1);
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'products', currentReviewProductId), {
+                    reviews: updatedReviews
+                });
+                showToast('Review deleted successfully');
+                // The onSnapshot listener will auto-update globalProducts, but we need to re-render the modal manually
+                product.reviews = updatedReviews; 
+                openReviewManager(currentReviewProductId);
+            } catch (error) {
+                showToast('Failed to delete review', 'error');
+            }
+        }
+
+        // ---------- IMAGE CROPPER LOGIC (Base64 High Compression) ----------
+
+        function triggerImageUpload(index) {
+            currentUploadIndex = index;
+            document.getElementById('hidden-file-input').click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const cropperModal = document.getElementById('cropper-modal');
+                const cropperImage = document.getElementById('cropper-image');
+                
+                cropperImage.src = e.target.result;
+                cropperModal.classList.remove('hidden');
+                cropperModal.classList.add('flex');
+                
+                requestAnimationFrame(() => {
+                    cropperModal.classList.remove('opacity-0');
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(cropperImage, {
+                        aspectRatio: 3 / 4,
+                        viewMode: 2,
+                        dragMode: 'move',
+                        autoCropArea: 1,
+                        restore: false,
+                        guides: true,
+                        center: true,
+                        highlight: false,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                    });
+                });
+            };
+            reader.readAsDataURL(file);
+            event.target.value = ''; 
+        }
+
+        function closeCropper() {
+            const cropperModal = document.getElementById('cropper-modal');
+            cropperModal.classList.add('opacity-0');
+            setTimeout(() => {
+                cropperModal.classList.add('hidden');
+                cropperModal.classList.remove('flex');
+                if (cropper) { cropper.destroy(); cropper = null; }
+            }, 300);
+        }
+
+        function applyCrop() {
+            if (!cropper) return;
+            // High compression: Shrink resolution and use low-quality JPEG to stay under 1MB DB limit
+            const canvas = cropper.getCroppedCanvas({
+                width: 480, 
+                height: 640,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'medium'
+            });
+
+            // Very aggressive compression: 0.4 quality JPEG
+            const base64DataUrl = canvas.toDataURL('image/jpeg', 0.4); 
+            productImages[currentUploadIndex] = base64DataUrl;
+            
+            updateImageGridUI();
+            closeCropper();
+        }
+
+        function removeImage(event, index) {
+            event.stopPropagation();
+            productImages[index] = null;
+            updateImageGridUI();
+        }
+
+        function updateImageGridUI() {
+            for(let i=0; i<4; i++) {
+                const previewImg = document.getElementById(`preview-img-${i}`);
+                const placeholder = document.getElementById(`placeholder-${i}`);
+                const removeBtn = document.getElementById(`remove-img-${i}`);
+                
+                if (productImages[i]) {
+                    previewImg.src = productImages[i];
+                    previewImg.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                    removeBtn.classList.remove('hidden');
+                    removeBtn.classList.add('flex');
+                } else {
+                    previewImg.src = '';
+                    previewImg.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                    removeBtn.classList.add('hidden');
+                    removeBtn.classList.remove('flex');
+                }
+            }
+        }
+
+        // ---------- DATABASE LOGIC ----------
+
+        function listenToProducts() {
+            const productsRef = collection(db, 'artifacts', appId, 'products');
+            onSnapshot(productsRef, (snapshot) => {
+                let products = [];
+                snapshot.forEach(doc => { products.push({ id: doc.id, ...doc.data() }); });
+                globalProducts = products.reverse(); 
+                renderProductsTable(globalProducts);
+            }, (error) => {
+                showToast("Failed to connect to database.", "error");
+            });
+        }
+
+        function renderProductsTable(products) {
+            const tbody = document.getElementById('products-table-body');
+            const countLabel = document.getElementById('inventory-count');
+            
+            let filteredProducts = products;
+            if (currentAdminTab === 'sarees') {
+                filteredProducts = products.filter(p => p.category === 'sarees');
+            } else if (currentAdminTab === 'dresses') {
+                filteredProducts = products.filter(p => ['threepiece', 'twopiece', 'onepiece'].includes(p.category));
+            } else if (currentAdminTab === 'jewellery') {
+                filteredProducts = products.filter(p => p.category === 'jewellery');
+            }
+            
+            if (!filteredProducts || filteredProducts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500">No products found in this category.</td></tr>`;
+                countLabel.innerText = `Showing 0 products`;
+                return;
+            }
+
+            const html = filteredProducts.map(p => {
+                const title = p.title || 'Untitled Product';
+                const status = p.status || 'draft';
+                const price = p.price ? parseInt(p.price).toLocaleString('en-IN') : '0';
+                const mrp = p.mrp ? parseInt(p.mrp).toLocaleString('en-IN') : null;
+                const stock = p.stock !== undefined ? p.stock : 0;
+                
+                let image = 'https://placehold.co/100x120?text=No+Img';
+                if (p.images && Array.isArray(p.images) && p.images.length > 0 && p.images[0]) image = p.images[0];
+                else if (p.image) image = p.image;
+                
+                let statusBadge = '';
+                if (status === 'active') statusBadge = '<span class="px-2.5 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full border border-green-200">Active</span>';
+                else if (status === 'outofstock') statusBadge = '<span class="px-2.5 py-1 bg-red-100 text-red-700 text-[10px] font-bold uppercase rounded-full border border-red-200">Out of Stock</span>';
+                else statusBadge = '<span class="px-2.5 py-1 bg-gray-100 text-gray-700 text-[10px] font-bold uppercase rounded-full border border-gray-200">Draft</span>';
+
+                let catName = p.category || '';
+                if(catName === 'threepiece') catName = 'Three Piece';
+                else if (catName === 'twopiece') catName = 'Two Piece';
+                else if (catName === 'onepiece') catName = 'One Piece';
+                else if (catName) catName = catName.charAt(0).toUpperCase() + catName.slice(1);
+                else catName = 'Uncategorized';
+
+                return `
+                <tr class="hover:bg-gray-50/80 transition-colors group">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="h-12 w-10 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden border border-gray-200">
+                                <img src="${image}" class="h-full w-full object-cover" alt="Product" onerror="this.src='https://placehold.co/100x120?text=No+Img'">
+                            </div>
+                            <div class="ml-4 max-w-[200px]">
+                                <div class="text-sm font-bold text-gray-900 truncate" title="${title.replace(/"/g, '&quot;')}">${title}</div>
+                                <div class="text-[10px] text-gray-400 font-mono mt-0.5">${p.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-md">${catName}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-bold text-gray-900">₹${price}</div>
+                        ${mrp ? `<div class="text-[11px] text-gray-400 line-through">₹${mrp}</div>` : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-bold ${stock <= 2 ? 'text-red-500' : 'text-gray-900'}">${stock}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${statusBadge}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center justify-end gap-2 opacity-100">
+                            <!-- REVIEW BUTTON -->
+                            <button onclick="openReviewManager('${p.id}')" class="w-8 h-8 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 flex items-center justify-center transition-colors shadow-sm border border-yellow-200" title="Manage Reviews">
+                                <i class="fas fa-star text-xs"></i>
+                            </button>
+                            <!-- EDIT BUTTON -->
+                            <button onclick="openProductModal('edit', '${p.id}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors shadow-sm border border-blue-200" title="Edit">
+                                <i class="fas fa-pen text-xs"></i>
+                            </button>
+                            <!-- DELETE BUTTON -->
+                            <button onclick="openDeleteModal('${p.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors shadow-sm border border-red-200" title="Delete">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = html;
+            countLabel.innerText = `Showing ${filteredProducts.length} products`;
+        }
+
+        function openProductModal(mode, id = null) {
+            modalMode = mode;
+            const modal = document.getElementById('product-modal');
+            const content = document.getElementById('product-modal-content');
+            
+            document.getElementById('product-form').reset();
+            document.getElementById('prod-id').value = '';
+            document.getElementById('prod-discount').value = '';
+            productImages = [null, null, null, null];
+            updateImageGridUI();
+            
+            if (mode === 'add') {
+                document.getElementById('modal-title').innerText = 'Add New Product';
+                document.getElementById('prod-stock').value = 10;
+                
+                let autoCat = 'sarees';
+                if (currentAdminTab === 'dresses') autoCat = 'threepiece';
+                else if (currentAdminTab === 'jewellery') autoCat = 'jewellery';
+                document.getElementById('prod-category').value = autoCat;
+
+            } else if (mode === 'edit' && id) {
+                document.getElementById('modal-title').innerText = 'Edit Product';
+                const product = globalProducts.find(p => p.id === id);
+                if (product) {
+                    document.getElementById('prod-id').value = product.id;
+                    document.getElementById('prod-title').value = product.title || '';
+                    document.getElementById('prod-category').value = product.category || 'sarees';
+                    document.getElementById('prod-status').value = product.status || 'active';
+                    document.getElementById('prod-price').value = product.price || '';
+                    document.getElementById('prod-mrp').value = product.mrp || '';
+                    document.getElementById('prod-discount').value = product.discount || '';
+                    document.getElementById('prod-stock').value = product.stock !== undefined ? product.stock : 10;
+                    document.getElementById('prod-description').value = product.description || '';
+                    
+                    if (product.images && Array.isArray(product.images)) {
+                        for(let i=0; i < Math.min(product.images.length, 4); i++) {
+                            productImages[i] = product.images[i];
+                        }
+                    } else if (product.image) {
+                        productImages[0] = product.image;
+                    }
+                    updateImageGridUI();
+                }
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                content.classList.remove('modal-enter');
+                content.classList.add('modal-enter-active');
+                setTimeout(() => content.classList.remove('modal-enter-active'), 300);
+            });
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('product-modal');
+            const content = document.getElementById('product-modal-content');
+            
+            content.classList.add('modal-exit-active');
+            setTimeout(() => {
+                content.classList.remove('modal-exit-active');
+                content.classList.add('modal-enter');
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        async function handleProductSubmit(e) {
+            e.preventDefault();
+            
+            if (!productImages[0]) {
+                showToast('A Main Image is required to publish.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btn-save-product');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+            btn.disabled = true;
+
+            const id = document.getElementById('prod-id').value;
+            const price = parseFloat(document.getElementById('prod-price').value);
+            const mrpRaw = document.getElementById('prod-mrp').value;
+            const mrp = mrpRaw ? parseFloat(mrpRaw) : null;
+            let discount = null;
+            if (mrp && price < mrp) {
+                discount = Math.round(((mrp - price) / mrp) * 100);
+            }
+
+            try {
+                // Collect valid Base64 images directly
+                const finalImageUrls = productImages.filter(img => img !== null && img !== '');
+
+                const productData = {
+                    title: document.getElementById('prod-title').value,
+                    category: document.getElementById('prod-category').value,
+                    status: document.getElementById('prod-status').value,
+                    price: price,
+                    mrp: mrp,
+                    discount: discount,
+                    stock: parseInt(document.getElementById('prod-stock').value),
+                    description: document.getElementById('prod-description').value,
+                    image: finalImageUrls[0], 
+                    images: finalImageUrls,   
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (modalMode === 'add') {
+                    productData.createdAt = new Date().toISOString();
+                    productData.reviews = []; 
+                    await addDoc(collection(db, 'artifacts', appId, 'products'), productData);
+                    showToast('Product added successfully!');
+                } else if (modalMode === 'edit') {
+                    await updateDoc(doc(db, 'artifacts', appId, 'products', id), productData);
+                    showToast('Product updated successfully!');
+                }
+                closeProductModal();
+            } catch (error) {
+                console.error("Save error:", error);
+                if (error.code && error.code.includes('resource-exhausted')) {
+                    showToast('Images too large! Database limit reached.', 'error');
+                } else {
+                    showToast('Failed to save product.', 'error');
+                }
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function openDeleteModal(id) {
+            document.getElementById('delete-prod-id').value = id;
+            document.getElementById('delete-modal').classList.remove('hidden');
+            document.getElementById('delete-modal').classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+            document.getElementById('delete-modal').classList.remove('flex');
+        }
+
+        async function executeDeleteProduct() {
+            const id = document.getElementById('delete-prod-id').value;
+            if(!id) return;
+
+            const btn = document.getElementById('btn-confirm-delete');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'products', id));
+                showToast('Product deleted permanently.', 'success');
+                closeDeleteModal();
+            } catch (error) {
+                showToast('Failed to delete product.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Bypass Auth for testing/building
+            try {
+                await signInAnonymously(auth);
+                listenToProducts();
+            } catch (error) {
+                showToast("Database init failed.", "error");
+            }
+        });
+    </script>
+</body>
+</html>
