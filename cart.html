@@ -326,7 +326,7 @@
         }
 
         async function updateQty(index, change) {
-            if (currentUser) {
+            if (currentUser && !currentUser.isAnonymous) {
                 // Update Cloud Cart
                 const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
                 try {
@@ -363,7 +363,7 @@
         }
 
         async function removeItem(index) {
-            if (currentUser) {
+            if (currentUser && !currentUser.isAnonymous) {
                 // Remove from Cloud Cart
                 const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
                 try {
@@ -406,27 +406,33 @@
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     currentUser = user;
-                    await syncCartToCloud();
-                    listenToCloudCart();
+                    // Only sync to cloud if it's a registered user, not a guest
+                    if (!user.isAnonymous) {
+                        await syncCartToCloud();
+                        listenToCloudCart();
+                    } else {
+                        const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                        renderCartUI(localCart);
+                    }
                 } else {
                     currentUser = null;
                     if (unsubscribeCart) unsubscribeCart();
                     const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
                     renderCartUI(localCart);
+                    
+                    // Initialize Guest Session ONLY if no user is found
+                    const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    try {
+                        if (initialToken) {
+                            await signInWithCustomToken(auth, initialToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch(e) {
+                        console.warn("Auth initialization error", e);
+                    }
                 }
             });
-
-            // Initialize Auth logic
-            const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-            try {
-                if (initialToken) {
-                    await signInWithCustomToken(auth, initialToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch(e) {
-                console.warn("Auth initialization error", e);
-            }
         });
     </script>
 </body>
