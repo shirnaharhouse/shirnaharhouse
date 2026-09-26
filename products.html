@@ -288,12 +288,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Headline</label>
-                        <input type="text" id="review-headline" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors" placeholder="e.g. Absolutely stunning fabric!">
-                    </div>
-                    <div>
                         <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Detailed Review</label>
-                        <textarea id="review-body" required rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors resize-none" placeholder="Share your experience with this product..."></textarea>
+                        <textarea id="review-body" required rows="4" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors resize-none" placeholder="Share your experience with this product..."></textarea>
                     </div>
                     <button type="submit" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl font-bold text-sm shadow-md transition-all uppercase tracking-wider mt-2">Submit Review</button>
                 </form>
@@ -694,7 +690,6 @@
                     </div>
                     <div class="flex items-center text-[#FFA41C] text-xs mb-1">
                         ${'<i class="fas fa-star"></i>'.repeat(rev.rating)}${'<i class="far fa-star"></i>'.repeat(5 - rev.rating)}
-                        <span class="text-gray-900 font-bold ml-2 text-sm">${rev.headline}</span>
                     </div>
                     <p class="text-xs text-gray-500 mb-2 font-medium">Reviewed on ${rev.date}</p>
                     <p class="text-sm text-gray-800 leading-relaxed mb-2">${rev.body}</p>
@@ -742,7 +737,6 @@
             const newRev = {
                 author: authorName,
                 rating: parseInt(document.getElementById('review-stars').value),
-                headline: document.getElementById('review-headline').value,
                 body: document.getElementById('review-body').value,
                 date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
             };
