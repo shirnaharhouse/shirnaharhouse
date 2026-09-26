@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport locked to prevent accidental double-tap zooming on mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Products | Shirnahar House</title>
     
@@ -79,7 +78,6 @@
         }
     </style>
 </head>
-<!-- overscroll-none prevents the elastic "bounce" effect on mobile screens -->
 <body class="bg-[#f8fafc] font-sans text-gray-800 antialiased selection:bg-brand-light selection:text-brand-dark overflow-x-hidden overscroll-none">
 
     <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col items-center gap-3 pointer-events-none w-full max-w-sm px-4"></div>
@@ -664,7 +662,6 @@
                 carousel.onscroll = null;
             }
             
-            // Render reviews and correctly close the function!
             renderReviews(product);
             renderRecommendations(product);
         }
@@ -838,6 +835,16 @@
             document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
 
             await loadCatalogFromFirebase();
+            
+            // Check if we need to open a specific product directly from the cart
+            const pendingViewName = localStorage.getItem('shirnahar_view_product_name');
+            if (pendingViewName) {
+                const targetProduct = globalCatalog.find(p => p.title === pendingViewName);
+                if (targetProduct) {
+                    openProduct(targetProduct.id);
+                }
+                localStorage.removeItem('shirnahar_view_product_name'); // Clear it so it doesn't loop
+            }
         });
     </script>
 </body>
