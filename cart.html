@@ -184,7 +184,6 @@
         let currentUser = null;
         let unsubscribeCart = null;
 
-        // Global functions mapped for inline HTML events
         window.updateQty = updateQty;
         window.removeItem = removeItem;
         window.proceedToCheckout = proceedToCheckout;
@@ -288,7 +287,6 @@
                     cloudCart = docSnap.data().items || [];
                 }
 
-                // Merge guest cart items into the authenticated cloud cart
                 if (localCart.length > 0) {
                     localCart.forEach(localItem => {
                         const existingIdx = cloudCart.findIndex(i => i.name === localItem.name);
@@ -304,9 +302,10 @@
                     });
                     
                     await setDoc(cartRef, { items: cloudCart });
-                    localStorage.removeItem('shirnahar_local_cart'); // Clear local memory after merge
+                    // Cache the new sync result
+                    localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(cloudCart));
+                    localStorage.removeItem('shirnahar_local_cart'); 
                 } else if (!docSnap.exists()) {
-                    // Create empty cart document if it doesn't exist
                     await setDoc(cartRef, { items: [] });
                 }
             } catch (e) {
@@ -324,6 +323,10 @@
                 let items = [];
                 if (docSnap.exists()) {
                     items = docSnap.data().items || [];
+                    // Keep the local memory cache updated seamlessly
+                    localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(items));
+                } else {
+                    localStorage.removeItem('shirnahar_cloud_cart_cache');
                 }
                 renderCartUI(items);
             }, (error) => {
@@ -333,7 +336,6 @@
 
         async function updateQty(index, change) {
             if (currentUser) {
-                // Update Cloud Cart
                 const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
                 try {
                     const docSnap = await getDoc(cartRef);
@@ -347,12 +349,16 @@
                             }
                             items[index].quantity += change;
                             if (items[index].quantity <= 0) items.splice(index, 1);
+                            
+                            // Optimistic instant local update
+                            localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(items));
+                            renderCartUI(items);
+                            
                             await setDoc(cartRef, { items });
                         }
                     }
                 } catch(e) { console.error(e); }
             } else {
-                // Update Guest Local Cart
                 let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
                 if (localCart[index]) {
                     const maxStock = localCart[index].stock || 5;
@@ -370,18 +376,21 @@
 
         async function removeItem(index) {
             if (currentUser) {
-                // Remove from Cloud Cart
                 const cartRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart');
                 try {
                     const docSnap = await getDoc(cartRef);
                     if (docSnap.exists()) {
                         let items = docSnap.data().items || [];
                         items.splice(index, 1);
+                        
+                        // Optimistic instant local update
+                        localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(items));
+                        renderCartUI(items);
+                        
                         await setDoc(cartRef, { items });
                     }
                 } catch(e) { console.error(e); }
             } else {
-                // Remove from Guest Local Cart
                 let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
                 localCart.splice(index, 1);
                 localStorage.setItem('shirnahar_local_cart', JSON.stringify(localCart));
@@ -396,47 +405,41 @@
             btn.disabled = true;
             btn.classList.add('opacity-75');
 
-            setTimeout(() => {
-                window.location.href = 'order.html';
-            }, 800);
+            setTimeout(() => { window.location.href = 'order.html'; }, 800);
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Render local guest cart immediately to prevent visual flashing
-            if (!currentUser) {
-                const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+            // INSTANT CACHE RENDER - Prevents the visual "flicker"
+            const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+            const cloudCache = JSON.parse(localStorage.getItem('shirnahar_cloud_cart_cache')) || [];
+            const isLikelyLoggedIn = localStorage.getItem('shirnahar_is_logged_in') === 'true';
+            
+            // Prioritize the cloud cache if we know the user is logged in
+            if (isLikelyLoggedIn && cloudCache.length > 0) {
+                renderCartUI(cloudCache);
+            } else {
                 renderCartUI(localCart);
             }
             
-            // Monitor Auth State for Account Syncing
+            // Background Auth & Sync
             onAuthStateChanged(auth, async (user) => {
-                if (user) {
+                if (user && !user.isAnonymous) {
                     currentUser = user;
-                    // Only sync to cloud if it's a registered user, not a guest
-                    if (!user.isAnonymous) {
-                        await syncCartToCloud();
-                        listenToCloudCart();
-                    } else {
-                        const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                        renderCartUI(localCart);
-                    }
+                    await syncCartToCloud();
+                    listenToCloudCart();
                 } else {
                     currentUser = null;
                     if (unsubscribeCart) unsubscribeCart();
-                    const localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                    renderCartUI(localCart);
                     
-                    // Initialize Guest Session ONLY if no user is found
+                    // Fallback to guest mode purely
+                    const currentLocalCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                    renderCartUI(currentLocalCart);
+                    
                     const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                     try {
-                        if (initialToken) {
-                            await signInWithCustomToken(auth, initialToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch(e) {
-                        console.warn("Auth initialization error", e);
-                    }
+                        if (initialToken) await signInWithCustomToken(auth, initialToken);
+                        else await signInAnonymously(auth);
+                    } catch(e) { console.warn("Auth initialization error", e); }
                 }
             });
         });
