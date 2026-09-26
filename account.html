@@ -344,13 +344,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // Explicitly enforce local persistence so the user stays logged in across browser sessions
-        setPersistence(auth, browserLocalPersistence).catch((error) => {
-            console.error("Failed to set auth persistence:", error);
-        });
+        // Enforce strong local persistence
+        setPersistence(auth, browserLocalPersistence).catch((error) => console.error("Persistence error:", error));
 
         const db = getFirestore(app);
-        
         let currentUserData = null; 
 
         window.switchAuthTab = switchAuthTab;
@@ -391,24 +388,38 @@
             try {
                 let total = 0;
                 
-                // If logged in, fetch accurate cart total from Cloud Firestore
+                // Optimistically load from cache first to prevent flashing
+                let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
+                let cloudCache = JSON.parse(localStorage.getItem('shirnahar_cloud_cart_cache')) || [];
+                
+                // If cloud cache exists (logged in user), use it. Otherwise use local guest cart.
+                let itemsToCount = cloudCache.length > 0 ? cloudCache : localCart;
+                itemsToCount.forEach(i => total += i.quantity);
+
+                // Update DOM instantly
+                const badge = document.getElementById('cart-badge');
+                if (badge) {
+                    badge.style.display = total > 0 ? 'flex' : 'none';
+                    badge.textContent = total > 99 ? '99+' : total;
+                }
+
+                // If fully verified logged in, fetch accurate cart total from Cloud Firestore
                 if (user && !user.isAnonymous) {
                     const cartRef = doc(db, 'artifacts', appId, 'users', user.uid, 'cart', 'currentCart');
                     const docSnap = await getDoc(cartRef);
                     if (docSnap.exists()) {
                         const items = docSnap.data().items || [];
+                        total = 0;
                         items.forEach(i => total += i.quantity);
+                        
+                        // Overwrite cache with true cloud data
+                        localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(items));
+                        
+                        if (badge) {
+                            badge.style.display = total > 0 ? 'flex' : 'none';
+                            badge.textContent = total > 99 ? '99+' : total;
+                        }
                     }
-                } else {
-                    // If guest, fetch from local device memory
-                    let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
-                    localCart.forEach(i => total += i.quantity); 
-                }
-                
-                const badge = document.getElementById('cart-badge');
-                if (badge) {
-                    badge.style.display = total > 0 ? 'flex' : 'none';
-                    badge.textContent = total > 99 ? '99+' : total;
                 }
             } catch (e) {
                 console.error("Badge update error:", e);
@@ -427,7 +438,6 @@
                     cloudCart = docSnap.data().items || [];
                 }
 
-                // Merge local items into cloud cart
                 localCart.forEach(localItem => {
                     const existingIdx = cloudCart.findIndex(i => i.name === localItem.name);
                     if (existingIdx > -1) {
@@ -438,7 +448,8 @@
                 });
 
                 await setDoc(cartRef, { items: cloudCart }, { merge: true });
-                // Clear local cart now that it is safely in the cloud
+                // Update local cloud cache and clear guest cart
+                localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(cloudCart));
                 localStorage.removeItem('shirnahar_local_cart');
             } catch (e) {
                 console.error("Cart sync error", e);
@@ -478,20 +489,19 @@
             
             if (isLoggedIn && user && !user.isAnonymous) {
                 
-                let name = '...';
+                let name = localStorage.getItem('shirnahar_cached_name') || '...';
                 let phone = user.email ? user.email.replace('@shirnahar.app', '').replace('+91', '') : '...';
                 let addressText = '...';
                 
                 currentUserData = { name: '', address: { street: '', city: '', state: 'Tripura' } };
 
                 try {
-                    // ADMIN CHECK: Query the specific path artifacts/shirnahar-house/admins/{user.uid}
+                    // ADMIN CHECK
                     const adminDoc = await getDoc(doc(db, 'artifacts', appId, 'admins', user.uid));
-                    
                     if (adminDoc.exists()) {
                         showToast('Admin Login Successful! Redirecting...', 'success');
                         setTimeout(() => window.location.href = 'dashboard.html', 800);
-                        return; // Stop execution, user is admin
+                        return;
                     }
 
                     // REGULAR USER LOGIC
@@ -514,6 +524,10 @@
                     document.getElementById('profile-name').innerText = name;
                     document.getElementById('profile-phone').innerText = '+91 ' + phone;
                     document.getElementById('profile-address').innerText = addressText;
+                    
+                    // SAVE OPTIMISTIC CACHE
+                    localStorage.setItem('shirnahar_is_logged_in', 'true');
+                    localStorage.setItem('shirnahar_cached_name', name);
 
                 } catch (error) {
                     console.error("Error fetching user data:", error);
@@ -523,18 +537,20 @@
                 setTimeout(() => {
                     authSection.classList.add('hidden');
                     dashSection.classList.remove('hidden');
-                    
                     requestAnimationFrame(() => {
                         dashSection.classList.remove('opacity-0', 'translate-y-4');
                     });
                 }, 400);
 
             } else {
+                // CLEAR OPTIMISTIC CACHE IF LOGGED OUT
+                localStorage.removeItem('shirnahar_is_logged_in');
+                localStorage.removeItem('shirnahar_cached_name');
+                
                 dashSection.classList.add('opacity-0', 'translate-y-4');
                 setTimeout(() => {
                     dashSection.classList.add('hidden');
                     authSection.classList.remove('hidden');
-                    
                     requestAnimationFrame(() => {
                         authSection.classList.remove('opacity-0', '-translate-y-4');
                     });
@@ -545,21 +561,13 @@
         async function handleAuthSubmit(e, mode) {
             e.preventDefault();
             
-            // Basic manual validation since browser validation is hidden by novalidate
             const phoneInput = document.getElementById(`${mode}-phone`).value;
-            if (phoneInput.length !== 10) {
-                showToast('Please enter a valid 10-digit phone number.', 'error');
-                return;
-            }
+            if (phoneInput.length !== 10) { showToast('Please enter a valid 10-digit phone number.', 'error'); return; }
 
             const password = document.getElementById(`${mode}-password`).value;
-            if (password.length < 6) {
-                showToast('Password must be at least 6 characters.', 'error');
-                return;
-            }
+            if (password.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
 
             const pseudoEmail = `+91${phoneInput}@shirnahar.app`;
-            
             const btn = document.getElementById(mode + '-btn');
             const originalText = btn.innerHTML;
             
@@ -569,23 +577,13 @@
             try {
                 if (mode === 'signup') {
                     const confirmPassword = document.getElementById('signup-confirm-password').value;
-                    if (password !== confirmPassword) {
-                        showToast('Passwords do not match!', 'error');
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        return;
-                    }
+                    if (password !== confirmPassword) { showToast('Passwords do not match!', 'error'); btn.innerHTML = originalText; btn.disabled = false; return; }
 
                     const name = document.getElementById('signup-name').value;
                     const address = document.getElementById('signup-address').value;
                     const city = document.getElementById('signup-city').value;
                     
-                    if (!name || !address || !city) {
-                        showToast('Please fill in all details.', 'error');
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        return;
-                    }
+                    if (!name || !address || !city) { showToast('Please fill in all details.', 'error'); btn.innerHTML = originalText; btn.disabled = false; return; }
 
                     const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
                     const user = userCredential.user;
@@ -603,18 +601,12 @@
                     showToast('Account created successfully!');
                 } else {
                     await signInWithEmailAndPassword(auth, pseudoEmail, password);
-                    // toggleUI logic runs automatically via onAuthStateChanged below
                 }
                 e.target.reset();
             } catch (error) {
-                console.error("Auth Error:", error);
-                if (error.code === 'auth/email-already-in-use') {
-                    showToast('This phone number is already registered.', 'error');
-                } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    showToast('Account not found or incorrect password.', 'error');
-                } else {
-                    showToast('Authentication failed. Please try again.', 'error');
-                }
+                if (error.code === 'auth/email-already-in-use') { showToast('This phone number is already registered.', 'error'); } 
+                else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') { showToast('Account not found or incorrect password.', 'error'); } 
+                else { showToast('Authentication failed. Please try again.', 'error'); }
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -623,8 +615,11 @@
 
         async function handleLogout() {
             try {
-                // Clear guest cart on sign out to prevent mixing accounts
+                // Clear ALL caches on sign out
                 localStorage.removeItem('shirnahar_local_cart'); 
+                localStorage.removeItem('shirnahar_cloud_cart_cache');
+                localStorage.removeItem('shirnahar_is_logged_in');
+                localStorage.removeItem('shirnahar_cached_name');
                 
                 await signOut(auth);
                 showToast('Signed out successfully');
@@ -666,19 +661,16 @@
                 const userRef = doc(db, 'artifacts', appId, 'users', user.uid);
                 await setDoc(userRef, {
                     name: newName,
-                    address: {
-                        street: newAddress,
-                        city: newCity,
-                        state: 'Tripura'
-                    }
+                    address: { street: newAddress, city: newCity, state: 'Tripura' }
                 }, { merge: true });
 
                 await updateProfile(user, { displayName: newName });
                 
+                // Update Cache instantly
+                localStorage.setItem('shirnahar_cached_name', newName);
+                
                 showToast('Profile updated successfully!');
                 closeEditModal();
-                
-                // Refresh UI immediately
                 toggleUI(true, user);
             } catch (error) {
                 showToast('Failed to update profile.', 'error');
@@ -688,13 +680,8 @@
             }
         }
 
-        function openDeleteModal() {
-            document.getElementById('delete-confirm-modal').classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('delete-confirm-modal').classList.add('hidden');
-        }
+        function openDeleteModal() { document.getElementById('delete-confirm-modal').classList.remove('hidden'); }
+        function closeDeleteModal() { document.getElementById('delete-confirm-modal').classList.add('hidden'); }
 
         async function executeAccountDeletion() {
             const user = auth.currentUser;
@@ -706,34 +693,43 @@
             btn.disabled = true;
             
             try {
-                // Delete user document from Firestore
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid));
-                
-                // Delete user from Auth
                 await deleteUser(user);
                 
-                // Clear local memory completely upon deletion
+                // Completely wipe local caches
                 localStorage.removeItem('shirnahar_local_cart');
+                localStorage.removeItem('shirnahar_cloud_cart_cache');
+                localStorage.removeItem('shirnahar_is_logged_in');
+                localStorage.removeItem('shirnahar_cached_name');
                 
                 showToast('Account permanently deleted.');
                 closeDeleteModal();
-                // We DO NOT reload the page here. 
-                // Firebase onAuthStateChanged will detect the deletion and slide the UI back to login naturally.
-                
             } catch (error) {
-                console.error("Delete account error:", error);
                 closeDeleteModal();
-                if (error.code === 'auth/requires-recent-login') {
-                    showToast('Security check: Please sign out and sign back in to verify your identity before deleting.', 'error');
-                } else {
-                    showToast('Failed to delete account. Please try again later.', 'error');
-                }
+                if (error.code === 'auth/requires-recent-login') { showToast('Security check: Please sign out and sign back in to verify your identity before deleting.', 'error'); } 
+                else { showToast('Failed to delete account. Please try again later.', 'error'); }
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // FIRE OPTIMISTIC UI INSTANTLY BEFORE FIREBASE LOADS
+            const isLikelyLoggedIn = localStorage.getItem('shirnahar_is_logged_in') === 'true';
+            if (isLikelyLoggedIn) {
+                // Hide auth, show dashboard instantly
+                document.getElementById('auth-section').classList.add('hidden');
+                const dash = document.getElementById('dashboard-section');
+                dash.classList.remove('hidden', 'opacity-0', 'translate-y-4');
+                
+                const cachedName = localStorage.getItem('shirnahar_cached_name') || 'Loading...';
+                document.getElementById('user-display-name').innerText = cachedName;
+                document.getElementById('user-avatar').innerText = cachedName !== 'Loading...' ? cachedName.charAt(0).toUpperCase() : '-';
+            }
+            
+            updateCartBadge(); // Load optimistic badge
+            
+            // Background Verify with Firebase
             onAuthStateChanged(auth, async (user) => {
                 if (user && !user.isAnonymous) {
                     await syncGuestCartToCloud(user);
