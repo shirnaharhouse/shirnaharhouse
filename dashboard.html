@@ -215,7 +215,21 @@
         </main>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
+            authDomain: "shirnahar-house.firebaseapp.com",
+            projectId: "shirnahar-house",
+            storageBucket: "shirnahar-house.firebasestorage.app",
+            messagingSenderId: "289287900697",
+            appId: "1:289287900697:web:0ae67720fd7c30efb02488"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
         window.toggleSidebar = toggleSidebar;
         window.logoutAdmin = logoutAdmin;
 
@@ -250,11 +264,24 @@
             }
         }
 
-        function logoutAdmin() {
-            showToast('Simulating Sign Out...', 'success');
-            setTimeout(() => {
-                window.location.href = 'account.html';
-            }, 800);
+        async function logoutAdmin() {
+            showToast('Signing out securely...', 'success');
+            try {
+                // Wipe local cache so account.html doesn't auto-login
+                localStorage.removeItem('shirnahar_local_cart'); 
+                localStorage.removeItem('shirnahar_cloud_cart_cache');
+                localStorage.removeItem('shirnahar_is_logged_in');
+                localStorage.removeItem('shirnahar_cached_name');
+                
+                // Officially sign out of Firebase Auth
+                await signOut(auth);
+                
+                setTimeout(() => {
+                    window.location.href = 'account.html';
+                }, 800);
+            } catch (error) {
+                showToast('Error signing out', 'error');
+            }
         }
 
         function setDate() {
