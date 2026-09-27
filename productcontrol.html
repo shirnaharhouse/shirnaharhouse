@@ -326,7 +326,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global Bindings
@@ -402,9 +402,24 @@
             }
         }
 
-        function logoutAdmin() {
-            showToast('Signing out...', 'success');
-            setTimeout(() => window.location.href = 'index.html', 800);
+        async function logoutAdmin() {
+            showToast('Signing out securely...', 'success');
+            try {
+                // Wipe local cache so account.html doesn't auto-login
+                localStorage.removeItem('shirnahar_local_cart'); 
+                localStorage.removeItem('shirnahar_cloud_cart_cache');
+                localStorage.removeItem('shirnahar_is_logged_in');
+                localStorage.removeItem('shirnahar_cached_name');
+                
+                // Officially sign out of Firebase Auth
+                await signOut(auth);
+                
+                setTimeout(() => {
+                    window.location.href = 'account.html';
+                }, 800);
+            } catch (error) {
+                showToast('Error signing out', 'error');
+            }
         }
 
         function switchAdminTab(tab) {
@@ -883,14 +898,25 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Bypass Auth for testing/building
-            try {
-                await signInAnonymously(auth);
-                listenToProducts();
-            } catch (error) {
-                showToast("Database init failed.", "error");
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            // Real Admin Authentication Check
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        const adminDoc = await getDoc(doc(db, 'artifacts', appId, 'admins', user.uid));
+                        if (adminDoc.exists()) {
+                            listenToProducts(); // Load products if admin is verified
+                        } else {
+                            showToast("Access Denied: Not an Admin", "error");
+                            setTimeout(() => window.location.href = 'account.html', 1500);
+                        }
+                    } catch (error) {
+                        showToast("Error verifying admin status", "error");
+                    }
+                } else {
+                    window.location.href = 'account.html';
+                }
+            });
         });
     </script>
 </body>
