@@ -586,16 +586,16 @@
 
         function applyCrop() {
             if (!cropper) return;
-            // High compression: Shrink resolution and use low-quality JPEG to stay under 1MB DB limit
+            // Upgraded for ultra high-quality product images (1080x1440 HD)
             const canvas = cropper.getCroppedCanvas({
-                width: 480, 
-                height: 640,
+                width: 1080, 
+                height: 1440,
                 imageSmoothingEnabled: true,
-                imageSmoothingQuality: 'medium'
+                imageSmoothingQuality: 'high'
             });
 
-            // Very aggressive compression: 0.4 quality JPEG
-            const base64DataUrl = canvas.toDataURL('image/jpeg', 0.4); 
+            // Increased JPEG quality to 90% for stunning fabric details
+            const base64DataUrl = canvas.toDataURL('image/jpeg', 0.9); 
             productImages[currentUploadIndex] = base64DataUrl;
             
             updateImageGridUI();
