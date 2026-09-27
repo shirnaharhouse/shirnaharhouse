@@ -3,20 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Dashboard | Shirnahar House</title>
+    <title>Admin Dashboard | Shirnahar House (UI Preview)</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Chart.js -->
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    
     <script>
         tailwind.config = {
             theme: {
@@ -32,7 +26,7 @@
                             dark: '#78350f', 
                         },
                         admin: {
-                            bg: '#f3f4f6',
+                            bg: '#f8fafc',
                             sidebar: '#111827',
                             card: '#ffffff'
                         }
@@ -41,56 +35,29 @@
             }
         }
     </script>
+    
     <style>
         .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
-        .tab-content.active { display: block; opacity: 1; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
     </style>
 </head>
-<body class="bg-admin-bg font-sans text-gray-800 antialiased overflow-hidden h-screen flex relative">
+<body class="bg-admin-bg font-sans text-gray-800 antialiased overflow-hidden h-screen flex relative selection:bg-brand-light selection:text-brand-dark">
 
-    <!-- Toast Container -->
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col items-end gap-3 pointer-events-none w-full max-w-sm px-4"></div>
-
-    <!-- Mobile Overlay -->
+    
     <div id="mobile-overlay" class="fixed inset-0 bg-gray-900/50 z-40 hidden md:hidden transition-opacity opacity-0" onclick="toggleSidebar()"></div>
 
-    <!-- Store Profile Modal -->
-    <div id="store-profile-modal" class="fixed inset-0 bg-gray-900/50 z-[100] hidden items-center justify-center backdrop-blur-sm transition-opacity opacity-0">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
-            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100 bg-gray-50">
-                <h3 class="font-serif font-bold text-xl text-gray-900">Store Profile</h3>
-                <button onclick="closeStoreProfile()" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Store Name</label>
-                    <input type="text" value="Shirnahar House" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-medium focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Contact Email</label>
-                    <input type="email" value="admin@shirnaharhouse.com" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-medium focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">Support Phone</label>
-                    <input type="text" value="+91 98765 43210" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-medium focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 ml-1">GSTIN</label>
-                    <input type="text" value="21AAAAA0000A1Z5" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-medium focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand">
-                </div>
-            </div>
-            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-                <button onclick="saveStoreProfile()" class="bg-brand hover:bg-brand-dark text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-brand/20 transition-all">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sidebar -->
     <aside id="sidebar" class="bg-admin-sidebar text-gray-300 w-64 flex-shrink-0 flex flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 z-50 shadow-xl">
         <div class="h-20 flex items-center justify-center border-b border-gray-800 bg-gray-900/50">
             <h1 class="font-serif text-2xl font-bold text-white tracking-wide">
@@ -98,30 +65,25 @@
             </h1>
         </div>
         
-        <div class="p-4 flex-1 overflow-y-auto">
+        <div class="p-4 flex-1 overflow-y-auto custom-scrollbar">
             <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 mt-2 px-3">Menu</p>
             <nav class="space-y-1.5">
                 <a href="dashboard.html" class="w-full flex items-center px-3 py-2.5 bg-brand text-white rounded-lg transition-colors group">
                     <i class="fas fa-chart-pie w-6 text-center"></i>
                     <span class="font-medium text-sm ml-2">Dashboard</span>
                 </a>
-                <a href="orders.html" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group">
+                <a href="orderscontrol.html" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group">
                     <i class="fas fa-shopping-cart w-6 text-center text-gray-400 group-hover:text-gray-200"></i>
                     <span class="font-medium text-sm ml-2">Orders</span>
-                    <span class="ml-auto bg-brand text-white text-[10px] font-bold px-2 py-0.5 rounded-full" id="new-orders-badge">0 New</span>
                 </a>
                 <a href="productcontrol.html" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group">
                     <i class="fas fa-box w-6 text-center text-gray-400 group-hover:text-gray-200"></i>
                     <span class="font-medium text-sm ml-2">Products</span>
                 </a>
-            </nav>
-
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4 mt-8 px-3">Settings</p>
-            <nav class="space-y-1.5">
-                <button onclick="openStoreProfile()" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group">
-                    <i class="fas fa-store w-6 text-center text-gray-400 group-hover:text-gray-200"></i>
-                    <span class="font-medium text-sm ml-2">Store Profile</span>
-                </button>
+                <a href="index.html" class="w-full flex items-center px-3 py-2.5 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors group mt-4">
+                    <i class="fas fa-external-link-alt w-6 text-center text-gray-400 group-hover:text-gray-200"></i>
+                    <span class="font-medium text-sm ml-2">View Storefront</span>
+                </a>
             </nav>
         </div>
         
@@ -133,193 +95,140 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         
-        <!-- Header -->
-        <header class="h-20 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between px-4 sm:px-6 lg:px-8 flex-shrink-0 z-30">
+        <header class="h-16 sm:h-20 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between px-4 sm:px-6 lg:px-8 flex-shrink-0 z-30 md:hidden">
             <div class="flex items-center">
-                <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-brand focus:outline-none mr-4">
+                <button onclick="toggleSidebar()" class="text-gray-500 hover:text-brand focus:outline-none">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <div class="relative hidden sm:block w-64 lg:w-96">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </div>
-                    <input type="text" class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-brand focus:border-brand sm:text-sm transition-colors" placeholder="Search...">
-                </div>
+                <h2 class="ml-4 text-lg font-serif font-bold text-gray-900">Dashboard</h2>
             </div>
-            
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center cursor-pointer group">
-                    <div class="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center font-bold text-sm border-2 border-transparent group-hover:border-brand-dark transition-colors">
-                        AD
-                    </div>
-                    <div class="ml-3 hidden md:block text-left">
-                        <p class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Admin User</p>
-                        <p class="text-xs text-gray-500">Store Manager</p>
-                    </div>
-                </div>
+            <div class="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center font-bold text-sm">
+                A
             </div>
         </header>
 
-        <!-- Dashboard View -->
-        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar relative bg-gray-50">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar relative opacity-100 transition-opacity duration-500" id="main-content">
             
-            <div class="mb-6 flex justify-between items-end">
+            <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mt-2 md:mt-0">
                 <div>
-                    <h2 class="text-2xl font-serif font-bold text-gray-900">Store Overview</h2>
-                    <p class="text-sm text-gray-500 mt-1">Real-time metrics from your Firebase database.</p>
+                    <h2 class="text-2xl font-serif font-bold text-gray-900">Welcome Back, Admin</h2>
+                    <p class="text-sm text-gray-500 mt-1">Here is what's happening with your store today.</p>
+                </div>
+                <div class="text-sm text-gray-500 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-200 flex items-center">
+                    <i class="far fa-calendar-alt mr-2 text-brand"></i> <span id="current-date">October 14, 2026</span>
                 </div>
             </div>
 
-            <!-- Metric Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                <!-- Total Revenue (Links to totalrevenue.html) -->
+                <a href="totalrevenue.html" class="block bg-white rounded-2xl p-5 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-200 hover:shadow-md hover:border-brand/40 transition-all cursor-pointer animate-fade-up group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-brand transition-colors">Total Revenue</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mt-1" id="metric-revenue">₹1,24,500</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0 ml-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-rupee-sign text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-[11px] text-gray-500 font-medium">Online + Offline</div>
+                        <i class="fas fa-arrow-right text-brand opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                    </div>
+                </a>
+
+                <!-- Total Orders (Links to orderscontrol.html) -->
+                <a href="orderscontrol.html" class="block bg-white rounded-2xl p-5 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-200 hover:shadow-md hover:border-brand/40 transition-all cursor-pointer animate-fade-up delay-100 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-brand transition-colors">Total Orders</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mt-1" id="metric-orders">142</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 ml-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-shopping-bag text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-[11px] text-gray-500 font-medium">Online + Offline</div>
+                        <i class="fas fa-arrow-right text-brand opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                    </div>
+                </a>
+
+                <!-- Orders Cancelled (Links to orderscontrol.html) -->
+                <a href="orderscontrol.html" class="block bg-white rounded-2xl p-5 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-200 hover:shadow-md hover:border-brand/40 transition-all cursor-pointer animate-fade-up delay-200 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-brand transition-colors">Orders Cancelled</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mt-1" id="metric-cancelled">12</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 ml-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-times-circle text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-[11px] text-gray-500 font-medium">Online + Offline</div>
+                        <i class="fas fa-arrow-right text-brand opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                    </div>
+                </a>
+
+                <!-- Pending Orders (Links to orderscontrol.html) -->
+                <a href="orderscontrol.html" class="block bg-white rounded-2xl p-5 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-200 hover:shadow-md hover:border-brand/40 transition-all cursor-pointer animate-fade-up delay-300 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-brand transition-colors">Pending Orders</p>
+                            <h3 class="text-2xl font-bold text-brand mt-1" id="metric-pending">28</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center flex-shrink-0 ml-2 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-clock text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-[11px] text-gray-500 font-medium">Online Only</div>
+                        <i class="fas fa-arrow-right text-brand opacity-0 group-hover:opacity-100 transition-opacity text-xs"></i>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-gray-200 mb-8 animate-fade-up delay-300">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <a href="orderscontrol.html" class="group block">
+                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-brand transition-colors flex items-center">
+                            Cancellation Rate (%) <i class="fas fa-external-link-alt text-[10px] ml-2 text-gray-400 group-hover:text-brand transition-colors"></i>
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">Monthly percentage of cancelled orders (Online + Offline)</p>
+                    </a>
+                    <select class="text-xs font-bold text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-brand cursor-pointer">
+                        <option>Per Month (This Year)</option>
+                        <option>Per Month (Last Year)</option>
+                    </select>
+                </div>
                 
-                <!-- Total Revenue -->
-                <a href="totalrevenue.html" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between group hover:border-brand/30 hover:shadow-md transition-all cursor-pointer block text-left">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Total Revenue</p>
-                        <h3 class="text-2xl font-bold text-gray-900 mt-1" id="dash-total-revenue">₹0</h3>
-                        <p class="text-[10px] font-medium text-gray-400 mt-1">(Online + Offline)</p>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center text-brand group-hover:scale-110 transition-transform">
-                        <i class="fas fa-wallet text-xl"></i>
-                    </div>
-                </a>
-                
-                <!-- Total Orders -->
-                <a href="orders.html" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between group hover:border-blue-300 hover:shadow-md transition-all cursor-pointer block text-left">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Total Orders</p>
-                        <div class="flex items-baseline gap-2 mt-1">
-                            <h3 class="text-2xl font-bold text-gray-900" id="dash-total-orders">0</h3>
-                        </div>
-                        <div class="flex items-center gap-2 mt-1 text-[11px] font-medium">
-                            <span class="text-blue-600"><span id="dash-online-orders">0</span> Online</span>
-                            <span class="text-gray-300">|</span>
-                            <span class="text-purple-600"><span id="dash-offline-orders">0</span> Offline</span>
-                        </div>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-shopping-bag text-xl"></i>
-                    </div>
-                </a>
-
-                <!-- Total Cancelled -->
-                <a href="orders.html" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between group hover:border-red-300 hover:shadow-md transition-all cursor-pointer block text-left">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Cancelled Orders</p>
-                        <h3 class="text-2xl font-bold text-gray-900 mt-1" id="dash-total-cancelled">0</h3>
-                        <div class="flex items-center gap-2 mt-1 text-[11px] font-medium">
-                            <span class="text-red-500"><span id="dash-online-cancelled">0</span> Online</span>
-                            <span class="text-gray-300">|</span>
-                            <span class="text-red-400"><span id="dash-offline-cancelled">0</span> Offline</span>
-                        </div>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-times-circle text-xl"></i>
-                    </div>
-                </a>
-
-                <!-- Pending Fulfillment -->
-                <a href="orders.html" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between group hover:border-yellow-400 hover:shadow-md transition-all cursor-pointer block text-left relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-1 h-full bg-yellow-400 hidden group-hover:block"></div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Pending Orders</p>
-                        <h3 class="text-2xl font-bold text-gray-900 mt-1" id="dash-total-pending">0</h3>
-                        <p class="text-[10px] font-bold tracking-wide text-yellow-600 mt-1 uppercase">Needs Fulfillment</p>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-clock text-xl"></i>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-serif font-bold text-gray-900">Pending vs Cancelled Analytics</h3>
-                    <div class="text-xs font-medium text-gray-500 flex gap-4">
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>Pending</span>
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-400 mr-2 shadow-sm"></span>Cancelled</span>
-                    </div>
-                </div>
-                <div class="relative h-80 w-full">
-                    <canvas id="orderAnalyticsChart"></canvas>
+                <!-- Chart Canvas Container -->
+                <div class="w-full h-64 md:h-80 relative">
+                    <canvas id="cancellationChart"></canvas>
                 </div>
             </div>
-
+            
+            <div class="h-10"></div>
         </main>
     </div>
 
-    <!-- Firebase & Logic Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Mappings for HTML onclicks
+    <script>
         window.toggleSidebar = toggleSidebar;
         window.logoutAdmin = logoutAdmin;
-        window.openStoreProfile = openStoreProfile;
-        window.closeStoreProfile = closeStoreProfile;
-        window.saveStoreProfile = saveStoreProfile;
 
-        // --- SAFE SECURITY GUARD FOR PREVIEW SANDBOX ---
-        let isAdmin = false;
-        try {
-            // This will crash if running inside a strict iframe sandbox
-            isAdmin = localStorage.getItem('shirnahar_admin_logged_in') === 'true';
-        } catch (error) {
-            console.warn("Preview Environment Sandbox Detected. Bypassing Security Guard for preview purposes.");
-            isAdmin = true; // Auto-pass in preview mode!
-        }
-
-        if (!isAdmin) {
-            document.body.innerHTML = `
-                <div class="h-screen w-full flex flex-col items-center justify-center bg-gray-50">
-                    <i class="fas fa-shield-alt text-5xl text-brand mb-4"></i>
-                    <h1 class="text-2xl font-serif font-bold text-gray-900 mb-2">Access Denied</h1>
-                    <p class="text-gray-500 font-medium">Please login securely. Redirecting...</p>
-                </div>`;
-            setTimeout(() => window.location.href = 'account.html', 1500);
-        }
-        // ------------------------------------------------
-
-        const appId = 'shirnahar-house';
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5P5YqgXmQQSMNNqX19qr8StQiwDR3HSo",
-            authDomain: "shirnahar-house.firebaseapp.com",
-            projectId: "shirnahar-house",
-            storageBucket: "shirnahar-house.firebasestorage.app",
-            messagingSenderId: "289287900697",
-            appId: "1:289287900697:web:0ae67720fd7c30efb02488",
-            measurementId: "G-L4MK6TB4EX"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let chartInstance = null;
-
-        // Utility: Custom Toast
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
-            const bg = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 
-                       (type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-gray-900 border-gray-800 text-white');
-            const iconColor = type === 'success' ? 'text-green-500' : 
-                         (type === 'error' ? 'text-red-500' : 'text-brand-light');
-            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+            const bg = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800';
+            const icon = type === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500';
 
             toast.className = `flex items-center w-full p-4 rounded-xl shadow-lg border ${bg} transform transition-all duration-300 translate-x-full opacity-0`;
-            toast.innerHTML = `<i class="fas ${icon} ${iconColor} text-lg mr-3"></i> <span class="text-sm font-medium">${message}</span>`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg mr-3"></i> <span class="text-sm font-medium">${message}</span>`;
             
             container.appendChild(toast);
-            
             requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
             setTimeout(() => {
                 toast.classList.add('translate-x-full', 'opacity-0');
@@ -341,174 +250,106 @@
             }
         }
 
-        // Fetch Real Orders & Update Stats
-        async function fetchAndUpdateDashboard() {
-            let allOrders = [];
-            
-            try {
-                // Fetch ALL orders across ALL users in the database
-                const ordersSnapshot = await getDocs(collectionGroup(db, 'orders'));
-                ordersSnapshot.forEach(doc => {
-                    allOrders.push({ id: doc.id, ...doc.data() });
-                });
-            } catch (error) {
-                console.warn("Firebase Read Blocked. Falling back to local offline memory.", error);
-                try {
-                    allOrders = JSON.parse(localStorage.getItem('shirnahar_local_orders')) || [];
-                } catch(e) {
-                    allOrders = [];
-                }
-            }
-
-            // --- Calculation Variables ---
-            // Static offline data integration
-            const staticOfflineOrders = 65; 
-            const staticOfflineCancelled = 3;
-            const staticOfflineRevenue = 85000;
-
-            let totalOnline = allOrders.length;
-            let pendingCount = 0;
-            let cancelledOnlineCount = 0;
-            let totalOnlineRevenue = 0;
-
-            allOrders.forEach(order => {
-                if (order.status === 'Pending') pendingCount++;
-                if (order.status === 'Cancelled') cancelledOnlineCount++;
-                if (order.status !== 'Cancelled') totalOnlineRevenue += (order.total || 0);
-            });
-
-            // Update DOM Elements
-            document.getElementById('dash-total-orders').innerText = totalOnline + staticOfflineOrders;
-            document.getElementById('dash-online-orders').innerText = totalOnline;
-            document.getElementById('dash-offline-orders').innerText = staticOfflineOrders;
-
-            document.getElementById('dash-total-pending').innerText = pendingCount;
-            document.getElementById('new-orders-badge').innerText = `${pendingCount} New`;
-
-            document.getElementById('dash-total-cancelled').innerText = cancelledOnlineCount + staticOfflineCancelled;
-            document.getElementById('dash-online-cancelled').innerText = cancelledOnlineCount;
-            document.getElementById('dash-offline-cancelled').innerText = staticOfflineCancelled;
-
-            document.getElementById('dash-total-revenue').innerText = '₹' + (totalOnlineRevenue + staticOfflineRevenue).toLocaleString('en-IN');
-
-            updateAnalyticsChart(pendingCount, cancelledOnlineCount);
-        }
-
-        // Chart.js Visualization
-        function updateAnalyticsChart(livePending, liveCancelled) {
-            const ctx = document.getElementById('orderAnalyticsChart');
-            if(!ctx) return;
-
-            // Simulating historical data + appending today's live data
-            const labels = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Today'];
-            const pendingData = [12, 19, 15, 8, 14, 10, livePending];
-            const cancelledData = [2, 3, 1, 5, 2, 0, liveCancelled];
-
-            if (chartInstance) {
-                chartInstance.data.datasets[0].data = pendingData;
-                chartInstance.data.datasets[1].data = cancelledData;
-                chartInstance.update();
-            } else {
-                chartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Pending',
-                                data: pendingData,
-                                backgroundColor: 'rgba(250, 204, 21, 0.9)', // yellow-400
-                                borderRadius: 6,
-                                barPercentage: 0.6,
-                                categoryPercentage: 0.8
-                            },
-                            {
-                                label: 'Cancelled',
-                                data: cancelledData,
-                                backgroundColor: 'rgba(248, 113, 113, 0.9)', // red-400
-                                borderRadius: 6,
-                                barPercentage: 0.6,
-                                categoryPercentage: 0.8
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                                backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                                titleFont: { family: 'Inter', size: 13 },
-                                bodyFont: { family: 'Inter', size: 13 },
-                                padding: 12,
-                                cornerRadius: 8
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: '#f3f4f6', drawBorder: false },
-                                ticks: { font: { family: 'Inter', size: 12 }, color: '#9ca3af', stepSize: 5 }
-                            },
-                            x: {
-                                grid: { display: false, drawBorder: false },
-                                ticks: { font: { family: 'Inter', size: 12 }, color: '#6b7280' }
-                            }
-                        },
-                        interaction: { mode: 'nearest', axis: 'x', intersect: false }
-                    }
-                });
-            }
-        }
-
-        // Profile & Auth Modals
-        function openStoreProfile() {
-            const modal = document.getElementById('store-profile-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.querySelector('div').classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeStoreProfile() {
-            const modal = document.getElementById('store-profile-modal');
-            modal.classList.add('opacity-0');
-            modal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function saveStoreProfile() {
-            showToast('Store profile updated successfully!', 'success');
-            closeStoreProfile();
-        }
-
         function logoutAdmin() {
-            showToast('Signing out securely...', 'info');
-            try {
-                localStorage.removeItem('shirnahar_admin_logged_in');
-            } catch(e) {}
-            setTimeout(() => window.location.href = 'index.html', 1000);
+            showToast('Simulating Sign Out...', 'success');
+            setTimeout(() => {
+                window.location.href = 'account.html';
+            }, 800);
         }
 
-        // Boot Application
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (isAdmin) {
-                try {
-                    await signInAnonymously(auth);
-                    fetchAndUpdateDashboard();
-                } catch (error) {
-                    console.error("Firebase Auth Error:", error);
-                    fetchAndUpdateDashboard(); // Fallback to local
+        function setDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', options);
+        }
+
+        function initCancellationChart() {
+            const ctx = document.getElementById('cancellationChart').getContext('2d');
+            
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.35)'); 
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0.0)'); 
+
+            // Monthly labels and percentage values (%)
+            const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const percentageData = [4.2, 5.8, 3.1, 7.5, 4.0, 8.2, 6.4, 5.1, 4.9, 3.5, 6.0, 4.8];
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cancellation Rate',
+                        data: percentageData,
+                        borderColor: '#ef4444', 
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#ef4444',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false 
+                        },
+                        tooltip: {
+                            backgroundColor: '#111827',
+                            titleFont: { family: 'Inter', size: 13 },
+                            bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '% Cancellation Rate';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 15, // Cap at 15% for clear percentage scaling
+                            grid: {
+                                color: '#f1f5f9', 
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { family: 'Inter', size: 11 },
+                                color: '#64748b', 
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { family: 'Inter', size: 12, weight: '500' },
+                                color: '#64748b',
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
                 }
-            }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setDate();
+            initCancellationChart();
         });
     </script>
 </body>
