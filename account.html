@@ -101,17 +101,17 @@
                     <form id="login-form" onsubmit="handleAuthSubmit(event, 'login')" class="space-y-5" novalidate>
                         <div class="text-center mb-6">
                             <h2 class="text-2xl font-serif font-bold text-gray-900">Welcome Back</h2>
-                            <p class="text-xs text-gray-500 mt-1">Sign in with your phone number and password.</p>
+                            <p class="text-xs text-gray-500 mt-1">Sign in with your email and password.</p>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1.5 ml-1">Phone Number</label>
-                            <div class="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand transition-all">
-                                <span class="pl-4 pr-2 py-3 text-sm font-bold text-gray-600 bg-gray-100 border-r border-gray-200">+91</span>
-                                <input type="tel" id="login-phone" required pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" class="w-full px-3 py-3 bg-transparent text-sm outline-none" placeholder="10-digit mobile number">
+                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1.5 ml-1">Email Address</label>
+                            <input type="email" id="login-email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Enter your email">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5 ml-1 mr-1">
+                                <label class="block text-[11px] font-bold uppercase text-gray-500">Password</label>
+                                <button type="button" onclick="openForgotPasswordModal()" class="text-[11px] font-bold text-brand hover:text-brand-dark transition-colors">Forgot Password?</button>
                             </div>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1.5 ml-1">Password</label>
                             <input type="password" id="login-password" required minlength="6" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Enter your password">
                         </div>
                         <button type="submit" id="login-btn" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl text-sm font-bold shadow-md transition-all uppercase tracking-wider mt-2">
@@ -130,6 +130,10 @@
                             <div>
                                 <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Full Name</label>
                                 <input type="text" id="signup-name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Enter your name">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Email Address</label>
+                                <input type="email" id="signup-email" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="For login & receipts">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Phone Number</label>
@@ -270,6 +274,32 @@
             </div>
         </div>
 
+        <!-- Forgot Password Modal -->
+        <div id="forgot-password-modal" class="hidden fixed inset-0 z-[120] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative animate-[fadeInUp_0.3s_ease-out]">
+                <button onclick="closeForgotPasswordModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-brand-light text-brand rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-key text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-serif font-bold text-gray-900 mb-2">Reset Password</h3>
+                    <p class="text-sm text-gray-500">Enter your registered email address. We will send you a secure link to reset your password.</p>
+                </div>
+                
+                <form id="forgot-password-form" onsubmit="handleForgotPasswordSubmit(event)" novalidate>
+                    <div class="mb-5">
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1.5 ml-1">Registered Email</label>
+                        <input type="email" id="forgot-email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all" placeholder="Enter your email address">
+                    </div>
+                    
+                    <button type="submit" id="forgot-submit-btn" class="w-full bg-brand hover:bg-brand-dark text-white py-3.5 rounded-xl text-sm font-bold shadow-md transition-all uppercase tracking-wider">
+                        Send Reset Link
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- Edit Profile Modal -->
         <div id="edit-profile-modal" class="hidden fixed inset-0 z-[120] bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative animate-[fadeInUp_0.3s_ease-out]">
@@ -280,6 +310,13 @@
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Full Name</label>
                         <input type="text" id="edit-name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Phone Number (For Delivery)</label>
+                        <div class="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand focus-within:ring-1 focus-within:ring-brand transition-all">
+                            <span class="pl-4 pr-2 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 border-r border-gray-200">+91</span>
+                            <input type="tel" id="edit-phone" required pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" class="w-full px-3 py-2.5 bg-transparent text-sm outline-none">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-gray-500 mb-1 ml-1">Delivery Address</label>
@@ -329,7 +366,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Added sendPasswordResetEmail to the imports
+        import { getAuth, onAuthStateChanged, signOut, updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'shirnahar-house';
@@ -360,6 +398,9 @@
         window.openDeleteModal = openDeleteModal;
         window.closeDeleteModal = closeDeleteModal;
         window.executeAccountDeletion = executeAccountDeletion;
+        window.openForgotPasswordModal = openForgotPasswordModal;
+        window.closeForgotPasswordModal = closeForgotPasswordModal;
+        window.handleForgotPasswordSubmit = handleForgotPasswordSubmit;
 
         function handleBackNavigation() {
             if (window.history.length > 1 || document.referrer) {
@@ -381,7 +422,7 @@
             setTimeout(() => {
                 toast.classList.add('translate-y-12', 'opacity-0');
                 setTimeout(() => toast.remove(), 400);
-            }, 3000);
+            }, 3500); // Slightly longer reading time for email alerts
         }
 
         async function updateCartBadge(user = null) {
@@ -490,10 +531,11 @@
             if (isLoggedIn && user && !user.isAnonymous) {
                 
                 let name = localStorage.getItem('shirnahar_cached_name') || '...';
-                let phone = user.email ? user.email.replace('@shirnahar.app', '').replace('+91', '') : '...';
+                let email = user.email || '...';
+                let phone = '...';
                 let addressText = '...';
                 
-                currentUserData = { name: '', address: { street: '', city: '', state: 'Tripura' } };
+                currentUserData = { name: '', phone: '', address: { street: '', city: '', state: 'Tripura' } };
 
                 try {
                     // ADMIN CHECK
@@ -511,18 +553,18 @@
                         currentUserData = data;
                         
                         if (data.name) name = data.name;
-                        if (data.phone) phone = data.phone.replace('+91', '');
+                        if (data.phone) phone = data.phone;
                         if (data.address) {
                             addressText = `${data.address.street}, ${data.address.city}, ${data.address.state}`;
                         }
                     }
 
                     document.getElementById('user-display-name').innerText = name;
-                    document.getElementById('user-display-email').innerText = '+91 ' + phone;
+                    document.getElementById('user-display-email').innerText = email;
                     document.getElementById('user-avatar').innerText = name.charAt(0).toUpperCase() || '-';
                     
                     document.getElementById('profile-name').innerText = name;
-                    document.getElementById('profile-phone').innerText = '+91 ' + phone;
+                    document.getElementById('profile-phone').innerText = phone !== '...' ? phone : 'Not added';
                     document.getElementById('profile-address').innerText = addressText;
                     
                     // SAVE OPTIMISTIC CACHE
@@ -561,13 +603,12 @@
         async function handleAuthSubmit(e, mode) {
             e.preventDefault();
             
-            const phoneInput = document.getElementById(`${mode}-phone`).value;
-            if (phoneInput.length !== 10) { showToast('Please enter a valid 10-digit phone number.', 'error'); return; }
-
+            const email = document.getElementById(`${mode}-email`).value;
             const password = document.getElementById(`${mode}-password`).value;
+            
+            if (!email) { showToast('Please enter a valid email address.', 'error'); return; }
             if (password.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
 
-            const pseudoEmail = `+91${phoneInput}@shirnahar.app`;
             const btn = document.getElementById(mode + '-btn');
             const originalText = btn.innerHTML;
             
@@ -580,12 +621,14 @@
                     if (password !== confirmPassword) { showToast('Passwords do not match!', 'error'); btn.innerHTML = originalText; btn.disabled = false; return; }
 
                     const name = document.getElementById('signup-name').value;
+                    const phoneInput = document.getElementById('signup-phone').value;
                     const address = document.getElementById('signup-address').value;
                     const city = document.getElementById('signup-city').value;
                     
+                    if (phoneInput.length !== 10) { showToast('Please enter a valid 10-digit phone number.', 'error'); btn.innerHTML = originalText; btn.disabled = false; return; }
                     if (!name || !address || !city) { showToast('Please fill in all details.', 'error'); btn.innerHTML = originalText; btn.disabled = false; return; }
 
-                    const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const user = userCredential.user;
                     
                     await updateProfile(user, { displayName: name });
@@ -593,6 +636,7 @@
                     const userRef = doc(db, 'artifacts', appId, 'users', user.uid);
                     await setDoc(userRef, {
                         name: name,
+                        email: email,
                         phone: `+91${phoneInput}`,
                         address: { street: address, city: city, state: 'Tripura' },
                         createdAt: new Date().toISOString()
@@ -600,11 +644,11 @@
                     
                     showToast('Account created successfully!');
                 } else {
-                    await signInWithEmailAndPassword(auth, pseudoEmail, password);
+                    await signInWithEmailAndPassword(auth, email, password);
                 }
                 e.target.reset();
             } catch (error) {
-                if (error.code === 'auth/email-already-in-use') { showToast('This phone number is already registered.', 'error'); } 
+                if (error.code === 'auth/email-already-in-use') { showToast('This email is already registered.', 'error'); } 
                 else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') { showToast('Account not found or incorrect password.', 'error'); } 
                 else { showToast('Authentication failed. Please try again.', 'error'); }
             } finally {
@@ -631,6 +675,12 @@
         function openEditModal() {
             if (currentUserData) {
                 document.getElementById('edit-name').value = currentUserData.name || '';
+                
+                if (currentUserData.phone) {
+                    // Extract just the 10 digits for the input box
+                    document.getElementById('edit-phone').value = currentUserData.phone.replace('+91', '');
+                }
+                
                 if (currentUserData.address) {
                     document.getElementById('edit-address').value = currentUserData.address.street || '';
                     document.getElementById('edit-city').value = currentUserData.address.city || '';
@@ -654,13 +704,22 @@
             btn.disabled = true;
 
             const newName = document.getElementById('edit-name').value;
+            const newPhoneInput = document.getElementById('edit-phone').value;
             const newAddress = document.getElementById('edit-address').value;
             const newCity = document.getElementById('edit-city').value;
+
+            if (newPhoneInput.length !== 10) {
+                showToast('Please enter a valid 10-digit phone number.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
 
             try {
                 const userRef = doc(db, 'artifacts', appId, 'users', user.uid);
                 await setDoc(userRef, {
                     name: newName,
+                    phone: `+91${newPhoneInput}`,
                     address: { street: newAddress, city: newCity, state: 'Tripura' }
                 }, { merge: true });
 
@@ -674,6 +733,49 @@
                 toggleUI(true, user);
             } catch (error) {
                 showToast('Failed to update profile.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        function openForgotPasswordModal() {
+            document.getElementById('forgot-password-modal').classList.remove('hidden');
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgot-password-modal').classList.add('hidden');
+        }
+
+        async function handleForgotPasswordSubmit(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('forgot-email').value;
+            
+            if (!emailInput) { 
+                showToast('Please enter your email address.', 'error'); 
+                return; 
+            }
+
+            const btn = document.getElementById('forgot-submit-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending...';
+            btn.disabled = true;
+
+            try {
+                // Sends the real Firebase password reset email to the user
+                await sendPasswordResetEmail(auth, emailInput);
+                showToast('Reset link sent! Please check your email inbox.', 'success');
+                closeForgotPasswordModal();
+                e.target.reset();
+            } catch (error) {
+                console.error("Reset error:", error);
+                if (error.code === 'auth/user-not-found') {
+                    showToast('No account found with this email address.', 'error');
+                } else if (error.code === 'auth/invalid-email') {
+                    showToast('Invalid email address format.', 'error');
+                } else {
+                    showToast('Failed to send reset link. Try again later.', 'error');
+                }
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
