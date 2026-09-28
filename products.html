@@ -431,6 +431,23 @@
                 let products = [];
                 snapshot.forEach(doc => { if(doc.data().status !== 'draft') products.push({ id: doc.id, ...doc.data() }); });
 
+                // NEW: Fetch all public reviews and attach them to the correct products
+                try {
+                    const reviewsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'reviews'));
+                    let allReviews = [];
+                    reviewsSnap.forEach(doc => { allReviews.push({ _reviewId: doc.id, ...doc.data() }); });
+                    
+                    products.forEach(p => {
+                        const legacyRevs = p.reviews || []; // Keep old reviews if any exist
+                        const newRevs = allReviews.filter(r => r.productId === p.id);
+                        // Sort newest first based on timestamp
+                        newRevs.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+                        p.reviews = [...newRevs, ...legacyRevs];
+                    });
+                } catch(revErr) {
+                    console.warn("Could not load reviews:", revErr);
+                }
+
                 globalCatalog = products.reverse(); 
                 
                 renderCategoryGrid('saree-grid', globalCatalog.filter(p => p.category === 'sarees'));
@@ -760,34 +777,37 @@
         async function handleReviewSubmit(e) {
             e.preventDefault();
             if (!currentOpenProduct) return;
+            if (!auth.currentUser) { 
+                showToast('Authentication error. Try reloading.', 'error'); 
+                return; 
+            }
 
             const authorName = localStorage.getItem('shirnahar_cached_name') || 'Customer';
+
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerText;
-            
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
             submitBtn.disabled = true;
 
             const newRev = {
+                productId: currentOpenProduct.id,
                 author: authorName,
                 rating: parseInt(document.getElementById('review-stars').value),
                 body: document.getElementById('review-body').value,
-                date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                timestamp: Date.now() // Used for sorting
             };
 
-            const updatedReviews = currentOpenProduct.reviews ? [...currentOpenProduct.reviews] : [];
-            updatedReviews.unshift(newRev);
-
             try {
-                await updateDoc(doc(db, 'artifacts', appId, 'products', currentOpenProduct.id), {
-                    reviews: updatedReviews
-                });
-                showToast('Review submitted securely!');
-            } catch (error) {
-                console.warn("Backend rejected review save, performing local UI update:", error);
-                showToast('Review submitted locally (Preview)', 'success');
-            } finally {
-                // Optimistically update the UI regardless of backend success for the preview
+                // NEW: Save to the dedicated public data collection instead of the locked product document
+                const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'reviews'), newRev);
+                
+                // Tag the local object with the new generated ID so we can track it
+                newRev._reviewId = docRef.id;
+
+                // Optimistically update the UI instantly
+                const updatedReviews = currentOpenProduct.reviews ? [...currentOpenProduct.reviews] : [];
+                updatedReviews.unshift(newRev);
                 currentOpenProduct.reviews = updatedReviews;
                 
                 const catalogIndex = globalCatalog.findIndex(p => p.id === currentOpenProduct.id);
@@ -799,7 +819,11 @@
                 
                 closeReviewModal();
                 e.target.reset();
-                
+                showToast('Review published successfully!');
+            } catch (error) {
+                console.error("Error saving review:", error);
+                showToast('Failed to submit review.', 'error');
+            } finally {
                 submitBtn.innerText = originalText;
                 submitBtn.disabled = false;
             }
