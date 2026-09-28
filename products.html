@@ -480,8 +480,6 @@
 
         async function handleAddToCart(title, price, img, maxStock = 5) {
             try {
-                // If user is strictly logged in with cloud cart configured, redirect to cart logic for safety
-                // For immediate visual feedback, update local cache
                 let localCart = JSON.parse(localStorage.getItem('shirnahar_local_cart')) || [];
                 let cloudCache = JSON.parse(localStorage.getItem('shirnahar_cloud_cart_cache')) || [];
                 
@@ -502,7 +500,6 @@
 
                 if (isLogged) {
                     localStorage.setItem('shirnahar_cloud_cart_cache', JSON.stringify(activeArray));
-                    // Push to cloud instantly
                     if (currentUser && !currentUser.isAnonymous) {
                         await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'cart', 'currentCart'), { items: activeArray });
                     }
@@ -603,7 +600,6 @@
                 buyNowBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
 
-            // Description logic
             const descContainer = document.getElementById('detail-description-container');
             if (product.description && product.description.trim() !== '') {
                 document.getElementById('detail-description').innerText = product.description;
@@ -699,22 +695,17 @@
         }
 
         function openReviewModal() {
-            // SECURE LOGIC: Check if user is logged in
             const isLoggedIn = localStorage.getItem('shirnahar_is_logged_in') === 'true';
             const cachedName = localStorage.getItem('shirnahar_cached_name');
 
             if (!isLoggedIn || !cachedName) {
                 showToast('Please sign in to write a review', 'error');
-                setTimeout(() => {
-                    window.location.href = 'account.html';
-                }, 1500);
+                setTimeout(() => { window.location.href = 'account.html'; }, 1500);
                 return;
             }
 
-            // Populate the UI badge with the logged-in user's name automatically
             document.getElementById('reviewer-name-display').innerText = cachedName;
             document.getElementById('reviewer-avatar').innerText = cachedName.charAt(0).toUpperCase();
-
             document.getElementById('review-modal').classList.remove('hidden');
         }
 
@@ -726,11 +717,10 @@
             e.preventDefault();
             if (!currentOpenProduct) return;
 
-            // Automatically grab the logged in user's name
             const authorName = localStorage.getItem('shirnahar_cached_name') || 'Customer';
-
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerText;
+            
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
             submitBtn.disabled = true;
 
@@ -864,7 +854,6 @@
             }, { rootMargin: '-100px 0px -50% 0px' });
             document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
 
-            // AUTH LISTENER
             onAuthStateChanged(auth, async (user) => {
                 if (user && !user.isAnonymous) {
                     currentUser = user;
@@ -878,7 +867,6 @@
 
             await loadCatalogFromFirebase();
             
-            // Check if we need to open a specific product directly from the cart or homepage
             const pendingViewId = localStorage.getItem('shirnahar_view_product_id');
             const pendingViewName = localStorage.getItem('shirnahar_view_product_name');
 
