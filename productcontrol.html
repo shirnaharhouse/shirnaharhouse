@@ -589,27 +589,37 @@
                 const cropperModal = document.getElementById('cropper-modal');
                 const cropperImage = document.getElementById('cropper-image');
                 
-                cropperImage.src = e.target.result;
+                // Clear old instance safely
+                if (cropper) { cropper.destroy(); cropper = null; }
+
+                // Unhide the modal container first
                 cropperModal.classList.remove('hidden');
                 cropperModal.classList.add('flex');
                 
-                requestAnimationFrame(() => {
-                    cropperModal.classList.remove('opacity-0');
-                    if (cropper) cropper.destroy();
-                    cropper = new Cropper(cropperImage, {
-                        aspectRatio: 3 / 4,
-                        viewMode: 2,
-                        dragMode: 'move',
-                        autoCropArea: 1,
-                        restore: false,
-                        guides: true,
-                        center: true,
-                        highlight: false,
-                        cropBoxMovable: true,
-                        cropBoxResizable: true,
-                        toggleDragModeOnDblclick: false,
-                    });
-                });
+                // Assign image source
+                cropperImage.src = e.target.result;
+                
+                // Wait for image to fully load before initializing Cropper to prevent mobile glitches
+                cropperImage.onload = () => {
+                    // Small timeout ensures the browser has painted the display:flex layout
+                    setTimeout(() => {
+                        cropperModal.classList.remove('opacity-0');
+                        cropper = new Cropper(cropperImage, {
+                            aspectRatio: 3 / 4,
+                            viewMode: 1, // More stable on mobile screens
+                            dragMode: 'move',
+                            autoCropArea: 1,
+                            restore: false,
+                            guides: true,
+                            center: true,
+                            highlight: false,
+                            cropBoxMovable: true,
+                            cropBoxResizable: true,
+                            toggleDragModeOnDblclick: false,
+                            responsive: true, // Adapts to window resize automatically
+                        });
+                    }, 50); 
+                };
             };
             reader.readAsDataURL(file);
             event.target.value = ''; 
@@ -622,6 +632,7 @@
                 cropperModal.classList.add('hidden');
                 cropperModal.classList.remove('flex');
                 if (cropper) { cropper.destroy(); cropper = null; }
+                document.getElementById('cropper-image').src = ''; // Clear image to prevent ghosting
             }, 300);
         }
 
